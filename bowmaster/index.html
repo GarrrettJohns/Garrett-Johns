@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bowmaster Prelude</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="description" content="Defend the keep with a longbow. A modern, touch-first tribute to Bowmaster Prelude — plays offline from your iPhone home screen.">
+<meta name="theme-color" content="#0d1220">
+<meta name="color-scheme" content="dark">
+
+<!-- Home-screen install (iOS + Android) -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bowmaster">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png" sizes="192x192">
+<link rel="icon" href="icons/favicon.png" sizes="64x64">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+  <div id="stage">
+    <canvas id="game"></canvas>
+
+    <div id="hud">
+      <div class="hud-row">
+        <div class="hud-keep">
+          <div class="hud-label"><span id="hud-wave">WAVE 1</span></div>
+          <div class="bar"><span id="hud-hp-fill"></span></div>
+          <div class="hud-hp"><i>🛡</i><span id="hud-hp-text">120</span></div>
+        </div>
+        <div class="hud-right">
+          <div class="gold"><i>◈</i><span id="hud-gold">0</span></div>
+          <button id="btn-pause" class="icon-btn" type="button" aria-label="Pause">❚❚</button>
+        </div>
+      </div>
+      <div id="hud-combo" hidden></div>
+      <div id="boss-bar" hidden>
+        <span id="boss-name">BOSS</span>
+        <div class="bar boss"><span id="boss-fill"></span></div>
+      </div>
+    </div>
+
+    <div id="banner" aria-live="polite"></div>
+  </div>
+
+  <div id="dock">
+    <div id="dock-ammo"></div>
+    <div id="aimpad"><span>Drag anywhere to draw &middot; release to loose</span></div>
+  </div>
+</div>
+
+<div id="screens">
+
+  <section id="screen-title">
+    <div class="sheet">
+      <div class="crest">🏹</div>
+      <h1>Bowmaster<span>Prelude</span></h1>
+      <p class="tag">Hold the keep. One bow, endless waves.</p>
+      <p id="title-best" class="best"></p>
+      <button id="btn-continue" class="btn ghost" type="button" hidden></button>
+      <button id="btn-play" class="btn primary" type="button">New run</button>
+      <button id="btn-howto" class="btn ghost" type="button">How to play</button>
+      <div class="toggles">
+        <button class="chip js-sound" type="button" aria-pressed="true"></button>
+        <button class="chip js-guide" type="button" aria-pressed="true"></button>
+      </div>
+      <p id="install-tip" class="tip" hidden>
+        <b>Play it like an app:</b> tap <i>Share</i> in Safari, then
+        <i>Add to Home Screen</i>. It runs full screen and works offline.
+      </p>
+    </div>
+  </section>
+
+  <section id="screen-howto">
+    <div class="sheet wide">
+      <h2>How to play</h2>
+      <ul class="howto">
+        <li><b>Draw</b><span>Touch anywhere on the field and drag <i>backwards</i>, like pulling a bowstring. The further you pull, the harder the shot.</span></li>
+        <li><b>Loose</b><span>Lift your finger. Arrows arc — lead your target and aim high for distance.</span></li>
+        <li><b>Aim for the head</b><span>Headshots do far more damage, pay 50% extra gold and drop most footmen in one hit.</span></li>
+        <li><b>Shieldbearers</b><span>Their shield stops body shots. Go over the top, take the legs, or punch through with a Bodkin.</span></li>
+        <li><b>Special shafts</b><span>Buy fire, frost, bomb, bodkin and storm arrows in the shop. Tap one in the bottom bar to load it for your next shot.</span></li>
+        <li><b>Between waves</b><span>Spend gold on your bow, your keep and militia to hold the line. Upgrades last for the whole run.</span></li>
+        <li><b>The keep</b><span>Anything that reaches the wall chips away at it. At zero, the run ends.</span></li>
+      </ul>
+      <button id="btn-howto-back" class="btn primary" type="button">Back</button>
+    </div>
+  </section>
+
+  <section id="screen-shop">
+    <div class="sheet wide shop">
+      <header class="shop-head">
+        <div>
+          <h2 id="shop-wave">Wave cleared</h2>
+          <p id="shop-bonus" class="bonus"></p>
+        </div>
+        <div class="purse"><i>◈</i><span id="shop-gold">0</span></div>
+      </header>
+      <button id="shop-repair" class="btn repair" type="button"></button>
+      <div id="shop-list" class="shop-list"></div>
+      <div class="shop-foot">
+        <button id="shop-next" class="btn primary" type="button">Begin next wave →</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-pause">
+    <div class="sheet">
+      <h2>Paused</h2>
+      <button id="btn-resume" class="btn primary" type="button">Resume</button>
+      <div class="toggles">
+        <button class="chip js-sound" type="button" aria-pressed="true"></button>
+        <button class="chip js-guide" type="button" aria-pressed="true"></button>
+      </div>
+      <button id="btn-quit" class="btn ghost" type="button">Save &amp; quit to menu</button>
+    </div>
+  </section>
+
+  <section id="screen-over">
+    <div class="sheet">
+      <h2 class="fell">The keep has fallen</h2>
+      <p class="reached">You reached wave <b id="over-wave">1</b></p>
+      <div class="score"><i>◈</i><span id="over-score">0</span></div>
+      <ul id="over-stats" class="stats"></ul>
+      <p id="over-best" class="best"></p>
+      <button id="btn-restart" class="btn primary" type="button">Run it back</button>
+      <button id="btn-over-menu" class="btn ghost" type="button">Main menu</button>
+    </div>
+  </section>
+
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
