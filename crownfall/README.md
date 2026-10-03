@@ -56,6 +56,9 @@ It then launches full screen and works offline.
   Haulers push wheelbarrows at double walking speed, 5 items a trip, up to 4
   per warehouse. Riding past a warehouse banks the coins on the king's horse
   (🏦 in the HUD): banked gold is safe if he falls and still pays for anything.
+- **Outposts serve the king:** tap a built outpost for the same King upgrades
+  as the castle (bow, weapons, horse) and an Army tab that trains troops on
+  the spot once you have Barracks, so there's no ride home.
 - **Outposts claim land:** each outpost's land (a square marked by corner
   flags) takes houses, farms, warehouses and workshops just like the castle
   grounds, and two more tower spots and a catapult spot open beside the road.

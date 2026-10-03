@@ -147,7 +147,7 @@ export const BUILDINGS = {
   },
   outpost: {
     name: 'Outpost', icon: '⛺', size: 6,
-    desc: 'A forward camp on the road to the enemy stronghold. It claims the land around it for houses and farms, its watchtower fires on passing enemies, and workers can drop off loads here.',
+    desc: 'Your camp on the road south. Upgrade the king and raise troops here; it claims the land around it and its watchtower guards the road.',
     levels: [{ dmg: 14, interval: 0.9, range: 13 }],   // costs and wave requirements live in map.js OUTPOSTS
   },
   goldmine: {

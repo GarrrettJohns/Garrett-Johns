@@ -673,6 +673,7 @@ export class World {
       const u = UNITS[c];
       const b = this.b[a];
       let locked = this.lockReason({ barracks: u.barracks });
+      if (!locked && b?.type === 'outpost' && !this.count('barracks')) locked = 'Build Barracks first';
       if (!locked && this.soldiers >= this.armyCap) locked = 'Army full';
       if (!locked && this.villagers.length === 0) locked = 'No free villagers';
       return {
@@ -688,10 +689,18 @@ export class World {
   menu(b) {
     const t = b.type;
     let tabs;
+    const KING = ['hero:damage', 'hero:rate', 'hero:range', 'weapon:bow', 'weapon:crossbow', 'weapon:fire', 'weapon:multi', 'hero:speed', 'hero:hp', 'hero:carry', 'hero:magnet'];
     if (t === 'castle') {
       tabs = [
-        { tab: 'King', items: ['hero:damage', 'hero:rate', 'hero:range', 'weapon:bow', 'weapon:crossbow', 'weapon:fire', 'weapon:multi', 'hero:speed', 'hero:hp', 'hero:carry', 'hero:magnet'] },
+        { tab: 'King', items: KING },
         { tab: 'Castle', items: ['up:castle', 'walls', 'gates'] },
+      ];
+    } else if (t === 'outpost') {
+      // Outposts serve the king in the field: the same upgrades as the
+      // castle, and troops raised on the spot (once there are Barracks).
+      tabs = [
+        { tab: 'King', items: KING },
+        { tab: 'Army', items: [`train:${b.id}:knight`, `train:${b.id}:archer`, `train:${b.id}:raider`, 'armor'] },
       ];
     } else if (t === 'barracks') {
       tabs = [{ tab: 'Barracks', items: [`train:${b.id}:knight`, `train:${b.id}:archer`, `train:${b.id}:raider`, `up:${b.id}`, 'armor'] }];
