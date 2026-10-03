@@ -787,12 +787,14 @@ export class Renderer {
         }
         for (const b of blockers) {
           const perp = side.ax === 'x' ? b.z : b.x, u = side.ax === 'x' ? b.x : b.z;
+          // Only buildings actually on this stretch of wall, not ones further along the same line.
+          if (Math.abs(u) > R + b.size / 2) continue;
           if (Math.abs(perp - side.at) < b.size / 2 + 0.7) cuts.push([u - b.size / 2 - 0.15, u + b.size / 2 + 0.15]);
         }
         cuts.sort((a, b) => a[0] - b[0]);
         let from = -R + 0.9;
         const spans = [];
-        for (const [a, b] of cuts) { if (a > from) spans.push([from, a]); from = Math.max(from, b); }
+        for (const [a, b] of cuts) { if (a > from) spans.push([from, Math.min(a, R - 0.9)]); from = Math.max(from, b); }
         if (R - 0.9 > from) spans.push([from, R - 0.9]);
         for (const [a, b] of spans) {
           const len = b - a;
