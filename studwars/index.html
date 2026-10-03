@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>StudWars</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="description" content="Knights vs Pirates. Gather bricks, build a base, raise an army and knock down the enemy fort. A brick-built strategy game for your phone.">
+<meta name="theme-color" content="#1f3f8a">
+<meta name="color-scheme" content="light">
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="StudWars">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png" sizes="192x192">
+<link rel="icon" href="icons/favicon.png" sizes="64x64">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+  <div id="stage">
+    <canvas id="game"></canvas>
+    <div id="box" hidden></div>
+    <div id="floats"></div>
+
+    <div id="hud" hidden>
+      <div id="topbar">
+        <div class="pill" title="Bricks"><i class="i-brick"></i><b id="h-bricks">0</b></div>
+        <div class="pill" title="Army size"><i>👥</i><b id="h-pop">0</b><small>/<span id="h-cap">5</span></small></div>
+        <div class="pill" title="Studs"><i class="i-stud"></i><b id="h-studs">0</b></div>
+        <div class="spacer"></div>
+        <div class="pill clock" id="h-time">0:00</div>
+        <button id="b-pause" class="ibtn" type="button" aria-label="Pause">❚❚</button>
+      </div>
+      <canvas id="minimap" width="160" height="160"></canvas>
+      <div id="objective" hidden></div>
+      <div id="quick">
+        <button id="q-hero" class="qbtn hero" type="button" aria-label="Select hero"><img alt=""><span class="cd" hidden></span></button>
+        <button id="q-army" class="qbtn" type="button" aria-label="Select army"><img alt=""><small>Army</small></button>
+        <button id="q-idle" class="qbtn" type="button" aria-label="Next idle builder"><img alt=""><small>Idle</small><span class="count" hidden></span></button>
+        <button id="q-box" class="qbtn" type="button" aria-label="Box select"><span class="boxicon"></span><small>Group</small></button>
+      </div>
+      <div id="toasts"></div>
+      <div id="placebar" hidden>
+        <span id="place-text">Tap where to build</span>
+        <button id="place-ok" class="brick-btn green" type="button">Build</button>
+        <button id="place-no" class="brick-btn grey" type="button">✕</button>
+      </div>
+      <div id="panel">
+        <div id="sel-card"></div>
+        <div id="actions"></div>
+      </div>
+    </div>
+  </div>
+
+  <section id="screen-title" class="screen show">
+    <div class="title-wrap">
+      <h1 class="logo" aria-label="StudWars"><span>S</span><span>T</span><span>U</span><span>D</span><span class="gap"></span><span>W</span><span>A</span><span>R</span><span>S</span></h1>
+      <p class="tag">Knights <b>vs</b> Pirates</p>
+      <div class="vs">
+        <img id="t-king" alt="">
+        <img id="t-captain" alt="">
+      </div>
+      <div class="diff" role="radiogroup" aria-label="Difficulty">
+        <button type="button" data-diff="easy">Easy</button>
+        <button type="button" data-diff="normal">Normal</button>
+        <button type="button" data-diff="hard">Hard</button>
+      </div>
+      <button id="btn-play" class="brick-btn big yellow" type="button">Battle!</button>
+      <div class="row">
+        <button id="btn-help" class="brick-btn blue" type="button">How to play</button>
+        <button id="btn-sound" class="brick-btn grey" type="button">🔊</button>
+        <button id="btn-music" class="brick-btn grey" type="button">🎵</button>
+      </div>
+      <p class="small" id="best"></p>
+    </div>
+  </section>
+
+  <section id="screen-help" class="screen">
+    <div class="card help">
+      <h2>How to play</h2>
+      <ul>
+        <li><b>Select:</b> tap a unit. Double-tap to grab every unit of that kind on screen. Long-press and drag (or tap <b>Group</b>) to box a crowd.</li>
+        <li><b>Move & fight:</b> with units selected, tap the ground to march there. They fight anything they meet on the way. Tap an enemy to attack it.</li>
+        <li><b>Retreat:</b> tap your own Keep with soldiers selected to pull them back.</li>
+        <li><b>Bricks:</b> select builders and tap a tree or a brick pile. They carry bricks back to the Keep or a Depot.</li>
+        <li><b>Build:</b> select a builder, pick a building, tap where it goes, then <b>Build</b>.</li>
+        <li><b>Farms</b> let you have a bigger army. <b>Barracks</b> train soldiers. <b>Towers</b> shoot invaders.</li>
+        <li><b>Hero:</b> your King is strong and comes back if he falls. Use his <b>Rally</b> power in a big fight.</li>
+        <li><b>Studs</b> pop out of everything you smash. Walk over them to collect them.</li>
+        <li><b>Win</b> by knocking down the Pirate Fort. Lose your Keep and it's over.</li>
+        <li><b>Camera:</b> drag to look around, pinch to zoom, tap the map in the corner to jump.</li>
+      </ul>
+      <button id="btn-help-close" class="brick-btn yellow" type="button">Got it</button>
+    </div>
+  </section>
+
+  <section id="screen-pause" class="screen">
+    <div class="card">
+      <h2>Paused</h2>
+      <button id="btn-resume" class="brick-btn yellow" type="button">Resume</button>
+      <button id="btn-pause-help" class="brick-btn blue" type="button">How to play</button>
+      <div class="row">
+        <button id="btn-sound2" class="brick-btn grey" type="button">🔊</button>
+        <button id="btn-music2" class="brick-btn grey" type="button">🎵</button>
+      </div>
+      <button id="btn-restart" class="brick-btn grey" type="button">Restart battle</button>
+      <button id="btn-quit" class="brick-btn red" type="button">Quit to menu</button>
+    </div>
+  </section>
+
+  <section id="screen-end" class="screen">
+    <div class="card">
+      <div class="crest" id="end-crest">🏆</div>
+      <h2 id="end-title">Victory!</h2>
+      <p class="sub" id="end-text"></p>
+      <div class="stats" id="end-stats"></div>
+      <button id="btn-again" class="brick-btn yellow" type="button">Play again</button>
+      <button id="btn-menu" class="brick-btn grey" type="button">Main menu</button>
+    </div>
+  </section>
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
