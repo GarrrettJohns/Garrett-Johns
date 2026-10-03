@@ -10,7 +10,7 @@ import {
   strongholdWallsGeo, strongholdGateGeo, strongholdTowerGeo, strongholdKeepGeo,
 } from './models.js';
 import {
-  LANES, lanePoint, BRIDGE, RIVER_Z, RIVER_HALF, FOREST_Z, PATH_HALF, CASTLE_R, scenery, MOUNTAIN, BOUNDS, STRONGHOLD,
+  LANES, lanePoint, BRIDGE, RIVER_Z, RIVER_HALF, FOREST_Z, PATH_HALF, CASTLE_R, scenery, HIGHLAND, HIGHLAND_TRAILS, BOUNDS, STRONGHOLD,
 } from './map.js';
 import { BUILDINGS, HERO } from './config.js';
 
@@ -75,6 +75,7 @@ class RigMesh {
       if (pt.n >= pt.cap) continue;
       const p = pt.p;
       if (p.show && p.show !== st.load) continue;
+      if (p.hide && p.hide.includes(st.load)) continue;
       let a = 0;
       if (p.anim === 'legA') a = s * 0.65 * walk;
       else if (p.anim === 'legB') a = -s * 0.65 * walk;
@@ -224,8 +225,9 @@ export class Renderer {
       if (z < FOREST_Z + 2) tmp.lerp(forest, Math.min(1, (FOREST_Z + 2 - z) / 5) * 0.85);
       const rd = Math.abs(z - RIVER_Z);
       if (rd < RIVER_HALF + 1.6) tmp.lerp(rd < RIVER_HALF + 0.3 ? bank : sand, rd < RIVER_HALF + 0.3 ? 1 : 0.6);
-      const md = Math.hypot(x - MOUNTAIN.x, z - MOUNTAIN.z);
-      if (md < MOUNTAIN.r + 3) tmp.lerp(highland, Math.min(1, (MOUNTAIN.r + 3 - md) / 3) * 0.85);
+      // The highland: rocky ground up to its crags.
+      const hd = Math.min(x - HIGHLAND.x0, HIGHLAND.z1 - z, z - (HIGHLAND.z0 - 1.5));
+      if (hd > -2 && z < RIVER_Z + 100) tmp.lerp(highland, Math.min(1, (hd + 2) / 3) * 0.85);
       // Scorched earth around the enemy stronghold.
       const sd = Math.hypot((x - STRONGHOLD.x) * 0.8, z - STRONGHOLD.z);
       if (sd < 30) tmp.lerp(new THREE.Color(0x6e5a4a), Math.min(1, (30 - sd) / 12) * 0.75);
@@ -245,6 +247,19 @@ export class Renderer {
       edge.receiveShadow = road.receiveShadow = true;
       scene.add(edge, road);
     }
+    // Trails through the highland.
+    for (const t of HIGHLAND_TRAILS) {
+      const pts = [];
+      for (let k = 1; k < t.length; k++) {
+        const [ax, az] = t[k - 1], [bx, bz] = t[k];
+        const n = Math.max(1, Math.round(Math.hypot(bx - ax, bz - az)));
+        for (let i = k === 1 ? 0 : 1; i <= n; i++) pts.push([ax + (bx - ax) * (i / n), az + (bz - az) * (i / n)]);
+      }
+      const trail = new THREE.Mesh(ribbon(pts, 1.2, 0.03), new THREE.MeshLambertMaterial({ color: B.road }));
+      trail.receiveShadow = true;
+      scene.add(trail);
+    }
+
     // Square castle courtyard.
     const yard = new THREE.Mesh(new THREE.PlaneGeometry((CASTLE_R + 1.6) * 2, (CASTLE_R + 1.6) * 2), roadMat);
     yard.rotation.x = -Math.PI / 2; yard.position.y = 0.03;
@@ -389,6 +404,7 @@ export class Renderer {
     const goldMat = new THREE.MeshLambertMaterial({ color: C.gold, emissive: 0x5a3a00 });
     this.coinPool = new Pool(scene, coinGeo(), goldMat, 500, { shadow: true });
     this.logPool = new Pool(scene, logGeo(), vcMat, 80, { shadow: true });
+    this.stonePool = new Pool(scene, new THREE.DodecahedronGeometry(0.28, 0), new THREE.MeshLambertMaterial({ color: 0xa9a49a }), 16, { shadow: true });
     this.stackPool = new Pool(scene, coinGeo(), goldMat, 1400, { shadow: true });
     this.arrowPool = new Pool(scene, arrowGeo(), vcMat, 500);
     this.particlePool = new Pool(scene, new THREE.BoxGeometry(1, 1, 1), new THREE.MeshLambertMaterial({ color: 0xffffff }), 900);
@@ -513,7 +529,9 @@ export class Renderer {
       e.canvas = canvas; e.tex = tex; e.body = mesh;
       if (b.type === 'pass') {
         const rocks = new THREE.Mesh(this.geo('rockfall', rockfallGeo), vcMat);
-        rocks.position.set(2.6, 0, -3.2);
+        // The rockfall blocks the gorge just beyond the pad.
+        rocks.position.set(3.6, 0, 0);
+        rocks.rotation.y = Math.PI / 2;
         rocks.castShadow = true;
         group.add(rocks);
       }
@@ -526,6 +544,7 @@ export class Renderer {
     body.receiveShadow = true;
     group.add(body);
     e.body = body;
+    if (b.type === 'pass') group.rotation.y = Math.PI / 2;   // the gorge runs east-west
     if (b.type === 'bridge') {
       const p = lanePoint(LANES.find((l) => l.id === 'N'), BRIDGE.s);
       group.rotation.y = Math.atan2(p.dx, p.dz);
@@ -708,7 +727,10 @@ export class Renderer {
       const v = Math.hypot(hero.vx, hero.vz);
       const gallop = Math.min(1, v / 4);
       const bob = Math.abs(Math.sin(hero.anim * 1.2)) * 0.12 * gallop;
-      this.rigs.hero.add(hero.x, bob, hero.z, hero.yaw, HERO_S, { walk: gallop, anim: hero.anim * 2.2, swing: hero.shootT * 5, flash: hero.flash });
+      const chop = hero.tool ? Math.max(0, Math.sin(t * 7.8)) : 0;
+      this.rigs.hero.add(hero.x, bob, hero.z, hero.yaw, HERO_S, { walk: gallop, anim: hero.anim * 2.2, swing: hero.tool ? chop : hero.shootT * 5, flash: hero.flash, load: hero.tool });
+      if (hero.tool && chop > 0.97 && !this.chopped) { this.chopped = true; this.spark(hero.x + Math.sin(hero.yaw) * 1.6, 0.8, hero.z + Math.cos(hero.yaw) * 1.6, hero.tool === 'axe' ? 0xc08a55 : 0xb8b8c0, 4, 0.16, 3, 0.4); }
+      if (chop < 0.5) this.chopped = false;
     }
     const UNIT_RIG = { knight: 'knight', archer: 'archer', raider: 'raider' };
     for (const a of world.allies) {
@@ -759,6 +781,26 @@ export class Renderer {
       cp.push(_m);
     }
     cp.end();
+    // What the king is carrying home, strapped to the horse's side.
+    this.stonePool.begin();
+    if (hero.alive && hero.load.n > 0) {
+      const rx = Math.cos(hero.yaw), rz = -Math.sin(hero.yaw);
+      const k = Math.min(4, Math.ceil(hero.load.n / 6));
+      for (let i = 0; i < k; i++) {
+        const side = i % 2 ? -1 : 1, up = Math.floor(i / 2);
+        const x = hero.x + rx * side * 0.75 * HERO_S, z = hero.z + rz * side * 0.75 * HERO_S, y = 1.35 * HERO_S + up * 0.3;
+        if (hero.load.res === 'wood') {
+          _q.setFromEuler(_e.set(0, hero.yaw + Math.PI / 2, 0));
+          _m.compose(_v.set(x, y + 0.3, z), _q, _s.set(0.8, 0.8, 0.8));
+          this.logPool.push(_m);
+        } else {
+          _q.setFromEuler(_e.set(i, i * 2, 0));
+          _m.compose(_v.set(x, y, z), _q, _s.set(1, 1, 1));
+          this.stonePool.push(_m);
+        }
+      }
+    }
+    this.stonePool.end();
     this.logPool.end();
 
     // ---- the coin stack on the king's horse, and the mine piles

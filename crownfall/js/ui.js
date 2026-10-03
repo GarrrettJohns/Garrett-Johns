@@ -20,6 +20,7 @@ export class UI {
       sheet: $('sheet'), sheetIcon: $('sheet-icon'), sheetName: $('sheet-name'), sheetSub: $('sheet-sub'), sheetList: $('sheet-list'),
       buildSheet: $('build-sheet'), buildList: $('build-list'),
       placeBar: $('place-bar'), placeText: $('place-text'), placeOk: $('btn-place-ok'), threats: $('threats'),
+      load: $('hud-load'), loadN: $('hud-load-n'), loadCap: $('hud-load-cap'), loadI: $('hud-load-i'), padtip: $('padtip'),
     };
     this.prev = {};
     this.menuFor = null;
@@ -131,7 +132,15 @@ export class UI {
       if (this.bannerT <= 0) e.banner.classList.remove('show');
     }
 
+    const ld = world.hero.load;
+    this.set('load', `${ld.n}|${ld.res}|${world.loadCap}`, () => {
+      e.load.hidden = ld.n === 0;
+      e.loadN.textContent = ld.n;
+      e.loadCap.textContent = `/${world.loadCap}`;
+      e.loadI.textContent = ld.res === 'stone' ? '🪨' : '🪵';
+    });
     this.updateThreats(world, ctx);
+    this.updatePadTip(world, ctx);
     this.updateMenu(world, dt, ctx);
     if (!e.buildSheet.hidden) this.renderBuild(world);
   }
@@ -143,6 +152,35 @@ export class UI {
   }
 
   // ----------------------------------------------------------- menu sheet
+  // A card over the nearest build pad saying what it does and what it costs.
+  updatePadTip(world, ctx) {
+    const el = this.el.padtip;
+    const h = world.hero;
+    let best = null, bd = 7;
+    if (h.alive && !ctx.placing && !this.sheetOpen && ctx.view) {
+      for (const b of Object.values(world.b)) {
+        if (b.state !== 'site' || !world.padVisible(b)) continue;
+        const d = Math.hypot(b.x - h.x, b.z - h.z) - b.size / 2;
+        if (d < bd) { bd = d; best = b; }
+      }
+    }
+    if (!best) { el.hidden = true; this.tipFor = null; return; }
+    const p = ctx.view.project(best.x, 2.2, best.z - best.size / 2);
+    if (p.behind) { el.hidden = true; return; }
+    const tip = world.padTip(best);
+    const sig = JSON.stringify([best.id, tip, world.hero.coins >= (tip.cost.gold || 0), world.res]);
+    if (sig !== this.tipSig) {
+      this.tipSig = sig;
+      const c = tip.cost;
+      const lack = (k, have) => ((c[k] || 0) > have ? 'lack' : '');
+      el.innerHTML = `<b>${tip.icon} ${esc(tip.title)}</b>${esc(tip.desc)}`
+        + (tip.locked ? `<div class="lock">🔒 ${esc(tip.locked)}</div>`
+          : `<div class="cost">${c.gold ? `<span class="${lack('gold', world.hero.coins)}"><i class="coin"></i>${c.gold}</span>` : ''}${c.wood ? `<span class="${lack('wood', world.res.wood)}">🪵 ${c.wood}</span>` : ''}${c.stone ? `<span class="${lack('stone', world.res.stone)}">🪨 ${c.stone}</span>` : ''}</div>`);
+    }
+    el.style.transform = `translate(${p.x}px, ${p.y - el.offsetHeight - 12}px)`;
+    el.hidden = false;
+  }
+
   // Red arrows round the screen edge pointing at each road enemies are on.
   // An arrow hides once that group is on screen.
   updateThreats(world, ctx) {

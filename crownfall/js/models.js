@@ -535,7 +535,7 @@ export function siteGeo(size) {
 function part(build, o = {}) {
   const b = new Builder();
   build(b);
-  return { geo: b.build(), pivot: o.pivot || [0, 0, 0], anim: o.anim || 'none', tint: !!o.tint, show: o.show || null, phase: o.phase || 0 };
+  return { geo: b.build(), pivot: o.pivot || [0, 0, 0], anim: o.anim || 'none', tint: !!o.tint, show: o.show || null, hide: o.hide || null, phase: o.phase || 0 };
 }
 
 function humanoid({ body, legs, head = C.skin, hat, extra, arm, tintBody = false, bulk = 1, height = 1 }) {
@@ -613,7 +613,16 @@ export const RIGS = {
       b.box(0.16, 0.5, 0.16, C.blue, { x: 0.42, y: 2.0 });
       b.add(new THREE.TorusGeometry(0.55, 0.04, 3, 10, Math.PI), C.woodDark, { x: 0.5, y: 2.0, z: 0.35, rz: Math.PI / 2, ry: Math.PI / 2 });
       b.box(0.02, 1.1, 0.02, C.white, { x: 0.5, y: 1.45, z: 0.35 });
-    }, { pivot: [0.42, 2.3, 0], anim: 'aim' }));
+    }, { pivot: [0.42, 2.3, 0], anim: 'aim', hide: ['axe', 'pick'] }));
+    // The king's tools: an axe in the forest, a pickaxe in the highland.
+    for (const tool of ['axe', 'pick']) {
+      parts.push(part((b) => {
+        b.box(0.16, 0.5, 0.16, C.blue, { x: 0.42, y: 2.0 });
+        b.box(0.08, 0.08, 1.15, C.woodLight, { x: 0.5, y: 2.05, z: 0.6 });
+        if (tool === 'axe') b.box(0.06, 0.42, 0.34, C.iron, { x: 0.5, y: 1.9, z: 1.05 });
+        else { b.box(0.06, 0.12, 0.7, C.iron, { x: 0.5, y: 2.05, z: 1.15, rx: Math.PI / 2 }); b.cone(0.06, 0.25, 4, C.iron, { x: 0.5, y: 1.62, z: 1.15, rx: Math.PI }); }
+      }, { pivot: [0.42, 2.3, 0], anim: 'arm', show: tool }));
+    }
     return { parts, height: 3.6 };
   },
   knight() {

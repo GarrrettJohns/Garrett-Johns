@@ -22,9 +22,17 @@ It then launches full screen and works offline.
 - **The army:** build Barracks (the game nudges you after wave 2) and tap it to
   train knights, archers and raiders. Each barracks raises the army cap.
 - **Gold:** at first gold comes only from waves: kills drop coins and every
-  cleared wave pays a bonus. Clearing the Mountain Pass (it needs wood) opens a
-  highland with a gold mine and quarries. Wave 5's boss, the Elder Treant,
-  drops a pile of logs.
+  cleared wave pays a bonus. Wave 5's boss, the Elder Treant, drops a pile of
+  logs.
+- **The highland:** a big rocky region east of the castle, walled in by crags.
+  The only way in is a gorge sealed by a rockfall; clearing the Mountain Pass
+  (it needs wood) opens it. Three enemy camps hold the trail inside, guarding
+  the gold mine and two quarries, which trails lead to.
+- **The king gathers:** standing still by forest trees he chops wood with an
+  axe, and by highland boulders he mines stone with a pickaxe. He carries the
+  load (20, more with saddlebags) and banks it at the castle or an outpost.
+- **Pads explain themselves:** ride near any build pad and a card says what it
+  does and what it costs.
 - **Pads:** a pad turns green when you can afford it. Stand on it to build.
 - **Building:** between waves tap 🔨, pick a building, then drag it on the grid
   and tap *Build here*. There is always room for the king to ride between

@@ -7,7 +7,7 @@ import { UI } from './ui.js';
 import { audio } from './audio.js';
 import { save } from './save.js';
 import { BUILDINGS, HERO_UPGRADES, levelInfo } from './config.js';
-import { CASTLE_R } from './map.js';
+import { CASTLE_R, FOREST_Z, inHighland } from './map.js';
 
 const $ = (id) => document.getElementById(id);
 const stage = $('stage');
@@ -24,6 +24,7 @@ let dirty = false;
 let pickStreak = 0;
 let pickT = 0;
 let lostAt = 0;
+const hintGather = {};
 
 // The closest grid spot to (x, z) where a building of this type fits.
 function nearestSpot(type, x, z) {
@@ -359,6 +360,14 @@ function handle(ev, events = []) {
       audio.deliver();
       ui.float(at(ev.x, 2.4, ev.z), `+${ev.amt} ${ev.res === 'wood' ? '🪵' : '🪨'}`, '#fff');
       break;
+    case 'gather':
+      audio.chop(ev.res);
+      ui.float(at(ev.x, 4.5, ev.z), `+1 ${ev.res === 'wood' ? '🪵' : '🪨'} (${ev.n}/${ev.cap})`, '#fff');
+      if (ev.n === 1 && !hintGather[ev.res]) {
+        hintGather[ev.res] = true;
+        ui.toast(`The king ${ev.res === 'wood' ? 'chops wood' : 'mines stone'}! Carry it to the castle to bank it.`);
+      }
+      break;
     case 'villager':
       audio.villager();
       ui.float(at(ev.x, 3, ev.z), '+1 👤', '#bff3ff');
@@ -468,6 +477,10 @@ function frame(now) {
       placing.ok = chk.ok;
       placing.reason = chk.reason || '';
     }
+    // First time in the forest or the highland: tell the player the king can gather.
+    const h = world.hero;
+    if (h.alive && h.z < FOREST_Z && !hintGather.forest) { hintGather.forest = true; ui.toast('🪓 Stand still by the trees and the king chops wood himself'); }
+    if (h.alive && inHighland(h.x, h.z) && !hintGather.highland) { hintGather.highland = true; ui.toast('⛏️ Stand still by boulders and the king mines stone'); }
     if (world.phase === 'build') {
       saveT += dt;
       if ((dirty && saveT > 1.5) || saveT > 10) persist();

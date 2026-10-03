@@ -10,7 +10,16 @@ import {
 import {
   LANES, LANE, lanePoint, laneCrossing, laneAtZ, FIXED_PADS, START, BRIDGE, RIVER_Z,
   RIVER_HALF, BOUNDS, CASTLE_R, distToLanes, PATH_HALF, GRID, STRONGHOLD, FRONTIERS, OUTPOSTS,
+  HIGHLAND, inHighland, GORGE_OUT, GORGE_IN, CAMPS, FOREST_Z, scenery,
 } from './map.js';
+
+// Trees the king can chop (the forest and southern grove) and boulders he can
+// mine (in the highland). Same seeded scenery the renderer draws.
+const SCENE = scenery();
+const CHOP_TREES = SCENE.trees.filter((t) => t.forest);
+const MINE_ROCKS = SCENE.rocks.filter((r) => r.highland);
+const GATHER_REACH = 3.2;
+const GATHER_EVERY = 0.8;
 
 const OUTPOST = Object.fromEntries(OUTPOSTS.map((o, i) => [o.id, { ...o, index: i }]));
 // Distance from a point to the castle's square footprint (0 inside).
@@ -105,7 +114,7 @@ const OBJECTIVES = [
     at: (w) => w.b.pass,
   },
   {
-    text: 'Build a Gold Mine in the mountains',
+    text: 'Fight past the enemy camps and build the Gold Mine',
     done: (w) => w.built('goldmine'),
     at: (w) => w.b.goldmine,
   },
@@ -209,6 +218,7 @@ export class World {
       coins: 0, moving: false, fundT: 0, fundAcc: 0, fundId: null,
       up: { damage: 0, rate: 0, range: 0, speed: 0, hp: 0, carry: 0, magnet: 0 },
       weapons: { bow: true }, weapon: 'bow', anim: 0, shootT: 0, flash: 0, needShown: false,
+      load: { res: null, n: 0 }, tool: null, gatherT: 0, warned: null,
     };
 
     this.b = {};
@@ -281,6 +291,8 @@ export class World {
   get lanesOpen() { return LANES.filter((l) => l.opens <= Math.max(1, this.wave + (this.phase === 'wave' ? 0 : 1))); }
 
   heroStat(k) { return HERO_UPGRADES[k].values[this.hero.up[k]]; }
+  // How many logs or stones the king can carry home himself.
+  get loadCap() { return 20 + 10 * this.hero.up.carry; }
   get carry() { return this.heroStat('carry'); }
   get heroMaxHp() { return this.heroStat('hp'); }
 
@@ -460,6 +472,16 @@ export class World {
     return { name: b.type === 'tower' ? lv.name : b.type === 'outpost' ? OUTPOST[b.id].name : t.name, icon: t.icon, level: b.level + 1, max: t.levels.length, desc: t.desc, lines };
   }
 
+  // What a pad is for, shown to the player when the king rides near it.
+  padTip(b) {
+    const t = BUILDINGS[b.type];
+    const it = this.item(`build:${b.id}`);
+    let desc = t.desc;
+    if (b.type === 'outpost') desc = 'Claim the road south: the fog lifts on new land with mines and camps, and southern enemies gather further away. Its watchtower guards the road.';
+    if (b.type === 'tower') desc = 'Builds a tower that shoots enemies on this road. Archers posted inside add more arrows.';
+    return { icon: t.icon, title: it.title, desc, cost: it.cost, locked: it.locked };
+  }
+
   missing(cost) {
     const m = [];
     if ((cost.wood || 0) > this.res.wood) m.push(`${cost.wood - this.res.wood} wood`);
@@ -505,7 +527,10 @@ export class World {
     b.born = this.t;
     this.emit('built', { id: b.id, x: b.x, z: b.z, type: b.type });
     if (b.type === 'bridge') this.emit('toast', { text: 'The forest is open! Build a Lumber Camp.' });
-    if (b.type === 'pass') this.emit('toast', { text: 'The mountains are open: gold to mine, stone to cut.' });
+    if (b.type === 'pass') {
+      this.spawnCamps();
+      this.emit('toast', { text: 'The pass is open! Enemy camps hold the trail. Fight through to the mines.' });
+    }
     if (b.type === 'outpost') {
       this.emit('outpost', { name: OUTPOST[b.id].name, last: this.siegeReady });
       // Anyone already beyond the old frontier stays put; new troops muster further back.
@@ -700,6 +725,11 @@ export class World {
 
   // A walking route from a to b. Anything across the river goes by the bridge.
   route(ax, az, bx, bz) {
+    // In or out of the highland: through the gorge.
+    if (inHighland(ax, az) !== inHighland(bx, bz)) {
+      const a = inHighland(ax, az) ? [GORGE_IN, GORGE_OUT] : [GORGE_OUT, GORGE_IN];
+      return [{ ...a[0] }, { ...a[1] }, { x: bx, z: bz }];
+    }
     const north = (z) => z < RIVER_Z;
     if (north(az) !== north(bz)) {
       const s = { x: BRIDGE.x, z: RIVER_Z + RIVER_HALF + 1.5 };
@@ -1117,6 +1147,8 @@ export class World {
       h.hp = 0;
       h.respawnT = HERO.respawn;
       if (h.coins > 0) { this.burstCoins(h.x, h.z, h.coins); h.coins = 0; }
+      h.load = { res: null, n: 0 };
+      h.tool = null;
       this.emit('heroDown', { x: h.x, z: h.z });
       // Losing the king loses the wave: it has to be fought again from the start.
       if (this.phase === 'wave') {
@@ -1174,7 +1206,8 @@ export class World {
       if (e.static) { this.updateStructure(e); continue; }
       const lane = e.lane;
       lanePoint(lane, e.s, tmpP);
-      const homeX = tmpP.x - tmpP.dz * e.off, homeZ = tmpP.z + tmpP.dx * e.off;
+      // Camp guards hold their post instead of marching down a road.
+      const homeX = e.guard ? e.guard.x : tmpP.x - tmpP.dz * e.off, homeZ = e.guard ? e.guard.z : tmpP.z + tmpP.dx * e.off;
 
       // Pick a fight with anyone nearby.
       e.retarget -= dt;
@@ -1182,7 +1215,7 @@ export class World {
         e.retarget = 0.3;
         if (e.target && (e.target.gone || (e.target === hero && !hero.alive) || hyp(e.target.x - e.x, e.target.z - e.z) > def.aggro * 1.7)) e.target = null;
         if (!e.target && def.aggro > 0) {
-          let best = null, bd = def.aggro;
+          let best = null, bd = e.guard ? Math.max(def.aggro, 8) : def.aggro;
           if (hero.alive) { const d = hyp(hero.x - e.x, hero.z - e.z); if (d < bd) { bd = d; best = hero; } }
           for (const a of this.allies) { const d = hyp(a.x - e.x, a.z - e.z); if (d < bd) { bd = d; best = a; } }
           e.target = best;
@@ -1197,6 +1230,9 @@ export class World {
         e.yaw = Math.atan2(t.x - e.x, t.z - e.z);
         if (d > def.range + 0.6) { mx = (t.x - e.x) / d; mz = (t.z - e.z) / d; want = e.speed * 1.1; }
         else if (e.atkCd <= 0) this.enemyAttack(e, t);
+      } else if (e.guard) {
+        const dHome = hyp(homeX - e.x, homeZ - e.z);
+        if (dHome > 0.8) { mx = (homeX - e.x) / dHome; mz = (homeZ - e.z) / dHome; want = e.speed; e.yaw = Math.atan2(mx, mz); }
       } else {
         // Gate in the way?
         const g = this.gates[lane.id];
@@ -1251,7 +1287,7 @@ export class World {
     const slot = (id) => (by[id] = by[id] || { count: 0, lead: null, rem: Infinity });
     for (const q of this.spawnQueue) slot(q.lane).count++;
     for (const e of this.enemies) {
-      if (e.static || e.hp <= 0) continue;
+      if (e.static || e.guard || e.hp <= 0) continue;
       const v = slot(e.lane.id);
       v.count++;
       const rem = e.lane.length - e.s;
@@ -1270,7 +1306,33 @@ export class World {
   }
 
   // Enemies still to beat this wave (the stronghold itself isn't counted).
-  get enemiesLeft() { return this.spawnQueue.length + this.enemies.filter((e) => !e.static).length; }
+  get enemiesLeft() { return this.spawnQueue.length + this.enemies.filter((e) => !e.static && !e.guard).length; }
+
+  // Raise the enemy camps in the highland (the ones not yet beaten).
+  spawnCamps(alive = null) {
+    const mul = levelMul(this.level) * (1 + 0.08 * this.wave);
+    for (const c of CAMPS) {
+      const n = alive ? alive[c.id] ?? 0 : c.kinds.length;
+      c.kinds.slice(0, n).forEach((kind, i) => {
+        const def = ENEMIES[kind];
+        const a = (i / c.kinds.length) * TAU;
+        const gx = c.x + Math.cos(a) * 1.6, gz = c.z + Math.sin(a) * 1.6;
+        this.enemies.push({
+          id: this.id(), kind, lane: LANE.E, s: 0, off: 0, x: gx, z: gz, yaw: rand(0, TAU), guard: { x: gx, z: gz, camp: c.id },
+          hp: def.hp * mul, max: def.hp * mul, dmg: def.dmg * levelMul(this.level), atkCd: rand(0, 1), speed: def.speed * 1.2,
+          target: null, retarget: Math.random() * 0.3, burn: 0, burnDps: 0, flash: 0, anim: Math.random() * 10, moving: false,
+          attackT: 0, def, scale: def.scale || 1, coins: def.coins + 2, name: null,
+        });
+      });
+    }
+  }
+
+  campsAlive() {
+    const out = {};
+    for (const c of CAMPS) out[c.id] = 0;
+    for (const e of this.enemies) if (e.guard && e.hp > 0) out[e.guard.camp]++;
+    return out;
+  }
 
   enemyAttack(e, t) {
     const def = e.def;
@@ -1353,10 +1415,20 @@ export class World {
     }
     nz = Math.max(-BOUNDS, Math.min(zMax, nz));
 
+    // The highland's crags: in and out only through the gorge, once cleared.
+    if (!this.noclip && inHighland(nx, nz) !== inHighland(h.x, h.z)) {
+      const gorge = this.built('pass') && Math.abs(nz - HIGHLAND.gorgeZ) < HIGHLAND.gorgeHalf && Math.abs(nx - HIGHLAND.x0) < 1.5;
+      if (!gorge) {
+        if (inHighland(h.x, nz) === inHighland(h.x, h.z)) nx = h.x;
+        else if (inHighland(nx, h.z) === inHighland(h.x, h.z)) nz = h.z;
+        else { nx = h.x; nz = h.z; }
+      }
+    }
+
     // Buildings are solid; pads and sites are not.
     const R = HERO.radius;
     for (const b of this.noclip ? [] : Object.values(this.b)) {
-      if (b.state !== 'built' || b.type === 'bridge') continue;
+      if (b.state !== 'built' || b.type === 'bridge' || b.type === 'pass') continue;
       const hs = (b.type === 'castle' ? CASTLE_R : b.size / 2 * 0.8) + R;
       const dx = nx - b.x, dz = nz - b.z;
       if (Math.abs(dx) < hs && Math.abs(dz) < hs) {
@@ -1369,6 +1441,8 @@ export class World {
     const v = hyp(h.vx, h.vz);
     h.moving = v > 0.6;
     if (h.moving) { h.yaw = turn(h.yaw, Math.atan2(h.vx, h.vz), dt * 12); h.anim += dt * (4 + v * 0.75); }
+
+    this.updateGathering(dt);
 
     // Shooting.
     h.atkCd -= dt;
@@ -1452,6 +1526,36 @@ export class World {
         const paid = this.fund(key);
         if (paid) this.emit('spend', { n: it.cost.gold || 0, x: site.x, z: site.z });
       }
+    }
+  }
+
+  // Standing still by a forest tree the king chops wood; by a highland
+  // boulder he mines stone. He carries the load and drops it off at the
+  // castle or an outpost.
+  updateGathering(dt) {
+    const h = this.hero;
+    h.tool = null;
+    // Drop off.
+    if (h.load.n > 0 && (this.atCastle() || this.list('outpost').some((o) => o.state === 'built' && hyp(o.x - h.x, o.z - h.z) < 6))) {
+      this.res[h.load.res] += h.load.n;
+      this.emit('deliver', { x: h.x, z: h.z, res: h.load.res, amt: h.load.n });
+      h.load = { res: null, n: 0 };
+      h.warned = null;
+    }
+    if (hyp(h.vx, h.vz) > 1.0 || this.nearestEnemy(h.x, h.z, this.heroStat('range'))) { h.gatherT = 0; return; }
+    const near = (list) => list.some((t) => Math.abs(t.x - h.x) < GATHER_REACH && Math.abs(t.z - h.z) < GATHER_REACH && hyp(t.x - h.x, t.z - h.z) < GATHER_REACH);
+    const res = near(CHOP_TREES) ? 'wood' : near(MINE_ROCKS) ? 'stone' : null;
+    if (!res) { h.gatherT = 0; return; }
+    const warn = (key, text) => { if (h.warned !== key) { h.warned = key; this.emit('need', { text }); } };
+    if (h.load.n > 0 && h.load.res !== res) return warn('mix', `Drop your ${h.load.res} at the castle first`);
+    if (h.load.n >= this.loadCap) return warn('full', 'Your load is full: carry it back to the castle');
+    h.tool = res === 'wood' ? 'axe' : 'pick';
+    h.gatherT += dt;
+    if (h.gatherT >= GATHER_EVERY) {
+      h.gatherT = 0;
+      h.load.res = res;
+      h.load.n++;
+      this.emit('gather', { res, x: h.x, z: h.z, n: h.load.n, cap: this.loadCap });
     }
   }
 
@@ -1571,7 +1675,7 @@ export class World {
     this.updateProjectiles(dt);
     this.updateCoins(dt);
 
-    if (this.phase === 'wave' && !this.siege && !this.spawnQueue.length && !this.enemies.length) this.endWave();
+    if (this.phase === 'wave' && !this.siege && !this.spawnQueue.length && !this.enemies.some((e) => !e.guard)) this.endWave();
 
     // Objectives.
     let o = OBJECTIVES[this.objective];
@@ -1604,10 +1708,11 @@ export class World {
       funds: { ...this.funds },
       objective: this.objective,
       level: this.level,
+      camps: this.built('pass') ? this.campsAlive() : null,
       stats: { ...this.stats },
       walls: { ...this.walls },
       armor: this.armor,
-      hero: { x: h.x, z: h.z, coins: h.coins, up: { ...h.up }, weapons: { ...h.weapons }, weapon: h.weapon },
+      hero: { x: h.x, z: h.z, coins: h.coins, up: { ...h.up }, weapons: { ...h.weapons }, weapon: h.weapon, load: { ...h.load } },
       buildings: Object.values(this.b).map((b) => ({ id: b.id, type: b.type, x: b.x, z: b.z, state: b.state, level: b.level, fixed: b.fixed, lane: b.lane, garrison: b.garrison, pile: b.pile })),
       villagers: this.villagers.length,
       allies: this.allies.map((a) => a.kind),
@@ -1632,6 +1737,7 @@ export class World {
     // Older saves could hold part-paid upgrades; hand that gold back.
     h.coins = s.hero.coins + Object.values(s.funds || {}).reduce((a, v) => a + v, 0);
     h.weapons = { ...s.hero.weapons };
+    if (s.hero.load) h.load = { ...s.hero.load };
     h.weapon = s.hero.weapon;
     h.hp = this.heroMaxHp;
     this.b = {};
@@ -1665,6 +1771,7 @@ export class World {
     this.spawnQueue = [];
     this.gates = null;
     this.rebuildGates();
+    if (this.built('pass')) this.spawnCamps(s.camps || null);
   }
 }
 

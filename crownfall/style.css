@@ -168,6 +168,26 @@ body:not([data-state="play"]) #place-bar { visibility: hidden; }
 }
 @keyframes rise { 0% { opacity: 0; margin-top: 0; } 15% { opacity: 1; } 100% { opacity: 0; margin-top: -44px; } }
 
+.pill.load { background: rgba(90, 60, 30, 0.85); }
+
+/* ----------------------------------------------- what a build pad is for */
+#padtip {
+  position: absolute; left: 0; top: 0; width: 220px; margin-left: -110px;
+  transform-origin: 50% 100%;
+  background: rgba(255, 255, 255, 0.95); color: var(--ink-dark);
+  border-radius: 14px; padding: 8px 10px; pointer-events: none;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15), 0 8px 18px rgba(0, 0, 0, 0.2);
+  font-size: 12px; font-weight: 600; line-height: 1.3;
+}
+#padtip::after {
+  content: ""; position: absolute; left: 50%; bottom: -8px; margin-left: -8px;
+  border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 8px solid rgba(255, 255, 255, 0.95);
+}
+#padtip b { display: block; font-size: 14px; font-weight: 900; margin-bottom: 2px; }
+#padtip .cost { margin-top: 5px; }
+#padtip .lock { margin-top: 5px; color: #c0281c; font-weight: 800; }
+body:not([data-state="play"]) #padtip { visibility: hidden; }
+
 /* ------------------------------------------- incoming-enemy edge arrows */
 #threats { position: absolute; inset: 0; pointer-events: none; }
 .threat {
