@@ -4,7 +4,7 @@
 import { BUILDINGS } from './config.js';
 
 const $ = (id) => document.getElementById(id);
-const PLACEABLE = ['house', 'farm', 'barracks'];
+const PLACEABLE = ['house', 'warehouse', 'farm', 'barracks'];
 const LIMIT = { barracks: 2 };
 const TAB_ICON = { King: '👑', Army: '⚔️', Castle: '🏰' };
 

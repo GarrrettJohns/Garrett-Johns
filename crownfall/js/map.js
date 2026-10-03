@@ -296,7 +296,7 @@ export function scenery() {
       const d = 3.6 + rnd() * 2.6;
       const x = p.x + Math.cos(a) * d, z = p.z + Math.sin(a) * d;
       if (distToLanes(x, z) < PATH_HALF + 1) continue;
-      rocks.push({ x, z, s: 0.6 + rnd() * 0.9, r: rnd() * 6.28 });
+      rocks.push({ x, z, s: 0.6 + rnd() * 0.9, r: rnd() * 6.28, highland: inHighland(x, z) || undefined });
     }
   }
   // A few loose boulders.
@@ -324,11 +324,11 @@ export function scenery() {
     crag(x, H.gorgeZ + H.gorgeHalf + 1.8, 0.8);
   }
   // Boulders across the highland: the king can mine these for stone.
-  for (let i = 0; i < 160 && rocks.length < 200; i++) {
+  for (let i = 0; i < 2000 && rocks.filter((r) => r.highland).length < 48; i++) {
     const x = H.x0 + 2 + rnd() * (H.x1 - H.x0 - 4), z = H.z0 + 1.5 + rnd() * (H.z1 - H.z0 - 3);
-    if (!clearOf(x, z, 4.2)) continue;
-    if (HIGHLAND_TRAILS.some((t) => t.some((p, k) => k && segDist(x, z, t[k - 1][0], t[k - 1][1], p[0], p[1]) < 2.2))) continue;
-    if (rocks.some((r) => Math.hypot(r.x - x, r.z - z) < 2.2)) continue;
+    if (!clearOf(x, z, 3.8)) continue;
+    if (HIGHLAND_TRAILS.some((t) => t.some((p, k) => k && segDist(x, z, t[k - 1][0], t[k - 1][1], p[0], p[1]) < 1.9))) continue;
+    if (rocks.some((r) => Math.hypot(r.x - x, r.z - z) < 2.0)) continue;
     rocks.push({ x, z, s: 0.45 + rnd() * 0.6, r: rnd() * 6.28, highland: true });
   }
 

@@ -16,12 +16,20 @@ import {
 // Trees the king can chop (the forest and southern grove) and boulders he can
 // mine (in the highland). Same seeded scenery the renderer draws.
 const SCENE = scenery();
-const CHOP_TREES = SCENE.trees.filter((t) => t.forest);
-const MINE_ROCKS = SCENE.rocks.filter((r) => r.highland);
+// Trees and boulders come in three sizes: more swings, more yield.
+const NODE_SWINGS = [3, 5, 8];
+const NODE_YIELD = [1, 3, 6];
+const sizeClass = (s, lo, hi) => (s < lo ? 0 : s < hi ? 1 : 2);
+const CHOP_TREES = SCENE.trees.map((t, si) => ({ ...t, si })).filter((t) => t.forest);
+const MINE_ROCKS = SCENE.rocks.map((r, si) => ({ ...r, si })).filter((r) => r.highland);
+const SWING_EVERY = 0.75;    // a worker's swing
+const KING_SWING = 0.5;      // the king swings faster
+const HUT_REACH = 24;        // how far from their hut workers will go for trees and rocks
+const STOCK_CAP = 60;        // a hut's stockpile
 const GATHER_REACH = 3.2;
 const GATHER_EVERY = 0.8;
 
-const JOB_TYPES = ['goldmine', 'lumber', 'quarry', 'farm'];
+const JOB_TYPES = ['goldmine', 'lumber', 'quarry', 'farm', 'warehouse'];
 const OUTPOST = Object.fromEntries(OUTPOSTS.map((o, i) => [o.id, { ...o, index: i }]));
 // Distance from a point to the castle's square footprint (0 inside).
 const castleDist = (x, z) => hyp(Math.max(Math.abs(x) - CASTLE_R, 0), Math.max(Math.abs(z) - CASTLE_R, 0));
@@ -108,6 +116,11 @@ const OBJECTIVES = [
     text: 'Build a Lumber Camp in the forest',
     done: (w) => w.count('lumber') >= 1,
     at: (w) => w.b['lumber-1'],
+  },
+  {
+    text: 'Build a Warehouse (🔨) so wood reaches your stores',
+    done: (w) => w.count('warehouse') >= 1,
+    at: (w) => w.siteOf('warehouse'),
   },
   {
     text: 'Tap the Lumber Camp and add a worker with 👷 +',
@@ -240,6 +253,13 @@ export class World {
     }
     this.addBuilding({ id: 'house-start', type: 'house', ...START.house, state: 'built', level: 0 });
     this.b[START.tower].state = 'built';
+
+    // Living trees and boulders that workers and the king cut down.
+    const node = (t, cls) => ({ si: t.si, x: t.x, z: t.z, s: t.s, cls, hp: NODE_SWINGS[cls], state: 'up', pieces: 0, regrow: 0, grow: 1, by: null, fall: rand(0, TAU) });
+    this.trees = CHOP_TREES.map((t) => node(t, sizeClass(t.s, 0.95, 1.2)));
+    this.stones = MINE_ROCKS.map((r) => node(r, sizeClass(r.s, 0.62, 0.85)));
+    this.natureVer = 0;
+    this.natureT = 0;
 
     this.villagers = [];
     this.allies = [];
@@ -398,7 +418,10 @@ export class World {
     }
     if (kind === 'workers') {
       const b = this.b[a];
-      const per = { goldmine: 'digs gold into the pile', lumber: 'chops and hauls wood', quarry: 'cuts and hauls stone', farm: 'helps families grow' }[b.type];
+      const per = {
+        goldmine: 'digs gold into the pile', lumber: 'fells trees and stacks the logs here', quarry: 'breaks boulders and stacks the stone here',
+        farm: 'helps families grow', warehouse: 'fetches wood and stone from the camps and quarries into your stores',
+      }[b.type];
       return {
         key, kind: 'workers', icon: '👷', title: 'Workers', id: b.id,
         assigned: this.wantedAt(b), working: this.workersAt(b), slots: this.workerSlots(b), free: this.freeVillagers,
@@ -483,7 +506,11 @@ export class World {
     if (b.type === 'outpost') lines.push(`${OUTPOST[b.id].name} · fires on passing enemies`);
     if (b.type === 'house') lines.push(`${lv.beds} beds`);
     if (b.type === 'goldmine') lines.push(`Pile ${b.pile}/${lv.pile}`);
-    if (b.type === 'lumber' || b.type === 'quarry') lines.push(`${lv.carry} per trip`);
+    if (b.type === 'lumber' || b.type === 'quarry') {
+      lines.push(`Stock ${b.stock || 0}/${STOCK_CAP} ${b.type === 'lumber' ? 'wood' : 'stone'}`);
+      if (!this.count('warehouse')) lines.push('No warehouse yet: build one to bring this home');
+    }
+    if (b.type === 'warehouse') lines.push(`Waiting at camps: ${this.list('lumber').reduce((a, x) => a + (x.stock || 0), 0)} wood, ${this.list('quarry').reduce((a, x) => a + (x.stock || 0), 0)} stone`);
     if (JOB_TYPES.includes(b.type) || b.type === 'house' || b.type === 'castle') lines.push(`${Math.max(0, this.freeVillagers)} free villagers`);
     if (b.type === 'tower') lines.push(`${lv.name} · ${b.garrison}/${lv.slots} archers posted`);
     if (b.type === 'barracks') lines.push(`Army ${this.soldiers}/${this.armyCap} · ${this.villagers.length} villagers free to enlist`);
@@ -814,7 +841,7 @@ export class World {
     this.assignT -= dt;
     if (this.assignT <= 0) {
       this.assignT = 0.5;
-      for (const v of this.villagers) if (v.job && !this.built(v.job)) { v.job = null; v.state = 'idle'; v.carry = null; }
+      for (const v of this.villagers) if (v.job && !this.built(v.job)) this.releaseVillager(v);
       for (const b of this.jobBuildings()) {
         const need = this.wantedAt(b);
         let have = this.workersAt(b);
@@ -822,7 +849,7 @@ export class World {
         for (const v of this.villagers) {
           if (have <= need) break;
           if (v.job !== b.id) continue;
-          v.job = null; v.state = 'idle'; v.carry = null; v.path = []; v.t = 0;
+          this.releaseVillager(v);
           have--;
         }
         while (have < need) {
@@ -871,6 +898,8 @@ export class World {
         }
         continue;
       }
+      if (b.type === 'lumber' || b.type === 'quarry') { this.updateCutter(v, b, dt); continue; }
+      if (b.type === 'warehouse') { this.updateHauler(v, b, dt); continue; }
       const lv = BUILDINGS[b.type].levels[b.level];
       if (v.state === 'toWork') { v.state = 'work'; v.t = b.type === 'goldmine' ? lv.every : (lv.work || 4); v.yaw = Math.atan2(b.x - v.x, b.z - v.z); }
       if (v.state === 'work') {
@@ -905,6 +934,169 @@ export class World {
     }
   }
 
+  releaseVillager(v) {
+    if (v.node && v.node.by === v.id) v.node.by = null;
+    if (v.src && this.b[v.src]) this.b[v.src].reserved = Math.max(0, (this.b[v.src].reserved || 0) - (v.plan || 0));
+    v.job = null; v.state = 'idle'; v.carry = null; v.path = []; v.t = 0; v.node = null; v.src = null; v.plan = 0;
+  }
+
+  // Woodcutters and masons: walk to the nearest tree or boulder by the hut,
+  // cut it down (or pick up what's left of one), carry the pieces home and
+  // stack them in the hut for a warehouse hauler.
+  updateCutter(v, b, dt) {
+    const lv = BUILDINGS[b.type].levels[b.level];
+    const wood = b.type === 'lumber';
+    const list = wood ? this.trees : this.stones;
+    const res = wood ? 'wood' : 'stone';
+    const home = { x: b.x + rand(-1.2, 1.2), z: b.z + b.size / 2 + 0.8 };
+    switch (v.state) {
+      case 'chop': {
+        const n = v.node;
+        if (!n || n.state !== 'up') {
+          // Someone else (the king) got there first.
+          if (n && n.by === v.id) n.by = null;
+          v.node = null; v.state = 'seek'; return;
+        }
+        v.yaw = Math.atan2(n.x - v.x, n.z - v.z);
+        v.t -= dt;
+        if (v.t <= 0) { v.t = SWING_EVERY; this.hitNode(n, wood, v.x, v.z); }
+        if (n.state === 'down') { v.state = 'gather'; v.t = 0.5; }
+        return;
+      }
+      case 'gather': {
+        v.t -= dt;
+        if (v.t > 0) return;
+        const n = v.node;
+        const take = n ? Math.min(n.pieces, lv.carry) : 0;
+        if (n) { this.takePieces(n, take); n.by = null; }
+        v.node = null;
+        v.carry = take ? { res, amt: take } : null;
+        v.state = 'return';
+        v.path = this.route(v.x, v.z, home.x, home.z);
+        return;
+      }
+      case 'return':
+        if (v.carry) {
+          b.stock = Math.min(STOCK_CAP, (b.stock || 0) + v.carry.amt);
+          this.emit('stock', { x: b.x, z: b.z, res, amt: v.carry.amt });
+        }
+        v.carry = null;
+        v.state = 'seek';
+        return;
+      case 'wait':
+        v.t -= dt;
+        if (v.t <= 0) v.state = 'seek';
+        return;
+      default: {
+        // Look for work: leftover pieces first, then a standing tree or rock.
+        if ((b.stock || 0) >= STOCK_CAP) { v.state = 'wait'; v.t = 3; return; }
+        let best = null, bd = HUT_REACH;
+        for (const n of list) {
+          if (n.by || (n.state !== 'up' && !(n.state === 'down' && n.pieces > 0))) continue;
+          const d = hyp(n.x - b.x, n.z - b.z) - (n.state === 'down' ? 6 : 0);
+          if (d < bd) { bd = d; best = n; }
+        }
+        if (!best) { v.state = 'wait'; v.t = 4; return; }
+        best.by = v.id;
+        v.node = best;
+        const a = Math.atan2(b.z - best.z, b.x - best.x);
+        v.path = this.route(v.x, v.z, best.x + Math.cos(a) * 1.1, best.z + Math.sin(a) * 1.1);
+        v.state = best.state === 'up' ? 'chop' : 'gather';
+        v.t = best.state === 'up' ? SWING_EVERY : 0.5;
+      }
+    }
+  }
+
+  // Warehouse haulers: fetch from whichever camp or quarry has the most
+  // waiting, bring it to the warehouse, into the kingdom's stores.
+  updateHauler(v, b, dt) {
+    const lv = BUILDINGS.warehouse.levels[b.level];
+    switch (v.state) {
+      case 'fetch': {
+        const src = this.b[v.src];
+        v.src = null;
+        if (!src) { v.state = 'seek'; return; }
+        src.reserved = Math.max(0, (src.reserved || 0) - v.plan);
+        const take = Math.min(src.stock || 0, lv.carry);
+        v.plan = 0;
+        src.stock = (src.stock || 0) - take;
+        v.carry = take ? { res: src.type === 'lumber' ? 'wood' : 'stone', amt: take } : null;
+        v.state = 'deliver';
+        v.path = this.route(v.x, v.z, b.x + rand(-1.5, 1.5), b.z + b.size / 2 + 0.8);
+        return;
+      }
+      case 'deliver':
+        if (v.carry) {
+          this.res[v.carry.res] += v.carry.amt;
+          this.emit('deliver', { x: v.x, z: v.z, res: v.carry.res, amt: v.carry.amt });
+        }
+        v.carry = null;
+        v.state = 'seek';
+        return;
+      case 'wait':
+        v.t -= dt;
+        if (v.t <= 0) v.state = 'seek';
+        return;
+      default: {
+        let best = null, bs = 0;
+        for (const src of [...this.list('lumber'), ...this.list('quarry')]) {
+          if (src.state !== 'built') continue;
+          const avail = (src.stock || 0) - (src.reserved || 0);
+          if (avail > bs) { bs = avail; best = src; }
+        }
+        if (!best) {
+          v.state = 'wait'; v.t = 3;
+          if (hyp(v.x - b.x, v.z - b.z) > b.size) v.path = [{ x: b.x + rand(-2, 2), z: b.z + b.size / 2 + 1 }];
+          return;
+        }
+        v.plan = Math.min(bs, lv.carry);
+        best.reserved = (best.reserved || 0) + v.plan;
+        v.src = best.id;
+        v.state = 'fetch';
+        v.path = this.route(v.x, v.z, best.x + rand(-1, 1), best.z + best.size / 2 + 0.8);
+      }
+    }
+  }
+
+  // One swing at a tree or boulder. At zero it falls (or breaks) into pieces.
+  hitNode(n, wood, x, z) {
+    if (n.state !== 'up') return;
+    n.hp--;
+    this.emit('nodeHit', { x: n.x, z: n.z, wood });
+    if (n.hp <= 0) {
+      n.state = 'down';
+      n.pieces = NODE_YIELD[n.cls];
+      n.fall = Math.atan2(n.x - x, n.z - z);
+      this.natureVer++;
+      this.emit(wood ? 'treeFell' : 'rockBroke', { si: n.si, x: n.x, z: n.z, s: n.s, dir: n.fall, cls: n.cls });
+    }
+  }
+
+  takePieces(n, k) {
+    n.pieces -= k;
+    if (n.pieces <= 0) { n.pieces = 0; n.state = 'gone'; n.regrow = rand(50, 80); }
+    this.natureVer++;
+  }
+
+  // Stumps and rubble regrow: a sapling appears and grows back to full size.
+  updateNature(dt) {
+    this.natureT -= dt;
+    let growing = false;
+    for (const list of [this.trees, this.stones]) {
+      for (const n of list) {
+        if (n.state === 'gone') {
+          n.regrow -= dt;
+          if (n.regrow <= 0 && !n.by) { n.state = 'grow'; n.grow = 0.15; this.natureVer++; }
+        } else if (n.state === 'grow') {
+          n.grow = Math.min(1, n.grow + dt / 30);
+          growing = true;
+          if (n.grow >= 1) { n.state = 'up'; n.hp = NODE_SWINGS[n.cls]; this.natureVer++; }
+        }
+      }
+    }
+    if (growing && this.natureT <= 0) { this.natureT = 0.5; this.natureVer++; }
+  }
+
   // --------------------------------------------------------------- army
   train(b, kind) {
     // Take an idle villager first, else pull one off the least important job.
@@ -912,6 +1104,7 @@ export class World {
     if (!v) v = [...this.villagers].sort((a, c) => jobPriority(this.b[c.job]) - jobPriority(this.b[a.job]))[0];
     if (!v) return;
     if (v.job && this.b[v.job]) this.b[v.job].assigned = Math.max(0, this.wantedAt(this.b[v.job]) - 1);
+    this.releaseVillager(v);
     this.villagers.splice(this.villagers.indexOf(v), 1);
     const a = this.addSoldier(kind, b.x, b.z + b.size / 2 + 0.6);
     this.emit('trained', { kind, x: a.x, z: a.z });
@@ -1575,33 +1768,63 @@ export class World {
     }
   }
 
-  // Standing still by a forest tree the king chops wood; by a highland
-  // boulder he mines stone. He carries the load and drops it off at the
-  // castle or an outpost.
+  // The king gathers too. Standing still by a forest tree he chops it down,
+  // by a highland boulder he breaks it up, and the pieces go on his horse.
+  // Riding past a lumber camp or quarry he scoops up its stockpile. He banks
+  // it all at the castle, a warehouse or an outpost.
   updateGathering(dt) {
     const h = this.hero;
     h.tool = null;
-    // Drop off.
-    if (h.load.n > 0 && (this.atCastle() || this.list('outpost').some((o) => o.state === 'built' && hyp(o.x - h.x, o.z - h.z) < 6))) {
+    const room = () => this.loadCap - h.load.n;
+    const can = (res) => (h.load.n === 0 || h.load.res === res) && room() > 0;
+    const add = (res, k) => { h.load.res = res; h.load.n += k; this.emit('gather', { res, x: h.x, z: h.z, k, n: h.load.n, cap: this.loadCap }); };
+    // Bank the load.
+    const depot = this.atCastle()
+      || this.list('outpost').some((o) => o.state === 'built' && hyp(o.x - h.x, o.z - h.z) < 6)
+      || this.list('warehouse').some((w) => w.state === 'built' && rectDist(h.x, h.z, w) < 2.5);
+    if (h.load.n > 0 && depot) {
       this.res[h.load.res] += h.load.n;
       this.emit('deliver', { x: h.x, z: h.z, res: h.load.res, amt: h.load.n });
       h.load = { res: null, n: 0 };
       h.warned = null;
     }
+    // Scoop up a hut's stockpile.
+    for (const hut of [...this.list('lumber'), ...this.list('quarry')]) {
+      if (hut.state !== 'built' || !(hut.stock > 0) || rectDist(h.x, h.z, hut) > 2.4) continue;
+      const res = hut.type === 'lumber' ? 'wood' : 'stone';
+      const k = Math.min(room(), hut.stock - (hut.reserved || 0));
+      if (can(res) && k > 0) { hut.stock -= k; add(res, k); }
+    }
     if (hyp(h.vx, h.vz) > 1.0 || this.nearestEnemy(h.x, h.z, this.heroStat('range'))) { h.gatherT = 0; return; }
-    const near = (list) => list.some((t) => Math.abs(t.x - h.x) < GATHER_REACH && Math.abs(t.z - h.z) < GATHER_REACH && hyp(t.x - h.x, t.z - h.z) < GATHER_REACH);
-    const res = near(CHOP_TREES) ? 'wood' : near(MINE_ROCKS) ? 'stone' : null;
-    if (!res) { h.gatherT = 0; return; }
+    // The nearest tree or boulder in reach: pieces on the ground first.
+    let node = null, wood = false, bd = GATHER_REACH;
+    for (const [list, w] of [[this.trees, true], [this.stones, false]]) {
+      for (const n of list) {
+        if (n.state !== 'up' && !(n.state === 'down' && n.pieces > 0)) continue;
+        if (Math.abs(n.x - h.x) > GATHER_REACH || Math.abs(n.z - h.z) > GATHER_REACH) continue;
+        const d = hyp(n.x - h.x, n.z - h.z) - (n.state === 'down' ? 1 : 0);
+        if (d < bd) { bd = d; node = n; wood = w; }
+      }
+    }
+    if (!node) { h.gatherT = 0; return; }
+    const res = wood ? 'wood' : 'stone';
     const warn = (key, text) => { if (h.warned !== key) { h.warned = key; this.emit('need', { text }); } };
     if (h.load.n > 0 && h.load.res !== res) return warn('mix', `Drop your ${h.load.res} at the castle first`);
-    if (h.load.n >= this.loadCap) return warn('full', 'Your load is full: carry it back to the castle');
-    h.tool = res === 'wood' ? 'axe' : 'pick';
+    if (room() <= 0) return warn('full', 'Your load is full: carry it back to the castle');
     h.gatherT += dt;
-    if (h.gatherT >= GATHER_EVERY) {
+    if (node.state === 'down') {
+      if (h.gatherT < 0.3) return;
       h.gatherT = 0;
-      h.load.res = res;
-      h.load.n++;
-      this.emit('gather', { res, x: h.x, z: h.z, n: h.load.n, cap: this.loadCap });
+      const k = Math.min(node.pieces, room());
+      this.takePieces(node, k);
+      add(res, k);
+      return;
+    }
+    h.tool = wood ? 'axe' : 'pick';
+    if (h.gatherT >= KING_SWING) {
+      h.gatherT = 0;
+      this.hitNode(node, wood, h.x, h.z);
+      if (node.state === 'down') { const k = Math.min(node.pieces, room()); this.takePieces(node, k); add(res, k); }
     }
   }
 
@@ -1715,6 +1938,7 @@ export class World {
 
     this.updateHero(dt, input);
     this.updateVillagers(dt);
+    this.updateNature(dt);
     this.updateAllies(dt);
     this.updateTowers(dt);
     this.updateEnemies(dt);
@@ -1759,7 +1983,7 @@ export class World {
       walls: { ...this.walls },
       armor: this.armor,
       hero: { x: h.x, z: h.z, coins: h.coins, up: { ...h.up }, weapons: { ...h.weapons }, weapon: h.weapon, load: { ...h.load } },
-      buildings: Object.values(this.b).map((b) => ({ id: b.id, type: b.type, x: b.x, z: b.z, state: b.state, level: b.level, fixed: b.fixed, lane: b.lane, garrison: b.garrison, pile: b.pile, assigned: b.assigned })),
+      buildings: Object.values(this.b).map((b) => ({ id: b.id, type: b.type, x: b.x, z: b.z, state: b.state, level: b.level, fixed: b.fixed, lane: b.lane, garrison: b.garrison, pile: b.pile, assigned: b.assigned, stock: b.stock || 0 })),
       villagers: this.villagers.length,
       allies: this.allies.map((a) => a.kind),
       coins: this.coins.map((c) => [Math.round(c.x * 10) / 10, Math.round(c.z * 10) / 10, c.value]),
@@ -1826,7 +2050,7 @@ function order(kind) { return { grunt: 0, raider: 1, archer: 2, brute: 3 }[kind]
 
 function jobPriority(b) {
   if (!b) return 9;
-  return { goldmine: 0, lumber: 1, quarry: 2, farm: 3 }[b.type] ?? 5;
+  return { goldmine: 0, lumber: 1, warehouse: 2, quarry: 3, farm: 4 }[b.type] ?? 5;
 }
 
 function hero_in(h, x, z, r) { return h.alive && hyp(h.x - x, h.z - z) < r; }

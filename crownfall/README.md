@@ -28,16 +28,26 @@ It then launches full screen and works offline.
   The only way in is a gorge sealed by a rockfall; clearing the Mountain Pass
   (it needs wood) opens it. Three enemy camps hold the trail inside, guarding
   the gold mine and two quarries, which trails lead to.
-- **The king gathers:** standing still by forest trees he chops wood with an
-  axe, and by highland boulders he mines stone with a pickaxe. He carries the
-  load (20, more with saddlebags) and banks it at the castle or an outpost.
+- **The king gathers:** standing still by forest trees he chops them down with
+  an axe, and by highland boulders he breaks them up with a pickaxe. The pieces
+  go on his horse (20, more with saddlebags) and he banks them at the castle, a
+  warehouse or an outpost.
 - **Pads explain themselves:** ride near any build pad and a card says what it
   does and what it costs.
 - **Pads:** a pad turns green when you can afford it. Stand on it to build.
 - **Building:** between waves tap 🔨, pick a building, then drag it on the grid
   and tap *Build here*. There is always room for the king to ride between
   buildings.
-- **Workers:** tap a gold mine, lumber camp, quarry or farm to add or remove
+- **Wood and stone:** woodcutters walk to the nearest tree by their lumber camp
+  and chop it down: 3 swings for a small tree, 5 for a medium one, 8 for a big
+  one, giving 1, 3 or 6 wood. The tree topples and breaks into logs, which they
+  carry back and stack at the camp. Masons do the same with highland boulders
+  at a quarry. Stumps and rubble grow back after a while.
+- **The warehouse:** build one inside the walls and assign haulers. They fetch
+  the stacks from the camps and quarries and bring them to the warehouse,
+  which is when wood and stone count as yours to spend. The king can also
+  scoop up a camp's stack as he rides by and bank it himself.
+- **Workers:** tap a gold mine, lumber camp, quarry, farm or warehouse to add or remove
   workers with − and +. Each worker adds output, each building has a set number
   of slots (upgrade it for more), and only free villagers can be assigned. More
   houses means more villagers means faster resources. The top bar shows how

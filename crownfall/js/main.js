@@ -361,12 +361,18 @@ function handle(ev, events = []) {
       audio.deliver();
       ui.float(at(ev.x, 2.4, ev.z), `+${ev.amt} ${ev.res === 'wood' ? '🪵' : '🪨'}`, '#fff');
       break;
+    case 'nodeHit':
+      if (Math.hypot(ev.x - world.hero.x, ev.z - world.hero.z) < 14) audio.chop(ev.wood ? 'wood' : 'stone');
+      break;
+    case 'treeFell':
+    case 'rockBroke':
+      if (Math.hypot(ev.x - world.hero.x, ev.z - world.hero.z) < 16) audio.fell(ev.type === 'treeFell');
+      break;
     case 'gather':
-      audio.chop(ev.res);
-      ui.float(at(ev.x, 4.5, ev.z), `+1 ${ev.res === 'wood' ? '🪵' : '🪨'} (${ev.n}/${ev.cap})`, '#fff');
-      if (ev.n === 1 && !hintGather[ev.res]) {
+      ui.float(at(ev.x, 4.5, ev.z), `+${ev.k} ${ev.res === 'wood' ? '🪵' : '🪨'} (${ev.n}/${ev.cap})`, '#fff');
+      if (!hintGather[ev.res]) {
         hintGather[ev.res] = true;
-        ui.toast(`The king ${ev.res === 'wood' ? 'chops wood' : 'mines stone'}! Carry it to the castle to bank it.`);
+        ui.toast(`The king ${ev.res === 'wood' ? 'chops wood' : 'mines stone'}! Carry it to the castle or a warehouse to bank it.`);
       }
       break;
     case 'villager':

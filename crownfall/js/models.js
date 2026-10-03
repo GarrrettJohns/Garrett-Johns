@@ -898,6 +898,32 @@ export function strongholdKeepGeo(broken) {
   return b.build();
 }
 
+// A warehouse: a big timber storehouse with crates, barrels and a log stack.
+export function warehouseGeo(level) {
+  const b = new Builder();
+  b.box(6, 0.2, 6, C.sandDark);
+  b.box(4.8, 2.6 + level * 0.3, 3.6, level >= 2 ? C.stone : C.wood, { y: 0.2, z: -0.8 });
+  for (const x of [-2.4, 0, 2.4]) b.box(0.28, 2.6 + level * 0.3, 0.28, C.woodDark, { x, y: 0.2, z: 1.0 });
+  b.roof(5.4, 1.5, 4.3, level >= 1 ? C.roofRed : C.roofBrown, { y: 2.8 + level * 0.3, z: -0.8 });
+  b.box(1.8, 1.9, 0.1, C.woodDark, { y: 0.2, z: 1.03 });
+  b.box(1.9, 0.12, 0.12, C.woodLight, { y: 1.2, z: 1.08, rz: 0.7 });
+  b.box(1.9, 0.12, 0.12, C.woodLight, { y: 1.2, z: 1.08, rz: -0.7 });
+  // Crates, barrels and stacked logs out front.
+  for (let i = 0; i < 3; i++) b.box(0.7, 0.7, 0.7, i % 2 ? C.woodLight : C.wood, { x: -2.2 + i * 0.8, y: 0.2, z: 2.1 });
+  b.box(0.7, 0.7, 0.7, C.woodLight, { x: -1.8, y: 0.9, z: 2.1 });
+  for (let i = 0; i < 2; i++) b.cyl(0.35, 0.35, 0.8, 8, 0x8a5a32, { x: 1.4 + i * 0.8, y: 0.2, z: 2.2 });
+  for (let r = 0; r < 2; r++) for (let i = 0; i < 3 - r; i++) b.cyl(0.22, 0.22, 1.6, 6, C.wood, { x: 2.5, y: 0.42 + r * 0.38, z: -0.3 + i * 0.46 + r * 0.23, rx: Math.PI / 2 });
+  b.box(1.2, 0.5, 0.06, C.cream, { y: 2.3, z: 1.08 });
+  return b.build();
+}
+
+export function stumpGeo() {
+  const b = new Builder();
+  b.cyl(0.22, 0.28, 0.35, 7, C.trunk);
+  b.cyl(0.19, 0.19, 0.02, 7, C.woodLight, { y: 0.35 });
+  return b.build();
+}
+
 // A forward camp: palisade square, tents, a watchtower and the king's flag.
 export function outpostGeo() {
   const b = new Builder();

@@ -110,6 +110,15 @@ export const BUILDINGS = {
       { growth: 1.7, workers: 4, cost: { gold: 90, stone: 30 } },
     ],
   },
+  warehouse: {
+    name: 'Warehouse', icon: '📦', size: 6, place: true,
+    desc: 'Haulers fetch wood and stone from the lumber camps and quarries and bring it here, into your stores.',
+    levels: [
+      { workers: 2, carry: 6, cost: { gold: 40 } },
+      { workers: 4, carry: 8, cost: { gold: 80, wood: 40 } },
+      { workers: 6, carry: 12, cost: { gold: 140, stone: 50 } },
+    ],
+  },
   barracks: {
     name: 'Barracks', icon: '⚔️', size: 6, place: true,
     desc: 'Where the army is raised: villagers enlist here as knights, archers and raiders.',
@@ -155,7 +164,7 @@ export const BUILDINGS = {
   },
   lumber: {
     name: 'Lumber Camp', icon: '🪓', size: 5, needs: 'bridge',
-    desc: 'Woodcutters fell pines and haul the logs to the castle.',
+    desc: 'Woodcutters fell nearby trees and stack the logs here, ready for warehouse haulers.',
     levels: [
       { workers: 3, work: 5, carry: 3, cost: { gold: 25 } },
       { workers: 5, work: 4, carry: 4, cost: { gold: 60, wood: 30 } },
@@ -164,7 +173,7 @@ export const BUILDINGS = {
   },
   quarry: {
     name: 'Quarry', icon: '🪨', size: 5, castle: 2, needs: 'pass',
-    desc: 'Masons cut stone and cart it to the castle.',
+    desc: 'Masons break up nearby boulders and stack the stone here, ready for warehouse haulers.',
     levels: [
       { workers: 3, work: 6, carry: 3, cost: { gold: 50, wood: 30 } },
       { workers: 5, work: 5, carry: 4, cost: { gold: 90, wood: 40 } },

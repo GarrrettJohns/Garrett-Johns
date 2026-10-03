@@ -7,7 +7,7 @@ import {
   C, Builder, vcMat, RIGS, pineGeo, rockGeo, cliffGeo, palisadeGeo, stoneWallGeo, gateGeo, gateDoorGeo,
   castleGeo, houseGeo, farmGeo, barracksGeo, stableGeo, rangeGeo, goldmineGeo, lumberGeo, quarryGeo,
   bridgeGeo, towerGeo, towerGunGeo, coinGeo, arrowGeo, chevronGeo, rockfallGeo, passGeo, treeGeo, outpostGeo, logGeo,
-  strongholdWallsGeo, strongholdGateGeo, strongholdTowerGeo, strongholdKeepGeo,
+  strongholdWallsGeo, strongholdGateGeo, strongholdTowerGeo, strongholdKeepGeo, warehouseGeo, stumpGeo,
 } from './models.js';
 import {
   LANES, lanePoint, BRIDGE, RIVER_Z, RIVER_HALF, FOREST_Z, PATH_HALF, CASTLE_R, scenery, HIGHLAND, HIGHLAND_TRAILS, BOUNDS, STRONGHOLD,
@@ -132,7 +132,7 @@ class Pool {
 const BUILD_GEO = {
   castle: castleGeo, house: houseGeo, farm: farmGeo, barracks: barracksGeo, stable: stableGeo, range: rangeGeo,
   goldmine: goldmineGeo, lumber: lumberGeo, quarry: quarryGeo, bridge: bridgeGeo, tower: towerGeo, pass: () => passGeo(),
-  outpost: () => outpostGeo(),
+  outpost: () => outpostGeo(), warehouse: warehouseGeo,
 };
 
 export class Renderer {
@@ -285,6 +285,10 @@ export class Renderer {
     const kinds = [treeGeo(B.trees[0]), treeGeo(B.trees[1])];
     const lists = [[], []];
     sc.trees.forEach((t, i) => lists[t.forest ? 0 : i % 3 === 0 ? 1 : 0].push(t));
+    // Each tree's instance, so felled trees can be hidden and regrown.
+    this.treeInst = new Map();
+    this.treeGeo = kinds[0];
+    const treeIndex = new Map(sc.trees.map((t, i) => [t, i]));
     kinds.forEach((geo, k) => {
       const list = lists[k];
       const mesh = new THREE.InstancedMesh(geo, vcMat, Math.max(1, list.length));
@@ -292,6 +296,7 @@ export class Renderer {
         _q.setFromAxisAngle(UP, t.r);
         _m.compose(_v.set(t.x, 0, t.z), _q, _s.set(t.s, t.s * (0.9 + (i % 5) * 0.06), t.s));
         mesh.setMatrixAt(i, _m);
+        this.treeInst.set(treeIndex.get(t), { mesh, i, t, sy: 0.9 + (i % 5) * 0.06 });
       });
       mesh.count = list.length;
       mesh.castShadow = true;
@@ -300,6 +305,9 @@ export class Renderer {
     });
 
     const rock = new THREE.InstancedMesh(rockGeo(), vcMat, sc.rocks.length);
+    this.rockMesh = rock;
+    this.rockList = sc.rocks;
+    this.natureSig = null;
     sc.rocks.forEach((t, i) => {
       _q.setFromAxisAngle(UP, t.r);
       _m.compose(_v.set(t.x, 0, t.z), _q, _s.set(t.s, t.s, t.s));
@@ -386,6 +394,97 @@ export class Renderer {
     }
   }
 
+  // Trees and boulders: hide felled ones, scale regrowing saplings, show
+  // stumps and the pieces waiting to be carried off, and the huts' stockpiles.
+  syncNature(world, dt, t) {
+    const sig = `${world.natureVer}`;
+    if (world !== this.natureWorld || sig !== this.natureSig) {
+      this.natureWorld = world;
+      this.natureSig = sig;
+      const touched = new Set();
+      for (const n of world.trees) {
+        const ti = this.treeInst.get(n.si);
+        if (!ti) continue;
+        const k = n.state === 'up' ? 1 : n.state === 'grow' ? n.grow : 0;
+        _q.setFromAxisAngle(UP, ti.t.r);
+        _m.compose(_v.set(ti.t.x, 0, ti.t.z), _q, _s.set(ti.t.s * k, ti.t.s * ti.sy * k, ti.t.s * k));
+        ti.mesh.setMatrixAt(ti.i, _m);
+        touched.add(ti.mesh);
+      }
+      for (const n of world.stones) {
+        const r = this.rockList[n.si];
+        if (!r) continue;
+        const k = n.state === 'up' ? 1 : n.state === 'grow' ? n.grow : 0;
+        _q.setFromAxisAngle(UP, r.r);
+        _m.compose(_v.set(r.x, 0, r.z), _q, _s.set(r.s * k, r.s * k, r.s * k));
+        this.rockMesh.setMatrixAt(n.si, _m);
+        touched.add(this.rockMesh);
+      }
+      for (const m of touched) m.instanceMatrix.needsUpdate = true;
+    }
+    // Stumps where trees were cut.
+    const sp = this.stumpPool;
+    sp.begin();
+    _q.identity();
+    for (const n of world.trees) {
+      if (n.state === 'up') continue;
+      _m.compose(_v.set(n.x, 0, n.z), _q, _s.set(n.s, n.s, n.s));
+      sp.push(_m);
+    }
+    sp.end();
+    // Pieces on the ground: logs along where the tree fell, rubble by the rock.
+    const now = this.time;
+    for (const n of world.trees) {
+      if (n.state !== 'down' || !n.pieces || (this.fellAt.get(n.si) || 0) > now) continue;
+      const fx = Math.sin(n.fall), fz = Math.cos(n.fall);
+      for (let i = 0; i < Math.min(6, n.pieces); i++) {
+        const d = 1 + i * 0.75;
+        _q.setFromEuler(_e.set(0, n.fall + Math.PI / 2, 0));
+        _m.compose(_v.set(n.x + fx * d, 0.25, n.z + fz * d), _q, _s.set(1, 1, 1));
+        this.logPool.push(_m);
+      }
+    }
+    for (const n of world.stones) {
+      if (n.state !== 'down' || !n.pieces) continue;
+      for (let i = 0; i < Math.min(6, n.pieces); i++) {
+        const a = i * 2.1 + n.si;
+        _q.setFromEuler(_e.set(i, a, 0));
+        _m.compose(_v.set(n.x + Math.cos(a) * 0.7, 0.2, n.z + Math.sin(a) * 0.7), _q, _s.set(1.2, 1.2, 1.2));
+        this.stonePool.push(_m);
+      }
+    }
+    // Hut stockpiles waiting for a hauler.
+    for (const b of [...world.list('lumber'), ...world.list('quarry')]) {
+      if (b.state !== 'built' || !b.stock) continue;
+      const n = Math.min(12, Math.ceil(b.stock / 5));
+      for (let i = 0; i < n; i++) {
+        const row = Math.floor(i / 4), col = i % 4;
+        if (b.type === 'lumber') {
+          _q.setFromEuler(_e.set(0, Math.PI / 2, 0));
+          _m.compose(_v.set(b.x - 1.4 + col * 0.45, 0.3 + row * 0.35, b.z + 2.9), _q, _s.set(1, 1, 1));
+          this.logPool.push(_m);
+        } else {
+          _q.setFromEuler(_e.set(i, i * 1.7, 0));
+          _m.compose(_v.set(b.x - 1.2 + col * 0.55, 0.25 + row * 0.4, b.z + 2.9), _q, _s.set(1.3, 1.3, 1.3));
+          this.stonePool.push(_m);
+        }
+      }
+    }
+    // Trees toppling over.
+    for (let i = this.falling.length - 1; i >= 0; i--) {
+      const f = this.falling[i];
+      f.t += dt / 0.7;
+      const k = Math.min(1, f.t);
+      f.pivot.rotation.x = (k * k) * (Math.PI / 2);
+      if (f.t >= 1) {
+        this.terrain.remove(f.root);
+        this.spark(f.x + Math.sin(f.dir) * 3 * f.s, 0.6, f.z + Math.cos(f.dir) * 3 * f.s, 0x3d9b46, 14, 0.3, 4, 0.7);
+        this.spark(f.x + Math.sin(f.dir) * 2 * f.s, 0.4, f.z + Math.cos(f.dir) * 2 * f.s, 0xc08a55, 8, 0.22, 3, 0.6);
+        this.falling.splice(i, 1);
+      }
+    }
+  }
+
   // Slide the fog back as the frontier advances.
   syncFog(world, dt) {
     const target = world.frontier;
@@ -403,8 +502,11 @@ export class Renderer {
 
     const goldMat = new THREE.MeshLambertMaterial({ color: C.gold, emissive: 0x5a3a00 });
     this.coinPool = new Pool(scene, coinGeo(), goldMat, 500, { shadow: true });
-    this.logPool = new Pool(scene, logGeo(), vcMat, 80, { shadow: true });
-    this.stonePool = new Pool(scene, new THREE.DodecahedronGeometry(0.28, 0), new THREE.MeshLambertMaterial({ color: 0xa9a49a }), 16, { shadow: true });
+    this.logPool = new Pool(scene, logGeo(), vcMat, 400, { shadow: true });
+    this.stonePool = new Pool(scene, new THREE.DodecahedronGeometry(0.28, 0), new THREE.MeshLambertMaterial({ color: 0xa9a49a }), 320, { shadow: true });
+    this.stumpPool = new Pool(scene, stumpGeo(), vcMat, 600, { shadow: true });
+    this.falling = [];
+    this.fellAt = new Map();
     this.stackPool = new Pool(scene, coinGeo(), goldMat, 1400, { shadow: true });
     this.arrowPool = new Pool(scene, arrowGeo(), vcMat, 500);
     this.particlePool = new Pool(scene, new THREE.BoxGeometry(1, 1, 1), new THREE.MeshLambertMaterial({ color: 0xffffff }), 900);
@@ -477,6 +579,9 @@ export class Renderer {
     this.rings.length = 0;
     this.fogZ = null;
     this.free = false;
+    for (const f of this.falling) this.terrain.remove(f.root);
+    this.falling.length = 0;
+    this.fellAt.clear();
   }
 
   // ------------------------------------------------------------- buildings
@@ -747,7 +852,7 @@ export class Renderer {
       }
     }
     for (const v of world.villagers) {
-      const working = v.state === 'work' && !v.path.length && v.job && world.b[v.job] && world.b[v.job].type !== 'farm';
+      const working = !v.path.length && (v.state === 'chop' || (v.state === 'work' && v.job && world.b[v.job] && world.b[v.job].type === 'goldmine'));
       this.rigs.villager.add(v.x, v.moving ? Math.abs(Math.sin(v.anim)) * 0.06 : 0, v.z, v.yaw, UNIT_S * 0.88, {
         walk: v.moving ? 1 : 0, anim: v.anim, swing: working ? (Math.sin(t * 7 + v.id) + 1) * 0.5 : 0,
         tint: VILLAGER_TINTS[v.id % VILLAGER_TINTS.length], load: v.carry ? v.carry.res : null,
@@ -781,8 +886,9 @@ export class Renderer {
       cp.push(_m);
     }
     cp.end();
-    // What the king is carrying home, strapped to the horse's side.
     this.stonePool.begin();
+    this.syncNature(world, dt, t);
+    // What the king is carrying home, strapped to the horse's side.
     if (hero.alive && hero.load.n > 0) {
       const rx = Math.cos(hero.yaw), rz = -Math.sin(hero.yaw);
       const k = Math.min(4, Math.ceil(hero.load.n / 6));
@@ -1154,6 +1260,29 @@ export class Renderer {
         break;
       case 'waveClear': this.ring(0, CASTLE_R + 2.5, 8, 0xffd84a, 0.9); break;
       case 'waveStart': this.waveT = 0; break;
+      case 'treeFell': {
+        // Topple a copy of the tree away from whoever felled it.
+        const root = new THREE.Group();
+        root.position.set(ev.x, 0, ev.z);
+        root.rotation.y = ev.dir;
+        const pivot = new THREE.Group();
+        root.add(pivot);
+        const m = new THREE.Mesh(this.treeGeo, vcMat);
+        m.scale.setScalar(ev.s);
+        m.castShadow = true;
+        pivot.add(m);
+        this.terrain.add(root);
+        this.falling.push({ root, pivot, t: 0, x: ev.x, z: ev.z, dir: ev.dir, s: ev.s });
+        this.fellAt.set(ev.si, this.time + 0.7);
+        break;
+      }
+      case 'rockBroke':
+        this.spark(ev.x, 0.6, ev.z, 0xa9a49a, 18, 0.32, 4.5, 0.8);
+        this.spark(ev.x, 0.4, ev.z, 0xe6dccb, 10, 0.5, 2, 0.6, 3);
+        break;
+      case 'nodeHit':
+        if (Math.random() < 0.6) this.spark(ev.x, 1, ev.z, ev.wood ? 0xc08a55 : 0xbfbab0, 3, 0.13, 2.5, 0.35);
+        break;
       case 'blocked': if (Math.random() < 0.3) this.spark(ev.x, 3, ev.z - 4, 0xbfc4cc, 2, 0.2, 2, 0.3); break;
       default: break;
     }

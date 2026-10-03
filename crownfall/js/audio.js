@@ -130,7 +130,12 @@ export const audio = {
     if (!this.limit('deny', 0.3)) return;
     this.tone({ freq: 200, to: 130, time: 0.16, type: 'square', gain: 0.1 });
   },
+  fell(tree) {
+    if (tree) { this.noise({ time: 0.6, gain: 0.2, freq: 500, sweepTo: 120, q: 0.6, type: 'lowpass' }); this.tone({ freq: 140, to: 60, time: 0.4, type: 'triangle', gain: 0.1, delay: 0.3 }); }
+    else { this.noise({ time: 0.35, gain: 0.25, freq: 1800, sweepTo: 300, q: 0.8 }); }
+  },
   chop(res) {
+    if (!this.limit('chop', 0.12)) return;
     if (res === 'wood') {
       this.noise({ time: 0.09, gain: 0.16, freq: 900, sweepTo: 300, q: 1.5 });
       this.tone({ freq: 180, to: 120, time: 0.07, type: 'triangle', gain: 0.08 });
