@@ -37,6 +37,11 @@ It then launches full screen and works offline.
 - **Building:** between waves tap 🔨, pick a building, then drag it on the grid
   and tap *Build here*. There is always room for the king to ride between
   buildings.
+- **Workers:** tap a gold mine, lumber camp, quarry or farm to add or remove
+  workers with − and +. Each worker adds output, each building has a set number
+  of slots (upgrade it for more), and only free villagers can be assigned. More
+  houses means more villagers means faster resources. The top bar shows how
+  many villagers are free.
 - **People:** houses bring villagers, and farms make families grow faster.
   Villagers work the mines, cut wood and stone, and haul it to the castle or the
   nearest outpost. Soldiers are villagers who enlist:

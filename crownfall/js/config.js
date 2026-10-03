@@ -105,9 +105,9 @@ export const BUILDINGS = {
     name: 'Farm', icon: '🌾', size: 6, place: true,
     desc: 'Fed families grow faster. Needs a farmer.',
     levels: [
-      { growth: 0.6, workers: 1, cost: { gold: 30 } },
-      { growth: 1.1, workers: 2, cost: { gold: 50, wood: 25 } },
-      { growth: 1.7, workers: 2, cost: { gold: 90, stone: 30 } },
+      { growth: 0.6, workers: 2, cost: { gold: 30 } },
+      { growth: 1.1, workers: 3, cost: { gold: 50, wood: 25 } },
+      { growth: 1.7, workers: 4, cost: { gold: 90, stone: 30 } },
     ],
   },
   barracks: {
@@ -143,9 +143,9 @@ export const BUILDINGS = {
     name: 'Gold Mine', icon: '⛏️', size: 5, needs: 'pass',
     desc: 'Miners dig coins into a pile. Ride by to scoop them up.',
     levels: [
-      { workers: 2, every: 2.4, pile: 80, cost: { gold: 40 } },
-      { workers: 3, every: 2.0, pile: 150, cost: { gold: 60, wood: 25 } },
-      { workers: 4, every: 1.6, pile: 260, cost: { gold: 140, stone: 50 } },
+      { workers: 3, every: 2.4, pile: 80, cost: { gold: 40 } },
+      { workers: 5, every: 2.0, pile: 150, cost: { gold: 60, wood: 25 } },
+      { workers: 7, every: 1.6, pile: 260, cost: { gold: 140, stone: 50 } },
     ],
   },
   bridge: {
@@ -157,18 +157,18 @@ export const BUILDINGS = {
     name: 'Lumber Camp', icon: '🪓', size: 5, needs: 'bridge',
     desc: 'Woodcutters fell pines and haul the logs to the castle.',
     levels: [
-      { workers: 2, work: 5, carry: 3, cost: { gold: 25 } },
-      { workers: 3, work: 4, carry: 4, cost: { gold: 60, wood: 30 } },
-      { workers: 3, work: 3.2, carry: 6, cost: { gold: 110, stone: 40 } },
+      { workers: 3, work: 5, carry: 3, cost: { gold: 25 } },
+      { workers: 5, work: 4, carry: 4, cost: { gold: 60, wood: 30 } },
+      { workers: 7, work: 3.2, carry: 6, cost: { gold: 110, stone: 40 } },
     ],
   },
   quarry: {
     name: 'Quarry', icon: '🪨', size: 5, castle: 2, needs: 'pass',
     desc: 'Masons cut stone and cart it to the castle.',
     levels: [
-      { workers: 2, work: 6, carry: 3, cost: { gold: 50, wood: 30 } },
-      { workers: 3, work: 5, carry: 4, cost: { gold: 90, wood: 40 } },
-      { workers: 3, work: 4, carry: 6, cost: { gold: 160, wood: 60 } },
+      { workers: 3, work: 6, carry: 3, cost: { gold: 50, wood: 30 } },
+      { workers: 5, work: 5, carry: 4, cost: { gold: 90, wood: 40 } },
+      { workers: 7, work: 4, carry: 6, cost: { gold: 160, wood: 60 } },
     ],
   },
   tower: {

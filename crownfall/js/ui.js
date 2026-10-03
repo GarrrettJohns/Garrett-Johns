@@ -38,6 +38,8 @@ export class UI {
     $('btn-pause').addEventListener('click', () => h.onPause());
 
     this.el.sheetList.addEventListener('click', (e) => {
+      const wk = e.target.closest('button[data-workers]');
+      if (wk) { const [id, d] = wk.dataset.workers.split(':'); h.onWorkers(id, Number(d)); this.sig = ''; this.sigT = 0; return; }
       const tab = e.target.closest('button[data-tab]');
       if (tab) { h.tap(); this.tab = tab.dataset.tab; this.sig = ''; this.sigT = 0; return; }
       const btn = e.target.closest('button[data-key]');
@@ -71,7 +73,8 @@ export class UI {
     this.set('wood', world.res.wood, () => { e.wood.textContent = world.res.wood; bump(e.wood.parentElement); });
     this.set('stone', world.res.stone, () => { e.stone.textContent = world.res.stone; bump(e.stone.parentElement); });
     this.set('pop', world.pop, () => { e.pop.textContent = world.pop; });
-    this.set('beds', world.beds, () => { e.beds.textContent = `/${world.beds}`; });
+    const free = Math.max(0, world.freeVillagers);
+    this.set('beds', `${world.beds}|${free}`, () => { e.beds.textContent = `/${world.beds}${free ? ` · ${free} free` : ''}`; });
 
     const waveN = world.phase === 'wave' ? world.wave + 1 : world.wave + 1;
     const label = world.siege ? `L${world.level} · Siege` : `L${world.level} · Wave ${waveN}`;
@@ -240,7 +243,7 @@ export class UI {
     const tabs = world.menu(b);
     if (!tabs.some((g) => g.tab === this.tab)) this.tab = tabs[0].tab;
     const items = tabs.find((g) => g.tab === this.tab).items;
-    const sig = JSON.stringify([info, this.tab, items.map((i) => [i.key, i.locked, i.maxed, i.owned, i.equipped, i.level, i.cost]), world.hero.coins, world.res]);
+    const sig = JSON.stringify([info, this.tab, items.map((i) => [i.key, i.locked, i.maxed, i.owned, i.equipped, i.level, i.cost, i.assigned, i.working, i.free]), world.hero.coins, world.res]);
     if (sig === this.sig) return;
     this.sig = sig;
 
@@ -253,6 +256,21 @@ export class UI {
   }
 
   row(world, it) {
+    if (it.kind === 'workers') {
+      const dots = Array.from({ length: it.slots }, (_, i) => `<i class="${i < it.working ? 'on' : i < it.assigned ? 'coming' : ''}"></i>`).join('');
+      return `<div class="row workers">
+        <div class="ri">${it.icon}</div>
+        <div class="rb">
+          <div class="rt">Workers ${it.assigned}/${it.slots} <span class="pips big">${dots}</span></div>
+          <div class="rd">${esc(it.desc)}</div>
+          <div class="rd free">${Math.max(0, it.free)} free villager${it.free === 1 ? '' : 's'}${it.free <= 0 ? ' · build houses for more' : ''}</div>
+        </div>
+        <div class="stepper">
+          <button class="rbtn step ${it.assigned <= 0 ? 'off' : ''}" type="button" data-workers="${it.id}:-1">−</button>
+          <button class="rbtn step ${it.assigned >= it.slots || it.free <= 0 ? 'off' : ''}" type="button" data-workers="${it.id}:1">+</button>
+        </div>
+      </div>`;
+    }
     const gold = it.cost.gold || 0;
     const lackG = gold > world.hero.coins;
     const lackW = (it.cost.wood || 0) > world.res.wood;

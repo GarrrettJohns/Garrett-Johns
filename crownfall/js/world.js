@@ -21,6 +21,7 @@ const MINE_ROCKS = SCENE.rocks.filter((r) => r.highland);
 const GATHER_REACH = 3.2;
 const GATHER_EVERY = 0.8;
 
+const JOB_TYPES = ['goldmine', 'lumber', 'quarry', 'farm'];
 const OUTPOST = Object.fromEntries(OUTPOSTS.map((o, i) => [o.id, { ...o, index: i }]));
 // Distance from a point to the castle's square footprint (0 inside).
 const castleDist = (x, z) => hyp(Math.max(Math.abs(x) - CASTLE_R, 0), Math.max(Math.abs(z) - CASTLE_R, 0));
@@ -107,6 +108,11 @@ const OBJECTIVES = [
     text: 'Build a Lumber Camp in the forest',
     done: (w) => w.count('lumber') >= 1,
     at: (w) => w.b['lumber-1'],
+  },
+  {
+    text: 'Tap the Lumber Camp and add a worker with 👷 +',
+    done: (w) => w.jobBuildings().some((b) => w.wantedAt(b) >= 2),
+    at: (w) => w.firstOf('lumber'),
   },
   {
     text: 'Clear the Mountain Pass (it needs wood)',
@@ -390,6 +396,15 @@ export class World {
         apply: () => { w.hero.weapons[a] = true; w.hero.weapon = a; },
       };
     }
+    if (kind === 'workers') {
+      const b = this.b[a];
+      const per = { goldmine: 'digs gold into the pile', lumber: 'chops and hauls wood', quarry: 'cuts and hauls stone', farm: 'helps families grow' }[b.type];
+      return {
+        key, kind: 'workers', icon: '👷', title: 'Workers', id: b.id,
+        assigned: this.wantedAt(b), working: this.workersAt(b), slots: this.workerSlots(b), free: this.freeVillagers,
+        desc: `Each worker ${per}. More workers, more ${b.type === 'farm' ? 'growth' : 'output'}.`, cost: {},
+      };
+    }
     if (kind === 'walls') {
       const next = WALLS.levels[this.walls.level + 1];
       return {
@@ -452,7 +467,10 @@ export class World {
     } else if (t === 'range') {
       tabs = [{ tab: 'Range', items: ['hero:damage', 'hero:rate', 'hero:range', 'weapon:bow', 'weapon:crossbow', 'weapon:fire', 'weapon:multi'] }];
     } else {
-      tabs = [{ tab: BUILDINGS[t].name, items: BUILDINGS[t].levels.length > 1 ? [`up:${b.id}`] : [] }];
+      const items = [];
+      if (JOB_TYPES.includes(t)) items.push(`workers:${b.id}`);
+      if (BUILDINGS[t].levels.length > 1) items.push(`up:${b.id}`);
+      tabs = [{ tab: BUILDINGS[t].name, items }];
     }
     return tabs.map((g) => ({ tab: g.tab, items: g.items.map((k) => this.item(k)).filter(Boolean) }));
   }
@@ -464,9 +482,9 @@ export class World {
     if (b.type === 'castle') lines.push(`Castle ${Math.ceil(this.castleHp)}/${this.castleMax}`, `Army ${this.soldiers}/${this.armyCap}`, `${this.pop}/${this.beds} people · ${this.villagers.length} free`);
     if (b.type === 'outpost') lines.push(`${OUTPOST[b.id].name} · fires on passing enemies`);
     if (b.type === 'house') lines.push(`${lv.beds} beds`);
-    if (b.type === 'farm') lines.push(`${this.workersAt(b)}/${lv.workers} farmers`);
-    if (b.type === 'goldmine') lines.push(`${this.workersAt(b)}/${lv.workers} miners · pile ${b.pile}/${lv.pile}`);
-    if (b.type === 'lumber' || b.type === 'quarry') lines.push(`${this.workersAt(b)}/${lv.workers} workers · ${lv.carry} per trip`);
+    if (b.type === 'goldmine') lines.push(`Pile ${b.pile}/${lv.pile}`);
+    if (b.type === 'lumber' || b.type === 'quarry') lines.push(`${lv.carry} per trip`);
+    if (JOB_TYPES.includes(b.type) || b.type === 'house' || b.type === 'castle') lines.push(`${Math.max(0, this.freeVillagers)} free villagers`);
     if (b.type === 'tower') lines.push(`${lv.name} · ${b.garrison}/${lv.slots} archers posted`);
     if (b.type === 'barracks') lines.push(`Army ${this.soldiers}/${this.armyCap} · ${this.villagers.length} villagers free to enlist`);
     return { name: b.type === 'tower' ? lv.name : b.type === 'outpost' ? OUTPOST[b.id].name : t.name, icon: t.icon, level: b.level + 1, max: t.levels.length, desc: t.desc, lines };
@@ -524,6 +542,7 @@ export class World {
   finishBuilding(b) {
     b.state = 'built';
     b.level = 0;
+    if (JOB_TYPES.includes(b.type)) { b.assigned = 0; b.assigned = Math.min(1, Math.max(0, this.freeVillagers)); }
     b.born = this.t;
     this.emit('built', { id: b.id, x: b.x, z: b.z, type: b.type });
     if (b.type === 'bridge') this.emit('toast', { text: 'The forest is open! Build a Lumber Camp.' });
@@ -717,9 +736,28 @@ export class World {
 
   workersAt(b) { return this.villagers.filter((v) => v.job === b.id).length; }
 
+  // Workers are assigned by the player: each job building has slots (its
+  // level's `workers`) and an `assigned` count.
+  workerSlots(b) { return BUILDINGS[b.type].levels[b.level].workers; }
+  wantedAt(b) { return Math.min(b.assigned ?? this.workerSlots(b), this.workerSlots(b)); }
+  get freeVillagers() { return this.villagers.length - this.jobBuildings().reduce((a, b) => a + this.wantedAt(b), 0); }
+
+  setWorkers(id, delta) {
+    const b = this.b[id];
+    if (!b || b.state !== 'built' || !JOB_TYPES.includes(b.type)) return;
+    const cur = this.wantedAt(b);
+    if (delta > 0) {
+      if (cur >= this.workerSlots(b)) { this.emit('need', { text: 'No more room here: upgrade it for more slots' }); return; }
+      if (this.freeVillagers <= 0) { this.emit('need', { text: 'No free villagers: build houses so more families move in' }); return; }
+    }
+    b.assigned = Math.max(0, Math.min(this.workerSlots(b), cur + delta));
+    this.assignT = 0;
+    this.emit('workers', { id, n: b.assigned });
+  }
+
   jobBuildings() {
     return Object.values(this.b)
-      .filter((b) => b.state === 'built' && ['goldmine', 'lumber', 'quarry', 'farm'].includes(b.type))
+      .filter((b) => b.state === 'built' && JOB_TYPES.includes(b.type))
       .sort((a, b) => jobPriority(a) - jobPriority(b) || a.born - b.born);
   }
 
@@ -778,8 +816,15 @@ export class World {
       this.assignT = 0.5;
       for (const v of this.villagers) if (v.job && !this.built(v.job)) { v.job = null; v.state = 'idle'; v.carry = null; }
       for (const b of this.jobBuildings()) {
-        const need = BUILDINGS[b.type].levels[b.level].workers;
+        const need = this.wantedAt(b);
         let have = this.workersAt(b);
+        // Sent home: release the extras.
+        for (const v of this.villagers) {
+          if (have <= need) break;
+          if (v.job !== b.id) continue;
+          v.job = null; v.state = 'idle'; v.carry = null; v.path = []; v.t = 0;
+          have--;
+        }
         while (have < need) {
           let best = null, bd = Infinity;
           for (const v of this.villagers) {
@@ -866,6 +911,7 @@ export class World {
     let v = this.villagers.find((x) => !x.job);
     if (!v) v = [...this.villagers].sort((a, c) => jobPriority(this.b[c.job]) - jobPriority(this.b[a.job]))[0];
     if (!v) return;
+    if (v.job && this.b[v.job]) this.b[v.job].assigned = Math.max(0, this.wantedAt(this.b[v.job]) - 1);
     this.villagers.splice(this.villagers.indexOf(v), 1);
     const a = this.addSoldier(kind, b.x, b.z + b.size / 2 + 0.6);
     this.emit('trained', { kind, x: a.x, z: a.z });
@@ -1713,7 +1759,7 @@ export class World {
       walls: { ...this.walls },
       armor: this.armor,
       hero: { x: h.x, z: h.z, coins: h.coins, up: { ...h.up }, weapons: { ...h.weapons }, weapon: h.weapon, load: { ...h.load } },
-      buildings: Object.values(this.b).map((b) => ({ id: b.id, type: b.type, x: b.x, z: b.z, state: b.state, level: b.level, fixed: b.fixed, lane: b.lane, garrison: b.garrison, pile: b.pile })),
+      buildings: Object.values(this.b).map((b) => ({ id: b.id, type: b.type, x: b.x, z: b.z, state: b.state, level: b.level, fixed: b.fixed, lane: b.lane, garrison: b.garrison, pile: b.pile, assigned: b.assigned })),
       villagers: this.villagers.length,
       allies: this.allies.map((a) => a.kind),
       coins: this.coins.map((c) => [Math.round(c.x * 10) / 10, Math.round(c.z * 10) / 10, c.value]),
@@ -1820,11 +1866,11 @@ function upgradeDesc(type, cur, next) {
   switch (type) {
     case 'castle': return `Castle strength ${cur.hp} → ${next.hp}, unlocks new buildings`;
     case 'house': return `Beds ${cur.beds} → ${next.beds}`;
-    case 'farm': return `Growth +${Math.round(cur.growth * 100)}% → +${Math.round(next.growth * 100)}%, farmers ${cur.workers} → ${next.workers}`;
+    case 'farm': return `Growth +${Math.round(cur.growth * 100)}% → +${Math.round(next.growth * 100)}%, farmer slots ${cur.workers} → ${next.workers}`;
     case 'barracks': return `Army size ${cur.army} → ${next.army}, unlocks Raiders`;
-    case 'goldmine': return `Miners ${cur.workers} → ${next.workers}, faster digging, pile ${cur.pile} → ${next.pile}`;
+    case 'goldmine': return `Miner slots ${cur.workers} → ${next.workers}, faster digging, pile ${cur.pile} → ${next.pile}`;
     case 'lumber':
-    case 'quarry': return `Workers ${cur.workers} → ${next.workers}, ${cur.carry} → ${next.carry} per trip`;
+    case 'quarry': return `Worker slots ${cur.workers} → ${next.workers}, ${cur.carry} → ${next.carry} per trip`;
     case 'tower': return `Damage ${cur.dmg} → ${next.dmg}, range ${cur.range} → ${next.range}m, archer posts ${cur.slots} → ${next.slots}`;
     default: return '';
   }

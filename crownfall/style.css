@@ -311,6 +311,12 @@ body:not([data-state="play"]) #btn-recenter { visibility: hidden; }
 .pips { display: inline-flex; gap: 3px; }
 .pips i { width: 8px; height: 8px; border-radius: 50%; background: #e2d7c4; display: block; }
 .pips i.on { background: var(--gold-dark); }
+.pips.big i { width: 11px; height: 11px; }
+.pips i.coming { background: #f3c86a; }
+.row.workers { border-color: #cfe3c3; background: #f8fdf4; }
+.rd.free { color: #3c7a2c; font-weight: 800; }
+.stepper { display: flex; gap: 6px; }
+.rbtn.step { min-width: 44px; font-size: 22px; padding: 6px 0; }
 .cost { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
 .cost span { font-size: 12px; font-weight: 800; background: #f3ecdf; border-radius: 8px; padding: 2px 7px; display: inline-flex; align-items: center; gap: 3px; }
 .cost span.lack { background: #ffe1dc; color: #c0281c; }

@@ -79,6 +79,7 @@ const ui = new UI({
     dirty = true;
   },
   onEquip: (w) => { world.equip(w); audio.buy(); dirty = true; },
+  onWorkers: (id, d) => { world.setWorkers(id, d); audio.tap(); dirty = true; },
 });
 
 // --------------------------------------------------------------- screens
