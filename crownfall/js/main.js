@@ -6,7 +6,7 @@ import { Input } from './input.js';
 import { UI } from './ui.js';
 import { audio } from './audio.js';
 import { save } from './save.js';
-import { BUILDINGS, HERO_UPGRADES, levelInfo } from './config.js';
+import { BUILDINGS, HERO_UPGRADES, WALLS, levelInfo } from './config.js';
 import { CASTLE_R, FOREST_Z, FORT, inHighland } from './map.js';
 
 const $ = (id) => document.getElementById(id);
@@ -246,11 +246,11 @@ const DEV = {
   },
   castle() {
     const c = world.b.castle;
-    c.level = Math.max(c.level, 2);
+    c.level = BUILDINGS.castle.levels.length - 1;
     world.castleHp = world.castleMax;
-    world.walls.level = Math.max(world.walls.level, 2);
+    world.walls.level = WALLS.levels.length - 1;
     world.rebuildGates();
-    return 'Castle Lv 3, walls fully expanded';
+    return 'Castle maxed, walls fully expanded';
   },
   win() { devCalm(); world.winLevel(); return null; },
   lose() {

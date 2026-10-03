@@ -197,9 +197,12 @@ export const BUILDINGS = {
 // Walls and gates, bought from the castle.
 export const WALLS = {
   levels: [
-    { radius: 16 },
-    { radius: 20, cost: { gold: 80, wood: 60 }, castle: 2 },
-    { radius: 24, cost: { gold: 180, wood: 90, stone: 80 }, castle: 3 },
+    { radius: 20 },
+    { radius: 25, cost: { gold: 80, wood: 60 }, castle: 2 },
+    { radius: 30, cost: { gold: 180, wood: 90, stone: 80 }, castle: 3 },
+    { radius: 35, cost: { gold: 300, wood: 150, stone: 150 }, castle: 3 },
+    { radius: 40, cost: { gold: 450, wood: 220, stone: 250 }, castle: 4 },
+    { radius: 46, cost: { gold: 650, wood: 300, stone: 400 }, castle: 4 },
   ],
   gates: [
     { name: 'Palisade gates', hp: 450 },

@@ -8,11 +8,20 @@
 
 import { mulberry32 } from './util.js';
 
-export const BOUNDS = 56;          // hero stays inside ±BOUNDS across (and north)
-export const RIVER_Z = -29;        // centre line of the river
+// The castle grounds can grow a long way, so everything beyond them sits
+// further out than the raw numbers below: a band around the castle is
+// stretched by SPREAD metres, and everything past it moves out by SPREAD.
+// The castle itself (|x|, |z| < 10) is unchanged.
+const SPREAD = 24, IN0 = 10, IN1 = 26;
+export const spread = (v) => v + Math.sign(v) * SPREAD * Math.min(1, Math.max(0, (Math.abs(v) - IN0) / (IN1 - IN0)));
+const P = ([x, z]) => [spread(x), spread(z)];
+const PP = (o) => ({ ...o, x: spread(o.x), z: spread(o.z) });
+
+export const BOUNDS = spread(56);          // hero stays inside ±BOUNDS across (and north)
+export const RIVER_Z = spread(-29);        // centre line of the river
 export const RIVER_HALF = 2.2;     // half width of the water
-export const FOREST_Z = -32;       // the forest starts north of this line
-export const WALL_HALF = [16, 20, 24];  // the square fortress walls, by level (half widths)
+export const FOREST_Z = spread(-32);       // the forest starts north of this line
+export const WALL_HALF = [20, 25, 30, 35, 40, 46];  // the square fortress walls, by level (half widths)
 export const CASTLE_R = 4.5;       // half width of the (square) castle
 export const GATE_GAP = 2.5;       // half width of the opening a gate fills
 export const PATH_HALF = 1.7;      // half width of a dirt road
@@ -21,8 +30,8 @@ export const GRID = 2;             // placement grid cell size
 // The enemy stronghold at the far end of the south road, and the stretch of
 // road the king claims on the way there. Each outpost pushes the frontier
 // (how far south he can ride, and where southern enemies muster) further on.
-export const STRONGHOLD = { x: 0, z: 190, gateZ: 179, half: 15 };
-export const FRONTIERS = [62, 110, 156, 212];
+export const STRONGHOLD = { x: 0, z: spread(190), gateZ: spread(179), half: 15 };
+export const FRONTIERS = [62, 110, 156, 212].map(spread);
 export const OUTPOSTS = [
   { id: 'outpost-1', name: 'Riverford Outpost', wave: 4, cost: { gold: 120, wood: 40 } },
   { id: 'outpost-2', name: 'Stonehill Outpost', wave: 9, cost: { gold: 220, wood: 80, stone: 60 } },
@@ -33,28 +42,28 @@ export const OUTPOSTS = [
 // north edge down past the castle. Its only way in is on its west face,
 // held by the enemy's Mountain Fort; take the fort and the mountains (their
 // gold, stone and boulders) are yours. Enemy camps hold the trails inside.
-export const HIGHLAND = { x0: 46, x1: 104, z0: -60, z1: 30, gorgeZ: -8, gorgeHalf: 2.6 };
-export const FORT = { x: 46, z: -8 };
-export const RIVER_X1 = 44;     // the river runs from the west edge to the foot of the mountains
+export const HIGHLAND = { x0: spread(46), x1: spread(104), z0: spread(-60), z1: spread(30), gorgeZ: -8, gorgeHalf: 2.6 };
+export const FORT = { x: HIGHLAND.x0, z: HIGHLAND.gorgeZ };
+export const RIVER_X1 = spread(44);     // the river runs from the west edge to the foot of the mountains
 export const inHighland = (x, z) => x > HIGHLAND.x0 && z < HIGHLAND.z1 && z > HIGHLAND.z0 - 10;
 export const GORGE_OUT = { x: FORT.x - 5, z: FORT.z };   // just outside the fort gate
 export const GORGE_IN = { x: FORT.x + 6, z: FORT.z };    // just inside it
 // How far east the king can ride at a given z.
-export const eastLimit = (z) => (z < 58 ? HIGHLAND.x1 - 2 : BOUNDS);
+export const eastLimit = (z) => (z < spread(58) ? HIGHLAND.x1 - 2 : BOUNDS);
 // Trails inside the mountains, from the fort gate out to each mine and quarry.
 export const HIGHLAND_TRAILS = [
   [[40, -8], [56, -8], [66, -14], [76, -18], [88, -24], [96, -33]],
   [[56, -8], [62, 2], [72, 10], [80, 15]],
   [[66, -14], [63, -28], [61, -39]],
   [[76, -18], [83, -9]],
-];
+].map((t) => t.map(P));
 // Enemy camps guarding the trails. Each is a list of enemy kinds.
 export const CAMPS = [
   { id: 'camp-1', x: 66, z: -6, kinds: ['grunt', 'grunt', 'grunt', 'archer'] },
   { id: 'camp-2', x: 69, z: 7, kinds: ['grunt', 'grunt', 'brute', 'archer'] },
   { id: 'camp-3', x: 70, z: -26, kinds: ['grunt', 'grunt', 'archer', 'archer', 'brute'] },
   { id: 'camp-4', x: 90, z: -18, kinds: ['grunt', 'brute', 'brute', 'archer', 'archer'] },
-];
+].map(PP);
 
 // Enemy lanes, from the map edge in to the castle. `opens` is the first wave
 // that uses the lane.
@@ -109,7 +118,7 @@ function sampleLane(ctrl) {
   return { pts, cum, length: cum[cum.length - 1] };
 }
 
-export const LANES = LANE_DEFS.map((d) => ({ ...d, ...sampleLane(d.pts) }));
+export const LANES = LANE_DEFS.map((d) => ({ ...d, ...sampleLane(d.pts.map(P)) }));
 export const LANE = Object.fromEntries(LANES.map((l) => [l.id, l]));
 
 // Position (and heading) at distance s along a lane.
@@ -188,7 +197,7 @@ export function inRiver(x, z) {
 // alternating sides of the road.
 function towerPads() {
   const out = [];
-  const back = [13, 23, 33];
+  const back = [21, 32, 43];
   for (const lane of LANES) {
     back.forEach((d, k) => {
       const s = lane.length - d;
@@ -212,21 +221,21 @@ export const FIXED_PADS = [
   { id: 'bridge', type: 'bridge', x: BRIDGE.x, z: BRIDGE.z },
   // Stands for the Mountain Fort: built once the fort is taken (never bought).
   { id: 'pass', type: 'pass', x: FORT.x, z: FORT.z },
-  { id: 'goldmine', type: 'goldmine', x: 87, z: -5 },
-  { id: 'lumber-1', type: 'lumber', x: -14, z: -38 },
-  { id: 'lumber-2', type: 'lumber', x: 13, z: -38 },
-  { id: 'lumber-3', type: 'lumber', x: 27, z: -43 },
-  { id: 'quarry-1', type: 'quarry', x: 61, z: -43 },
-  { id: 'quarry-2', type: 'quarry', x: 84, z: 18 },
-  { id: 'quarry-5', type: 'quarry', x: 99, z: -37, needs: 'pass' },
+  PP({ id: 'goldmine', type: 'goldmine', x: 87, z: -5 }),
+  PP({ id: 'lumber-1', type: 'lumber', x: -14, z: -38 }),
+  PP({ id: 'lumber-2', type: 'lumber', x: 13, z: -38 }),
+  PP({ id: 'lumber-3', type: 'lumber', x: 27, z: -43 }),
+  PP({ id: 'quarry-1', type: 'quarry', x: 61, z: -43 }),
+  PP({ id: 'quarry-2', type: 'quarry', x: 84, z: 18 }),
+  PP({ id: 'quarry-5', type: 'quarry', x: 99, z: -37, needs: 'pass' }),
   // The road south.
-  { id: 'outpost-1', type: 'outpost', x: 1, z: 58 },
-  { id: 'outpost-2', type: 'outpost', x: -12, z: 106 },
-  { id: 'outpost-3', type: 'outpost', x: 9, z: 151 },
-  { id: 'goldmine-2', type: 'goldmine', x: -24, z: 82, needs: 'outpost-1' },
-  { id: 'lumber-4', type: 'lumber', x: 27, z: 92, needs: 'outpost-1' },
-  { id: 'quarry-3', type: 'quarry', x: -26, z: 126, needs: 'outpost-2' },
-  { id: 'goldmine-3', type: 'goldmine', x: 28, z: 128, needs: 'outpost-2' },
+  PP({ id: 'outpost-1', type: 'outpost', x: 1, z: 58 }),
+  PP({ id: 'outpost-2', type: 'outpost', x: -12, z: 106 }),
+  PP({ id: 'outpost-3', type: 'outpost', x: 9, z: 151 }),
+  PP({ id: 'goldmine-2', type: 'goldmine', x: -24, z: 82, needs: 'outpost-1' }),
+  PP({ id: 'lumber-4', type: 'lumber', x: 27, z: 92, needs: 'outpost-1' }),
+  PP({ id: 'quarry-3', type: 'quarry', x: -26, z: 126, needs: 'outpost-2' }),
+  PP({ id: 'goldmine-3', type: 'goldmine', x: 28, z: 128, needs: 'outpost-2' }),
   ...towerPads(),
 ];
 
@@ -241,7 +250,7 @@ export const START = {
 // Scenery: trees in the forest and scattered across the land, rocks by the
 // quarries and mines, crags around the highland and cliffs walling in the
 // map. Seeded so the kingdom looks the same every load.
-const outside = (x, z, pad) => Math.max(Math.abs(x), Math.abs(z)) > WALL_HALF[2] + pad;
+const outside = (x, z, pad) => Math.max(Math.abs(x), Math.abs(z)) > WALL_HALF[WALL_HALF.length - 1] + pad;
 const nearStronghold = (x, z, pad) => Math.abs(x - STRONGHOLD.x) < STRONGHOLD.half + pad && z > STRONGHOLD.gateZ - 8 - pad;
 
 export function scenery() {
@@ -254,7 +263,7 @@ export function scenery() {
 
   // The forest: dense pines north of the river.
   for (let i = 0; i < 2600 && trees.length < 520; i++) {
-    const x = -62 + rnd() * (RIVER_X1 + 62);
+    const x = spread(-62) + rnd() * (RIVER_X1 - spread(-62));
     const z = FOREST_Z - 1 - rnd() * 32;
     if (distToLanes(x, z, [LANE.N]) < PATH_HALF + 1.4) continue;
     if (!clearOf(x, z, 4.6)) continue;
@@ -263,7 +272,7 @@ export function scenery() {
   }
   // A thinner fringe on the grassland side of the river bank.
   for (let i = 0; i < 400; i++) {
-    const x = -60 + rnd() * (RIVER_X1 + 58);
+    const x = spread(-60) + rnd() * (RIVER_X1 - spread(-60) - 2);
     const z = RIVER_Z + RIVER_HALF + 1 + rnd() * 3;
     if (distToLanes(x, z) < PATH_HALF + 2) continue;
     if (!outside(x, z, 3)) continue;
@@ -273,8 +282,8 @@ export function scenery() {
   }
   // Scattered pines across the grassland and down the road south.
   for (let i = 0; i < 4000 && trees.length < 960; i++) {
-    const z = RIVER_Z + RIVER_HALF + 2 + rnd() * (215 - RIVER_Z);
-    const x = -54 + rnd() * (eastLimit(z) + 54);
+    const z = RIVER_Z + RIVER_HALF + 2 + rnd() * (spread(215) - RIVER_Z);
+    const x = spread(-54) + rnd() * (eastLimit(z) - spread(-54));
     if (!outside(x, z, 4)) continue;
     if (inHighland(x + 4, z - 4)) continue;
     if (Math.hypot(x - FORT.x, z - FORT.z) < 12) continue;
@@ -283,7 +292,7 @@ export function scenery() {
     if (!clearOf(x, z, 5)) continue;
     if (!spaced(x, z, 3.6)) continue;
     // Clumps: thicker towards the cliffs at the edges.
-    if (rnd() > 0.18 + Math.abs(Math.min(x, 60)) / 70) continue;
+    if (rnd() > 0.18 + Math.abs(Math.min(x, 84)) / 94) continue;
     trees.push({ x, z, s: 0.8 + rnd() * 0.5, r: rnd() * 6.28 });
   }
   // A grove around the southern lumber camp.
@@ -309,7 +318,7 @@ export function scenery() {
   }
   // A few loose boulders.
   for (let i = 0; i < 80 && rocks.length < 110; i++) {
-    const x = -50 + rnd() * 100, z = -24 + rnd() * 190;
+    const x = spread(-50) + rnd() * 2 * spread(50), z = spread(-24) + rnd() * (spread(166) - spread(-24));
     if (!outside(x, z, 3)) continue;
     if (nearStronghold(x, z, 2)) continue;
     if (distToLanes(x, z) < PATH_HALF + 2) continue;
@@ -354,12 +363,13 @@ export function scenery() {
     if (distToLanes(x, z) < 7) return;
     cliffs.push({ x, z, w: 7 + rnd() * 6, h: 4 + rnd() * 7, d: 7 + rnd() * 6, r: rnd() * 6.28 });
   };
-  for (let x = -68; x <= 114; x += 4.6) wall(x, -60 - rnd() * 8);
-  for (let z = -68; z <= 222; z += 4.6) wall(-60 - rnd() * 8, z);
-  for (let z = -68; z <= 66; z += 4.6) wall(108 + rnd() * 8, z);
-  for (let x = 58; x <= 114; x += 4.6) wall(x, 64 + rnd() * 6);
-  for (let z = 64; z <= 222; z += 4.6) wall(60 + rnd() * 8, z);
-  for (let x = -68; x <= 68; x += 4.6) wall(x, 214 + rnd() * 8);
+  const sp = spread;
+  for (let x = sp(-68); x <= sp(114); x += 4.6) wall(x, sp(-60) - rnd() * 8);
+  for (let z = sp(-68); z <= sp(222); z += 4.6) wall(sp(-60) - rnd() * 8, z);
+  for (let z = sp(-68); z <= sp(66); z += 4.6) wall(sp(108) + rnd() * 8, z);
+  for (let x = sp(58); x <= sp(114); x += 4.6) wall(x, sp(64) + rnd() * 6);
+  for (let z = sp(64); z <= sp(222); z += 4.6) wall(sp(60) + rnd() * 8, z);
+  for (let x = sp(-68); x <= sp(68); x += 4.6) wall(x, sp(214) + rnd() * 8);
 
   return { trees, rocks, cliffs };
 }

@@ -19,6 +19,10 @@ It then launches full screen and works offline.
 - **The castle:** tap it. Its **King** tab upgrades the bow, horse and weapons,
   and **Castle** upgrades the keep, walls and gates. Nothing is bought in
   parts: you need all the gold, wood and stone first.
+- **Castle grounds:** the walls start 40 m across and expand five times, up to
+  92 m (half widths 20 → 25 → 30 → 35 → 40 → 46). The later expansions need
+  stone and a higher castle level. Fully expanded, the grounds hold dozens of
+  farms, houses and workshops.
 - **The army:** build Barracks (the game nudges you after wave 2) and tap it to
   train knights, archers and raiders. Each barracks raises the army cap.
 - **Gold:** at first gold comes only from waves: kills drop coins and every
