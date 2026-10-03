@@ -221,6 +221,8 @@ export class UI {
       el.style.transform = `translate(${x}px, ${y}px)`;
       el.firstChild.style.rotate = `${Math.atan2(dy, dx)}rad`;
       el.lastChild.textContent = th.label || `${th.name} ×${th.count}`;
+      // Keep the label on screen at the left and right edges.
+      el.lastChild.style.transform = x > w - 90 ? 'translate(calc(-100% + 22px), 0)' : x < 90 ? 'translate(-22px, 0)' : '';
       el.hidden = false;
     }
     for (const [id, el] of Object.entries(this.threatEls)) if (!seen.has(id)) el.hidden = true;

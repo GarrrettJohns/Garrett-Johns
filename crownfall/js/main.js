@@ -206,6 +206,20 @@ const DEV = {
     world.hero.coins = Math.max(world.hero.coins, 200);
     return `Ready for wave ${n} — tap Start Wave`;
   },
+  // An average king around waves 5-6 (wood-tier upgrades, 3 troops) in Level 1,
+  // waiting just outside the Mountain Fort.
+  fort() {
+    world = new World(null, {
+      level: 1,
+      carry: { up: { damage: 2, rate: 2, hp: 2, range: 1 }, weapons: { bow: true }, weapon: 'bow', army: ['knight', 'archer', 'archer'], coins: 100 },
+    });
+    world.wave = 5;
+    const h = world.hero;
+    h.x = FORT.x - 18; h.z = FORT.z;
+    for (const a of world.allies) { a.x = h.x - 2 + Math.random(); a.z = h.z + Math.random() * 2 - 1; }
+    renderer.reset();
+    return 'Average king at wave 6 — take the Mountain Fort!';
+  },
   siege() {
     devCalm();
     world.wave = Math.max(world.wave, 15);
