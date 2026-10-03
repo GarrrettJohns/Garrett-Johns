@@ -112,11 +112,11 @@ export const BUILDINGS = {
   },
   warehouse: {
     name: 'Warehouse', icon: '📦', size: 6, place: true,
-    desc: 'Haulers fetch wood and stone from the lumber camps and quarries and bring it here, into your stores.',
+    desc: 'Haulers race wheelbarrows of wood and stone (5 at a time) from the camps and quarries into your stores. Ride by to bank the coins on your horse here.',
     levels: [
-      { workers: 2, carry: 6, cost: { gold: 40 } },
-      { workers: 4, carry: 8, cost: { gold: 80, wood: 40 } },
-      { workers: 6, carry: 12, cost: { gold: 140, stone: 50 } },
+      { workers: 2, carry: 5, cost: { gold: 40 } },
+      { workers: 3, carry: 5, cost: { gold: 80, wood: 40 } },
+      { workers: 4, carry: 5, cost: { gold: 140, stone: 50 } },
     ],
   },
   barracks: {
@@ -239,11 +239,16 @@ export const ARMOR_UPGRADE = {
 export const VILLAGER = { speed: 3.2, growthEvery: 22, startPop: 3 };
 
 export const ENEMIES = {
-  grunt: { name: 'Grunt', hp: 30, dmg: 5, interval: 1, range: 1.3, speed: 2.3, aggro: 5, coins: 3, radius: 0.5 },
-  brute: { name: 'Brute', hp: 170, dmg: 18, interval: 1.4, range: 1.7, speed: 1.45, aggro: 4.5, coins: 8, radius: 0.85, armor: 3, scale: 1.55 },
-  archer: { name: 'Bowman', hp: 24, dmg: 6, interval: 1.5, range: 9, speed: 2.1, aggro: 9, coins: 4, radius: 0.5, ranged: true },
-  raider: { name: 'Outrider', hp: 42, dmg: 7, interval: 0.8, range: 1.4, speed: 4.6, aggro: 0, coins: 4, radius: 0.55 },
-  treant: { name: 'Elder Treant', hp: 1300, dmg: 30, interval: 1.8, range: 2.6, speed: 1.15, aggro: 6, coins: 50, wood: 45, radius: 1.5, armor: 1, scale: 2.6, slam: 3.4 },
+  // Swordsmen leave the road to chase the king or the nearest soldier.
+  grunt: { name: 'Swordsman', hp: 30, dmg: 5, interval: 1, range: 1.3, speed: 2.8, aggro: 8, leash: 16, coins: 3, radius: 0.5 },
+  brute: { name: 'Brute', hp: 170, dmg: 18, interval: 1.4, range: 1.7, speed: 1.75, aggro: 4.5, coins: 8, radius: 0.85, armor: 3, scale: 1.55 },
+  // Bowmen keep to the road and shoot whoever is nearest.
+  archer: { name: 'Bowman', hp: 24, dmg: 6, interval: 1.5, range: 9, speed: 2.5, aggro: 9, coins: 4, radius: 0.5, ranged: true, onPath: true },
+  // Outriders ignore everyone and race for the gates.
+  raider: { name: 'Outrider', hp: 42, dmg: 7, interval: 0.8, range: 1.4, speed: 5.4, aggro: 0, coins: 4, radius: 0.55 },
+  // War hounds run the king down wherever he is.
+  hound: { name: 'War Hound', hp: 22, dmg: 4, interval: 0.7, range: 1.2, speed: 5.6, aggro: 16, leash: 40, coins: 2, radius: 0.45 },
+  treant: { name: 'Elder Treant', hp: 1300, dmg: 30, interval: 1.8, range: 2.6, speed: 1.35, aggro: 6, coins: 50, wood: 45, radius: 1.5, armor: 1, scale: 2.6, slam: 3.4 },
   // The Mountain Fort guarding the way into the mountains.
   fgate: { name: 'Mountain Fort Gate', hp: 900, dmg: 0, interval: 9, range: 0, speed: 0, aggro: 0, coins: 40, radius: 2.6, armor: 2, structure: true },
   ftower: { name: 'Fort Tower', hp: 480, dmg: 8, interval: 1.3, range: 12, speed: 0, aggro: 12, coins: 25, radius: 1.8, armor: 1, structure: true, ranged: true },
@@ -251,7 +256,7 @@ export const ENEMIES = {
   sgate: { name: 'Stronghold Gate', hp: 2600, dmg: 0, interval: 9, range: 0, speed: 0, aggro: 0, coins: 80, radius: 3.4, armor: 3, structure: true },
   stower: { name: 'Stronghold Tower', hp: 1300, dmg: 13, interval: 1.2, range: 14, speed: 0, aggro: 14, coins: 50, radius: 2.2, armor: 2, structure: true, ranged: true },
   skeep: { name: 'Stronghold Keep', hp: 4200, dmg: 0, interval: 9, range: 0, speed: 0, aggro: 0, coins: 250, radius: 4.5, armor: 3, structure: true },
-  boss: { name: 'Warlord', hp: 1100, dmg: 34, interval: 1.7, range: 2.6, speed: 1.25, aggro: 6, coins: 60, radius: 1.5, armor: 2, scale: 2.8, slam: 3.2 },
+  boss: { name: 'Warlord', hp: 1100, dmg: 34, interval: 1.7, range: 2.6, speed: 1.5, aggro: 6, coins: 60, radius: 1.5, armor: 2, scale: 2.8, slam: 3.2 },
 };
 
 const BOSS_NAMES = { 5: 'Elder Treant', 10: 'Warlord Vexa', 15: 'The Iron King' };
@@ -275,6 +280,7 @@ export function waveSpec(n, lanesOpen, level = 1) {
   add('brute', n >= 3 ? Math.floor(((n - 1) / 2) * more) : 0);
   add('archer', n >= 4 ? Math.floor((n / 1.6) * more) : 0);
   add('raider', n >= 6 ? Math.round((n - 4) * 1.2 * more) : 0);
+  add('hound', n >= 3 ? Math.round((1 + n / 2.5) * more) : 0);
 
   let boss = null;
   if (n % 5 === 0) {
@@ -298,6 +304,8 @@ export function waveSpec(n, lanesOpen, level = 1) {
     total,
     lanes: lanesOpen,
     spawnGap: Math.max(0.35, 1.1 - n * 0.05),
-    bonus: 20 + n * 8,
+    // The first two waves pay extra so the early upgrades they lead into are
+    // affordable: a bow and tower upgrade after wave 1, barracks and a house after 2.
+    bonus: 20 + n * 8 + ([0, 50, 36][n] || 0),
   };
 }

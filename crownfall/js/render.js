@@ -76,7 +76,7 @@ class RigMesh {
     for (const pt of this.parts) {
       if (pt.n >= pt.cap) continue;
       const p = pt.p;
-      if (p.show && p.show !== st.load) continue;
+      if (p.show && (Array.isArray(p.show) ? !p.show.includes(st.load) : p.show !== st.load)) continue;
       if (p.hide && p.hide.includes(st.load)) continue;
       let a = 0;
       if (p.anim === 'legA') a = s * 0.65 * walk;
@@ -531,7 +531,7 @@ export class Renderer {
   buildDynamic() {
     const scene = this.scene;
     this.rigs = {};
-    const caps = { hero: 1, knight: 40, archer: 80, raider: 40, villager: 120, grunt: 160, brute: 50, bowman: 70, outrider: 70, boss: 3, treant: 2 };
+    const caps = { hero: 1, knight: 40, archer: 80, raider: 40, villager: 120, grunt: 160, brute: 50, bowman: 70, outrider: 70, hound: 60, boss: 3, treant: 2 };
     for (const [k, cap] of Object.entries(caps)) this.rigs[k] = new RigMesh(scene, RIGS[k](), cap);
 
     const goldMat = new THREE.MeshLambertMaterial({ color: C.gold, emissive: 0x5a3a00 });
@@ -702,7 +702,7 @@ export class Renderer {
   updatePad(e, world, b) {
     const it = world.item(`build:${b.id}`);
     const gold = it.cost.gold || 0;
-    const lackG = gold > world.hero.coins;
+    const lackG = gold > world.gold;
     const lackW = (it.cost.wood || 0) > world.res.wood, lackS = (it.cost.stone || 0) > world.res.stone;
     const ready = !it.locked && !lackG && !lackW && !lackS;
     const sig = `${it.locked}|${lackG}|${lackW}|${lackS}`;
@@ -893,10 +893,11 @@ export class Renderer {
       const working = !v.path.length && (v.state === 'chop' || (v.state === 'work' && v.job && world.b[v.job] && world.b[v.job].type === 'goldmine'));
       this.rigs.villager.add(v.x, v.moving ? Math.abs(Math.sin(v.anim)) * 0.06 : 0, v.z, v.yaw, UNIT_S * 0.88, {
         walk: v.moving ? 1 : 0, anim: v.anim, swing: working ? (Math.sin(t * 7 + v.id) + 1) * 0.5 : 0,
-        tint: VILLAGER_TINTS[v.id % VILLAGER_TINTS.length], load: v.carry ? v.carry.res : null,
+        tint: VILLAGER_TINTS[v.id % VILLAGER_TINTS.length],
+        load: v.job && world.b[v.job]?.type === 'warehouse' ? (v.carry ? `barrow-${v.carry.res}` : 'barrow') : v.carry ? v.carry.res : null,
       });
     }
-    const ENEMY_RIG = { grunt: 'grunt', brute: 'brute', archer: 'bowman', raider: 'outrider', boss: 'boss', treant: 'treant' };
+    const ENEMY_RIG = { grunt: 'grunt', brute: 'brute', archer: 'bowman', raider: 'outrider', hound: 'hound', boss: 'boss', treant: 'treant' };
     for (const e of world.enemies) {
       if (e.static) continue;
       this.rigs[ENEMY_RIG[e.kind]].add(e.x, e.moving ? Math.abs(Math.sin(e.anim)) * 0.08 : 0, e.z, e.yaw, e.scale * UNIT_S, {

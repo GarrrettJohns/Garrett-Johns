@@ -94,6 +94,7 @@ const OBJECTIVES = [
   },
   {
     text: 'Tap 🔨 Build and place a House inside the walls',
+    tip: 'house',
     done: (w) => w.count('house') >= 2,
     at: (w) => w.siteOf('house'),
   },
@@ -104,6 +105,7 @@ const OBJECTIVES = [
   },
   {
     text: 'Tap the Barracks and train an Archer for your towers',
+    tip: 'archer',
     done: (w) => w.armyCount('archer') >= 1,
     at: (w) => w.firstOf('barracks'),
   },
@@ -126,6 +128,29 @@ const OBJECTIVES = [
     text: 'Tap the Lumber Camp and add a worker with 👷 +',
     done: (w) => w.jobBuildings().some((b) => w.wantedAt(b) >= 2),
     at: (w) => w.firstOf('lumber'),
+  },
+  // Get the king ready before sending him at the Mountain Fort.
+  {
+    text: 'Ready for the fort: at the Castle, raise Arrow damage and Fire rate to Lv 3',
+    tip: 'fortprep',
+    done: (w) => w.built('pass') || (w.hero.up.damage >= 2 && w.hero.up.rate >= 2),
+    at: (w) => ({ x: 0, z: CASTLE_R + 1 }),
+  },
+  {
+    text: 'Toughen up: Horse health to Lv 3 and Bow range to Lv 2 (Castle)',
+    done: (w) => w.built('pass') || (w.hero.up.hp >= 2 && w.hero.up.range >= 1),
+    at: (w) => ({ x: 0, z: CASTLE_R + 1 }),
+  },
+  {
+    text: 'Train 3 soldiers at the Barracks to fight at your side',
+    done: (w) => w.built('pass') || w.soldiers >= 3,
+    at: (w) => w.firstOf('barracks'),
+  },
+  {
+    text: 'Tap 🚩 Follow me so your troops ride with you',
+    tip: 'follow',
+    done: (w) => w.built('pass') || w.rally,
+    at: () => null,
   },
   {
     text: 'Storm the Mountain Fort to the east: break its gate and towers',
@@ -226,7 +251,8 @@ export class World {
   reset() {
     this.phase = 'build';
     this.wave = 0;
-    this.res = { wood: 0, stone: 0 };
+    this.res = { wood: 0, stone: 0, gold: 0 };   // gold here is banked at a warehouse
+    this.rally = false;
     this.funds = {};
     this.objective = 0;
     this.stats = { kills: 0 };
@@ -327,6 +353,9 @@ export class World {
   count(type) { return this.list(type).filter((b) => b.state === 'built').length; }
   firstOf(type) { return this.list(type).find((b) => b.state === 'built') || null; }
   siteOf(type) { return this.list(type).find((b) => b.state === 'site') || null; }
+  // Gold to spend: on the king's horse plus what's banked in warehouses.
+  get gold() { return this.hero.coins + (this.res.gold || 0); }
+
   armyCount(kind) {
     let n = this.allies.filter((a) => a.kind === kind).length;
     if (kind === 'archer') for (const b of this.list('tower')) n += b.garrison;
@@ -385,7 +414,7 @@ export class World {
   objectiveInfo() {
     const o = OBJECTIVES[this.objective];
     if (!o) return null;
-    return { text: o.text, target: o.at(this), index: this.objective, total: OBJECTIVES.length };
+    return { text: o.text, target: o.at(this), index: this.objective, total: OBJECTIVES.length, tip: o.tip || null };
   }
 
   // ------------------------------------------------------------ purchases
@@ -394,6 +423,16 @@ export class World {
   item(key) {
     const [kind, a, c] = key.split(':');
     const w = this;
+    if (kind === 'callout') {
+      const t = this.b[a];
+      if (!t) return null;
+      return {
+        key, icon: '🚩', title: 'Call an archer to follow you', repeat: true, cost: {},
+        desc: t.garrison ? `${t.garrison} posted here. One climbs down and rides with the king, shooting as he goes.` : 'No archers posted here',
+        locked: t.garrison ? null : 'No archers here',
+        apply: () => w.callOut(t),
+      };
+    }
     if (kind === 'build') {
       const b = this.b[a];
       const t = BUILDINGS[b.type];
@@ -523,6 +562,7 @@ export class World {
     } else {
       const items = [];
       if (JOB_TYPES.includes(t)) items.push(`workers:${b.id}`);
+      if (t === 'tower') items.push(`callout:${b.id}`);
       if (BUILDINGS[t].levels.length > 1) items.push(`up:${b.id}`);
       tabs = [{ tab: BUILDINGS[t].name, items }];
     }
@@ -568,7 +608,7 @@ export class World {
   // Everything the king is short of, gold included.
   shortfall(cost) {
     const m = [];
-    if ((cost.gold || 0) > this.hero.coins) m.push(`${cost.gold - this.hero.coins} more gold`);
+    if ((cost.gold || 0) > this.gold) m.push(`${cost.gold - this.gold} more gold`);
     return m.concat(this.missing(cost));
   }
 
@@ -585,7 +625,10 @@ export class World {
       return 0;
     }
     const gold = it.cost.gold || 0;
-    this.hero.coins -= gold;
+    // Spend what the king carries first, then the warehouse's bank.
+    const hand = Math.min(gold, this.hero.coins);
+    this.hero.coins -= hand;
+    this.res.gold -= gold - hand;
     this.res.wood -= it.cost.wood || 0;
     this.res.stone -= it.cost.stone || 0;
     it.apply();
@@ -909,7 +952,8 @@ export class World {
         const d = hyp(dx, dz);
         if (d < 0.3) v.path.shift();
         else {
-          const step = Math.min(d, sp * dt * (v.carry ? 0.85 : 1));
+          const hauler = b && b.type === 'warehouse';
+          const step = Math.min(d, sp * dt * (hauler ? 2 : v.carry ? 0.85 : 1));
           v.x += (dx / d) * step; v.z += (dz / d) * step;
           v.yaw = Math.atan2(dx, dz);
           v.moving = true;
@@ -1141,6 +1185,23 @@ export class World {
     this.emit('trained', { kind, x: a.x, z: a.z });
   }
 
+  // 🚩 Follow me: every soldier in the field rides with the king. Tapping it
+  // again sends them back to their posts (archers to free tower slots).
+  setRally(on) {
+    this.rally = on;
+    if (!on) for (const a of this.allies) a.follow = false;
+    this.emit('rally', { on });
+  }
+
+  // Call one archer down from a tower to ride with the king.
+  callOut(t) {
+    if (!t || t.type !== 'tower' || !(t.garrison > 0)) return;
+    t.garrison--;
+    const a = this.addSoldier('archer', t.x, t.z + t.size / 2 + 0.8);
+    a.follow = true;
+    this.emit('trained', { kind: 'archer', x: a.x, z: a.z });
+  }
+
   addSoldier(kind, x, z) {
     const u = UNITS[kind];
     const a = {
@@ -1172,9 +1233,10 @@ export class World {
     const repost = this.postT <= 0;
     if (repost) this.postT = 1.5;
 
-    // Knights take formation slots behind the king.
+    // Knights, and anyone called with 🚩 Follow me, take formation slots
+    // behind the king.
     let ki = 0;
-    for (const a of this.allies) if (a.kind === 'knight') a.slot = ki++;
+    for (const a of this.allies) if (a.kind === 'knight' || a.follow || this.rally) a.slot = ki++;
 
     for (let i = this.allies.length - 1; i >= 0; i--) {
       const a = this.allies[i];
@@ -1188,7 +1250,19 @@ export class World {
       let gx = a.x, gz = a.z;           // where it wants to be
       let target = null;
 
-      if (a.kind === 'archer') {
+      const follows = hero.alive && a.kind !== 'knight' && (a.follow || this.rally);
+      if (follows) {
+        const row = Math.floor(a.slot / 5), col = a.slot % 5;
+        const ang = Math.PI + (col - 2) * 0.55;
+        const r = 2.2 + row * 1.4;
+        const fx = Math.sin(hero.yaw), fz = Math.cos(hero.yaw);
+        const lx = Math.sin(ang) * r, lz = Math.cos(ang) * r;
+        gx = hero.x + fz * lx + fx * lz;
+        gz = hero.z - fx * lx + fz * lz;
+        a.post = null;
+        if (a.kind === 'archer') target = this.nearestEnemy(a.x, a.z, u.range);
+        else { const e = this.nearestEnemy(a.x, a.z, 7); if (e && hyp(e.x - hero.x, e.z - hero.z) < 11) target = e; }
+      } else if (a.kind === 'archer') {
         if (repost && !a.post?.startsWith?.('tower')) {
           const t = this.freeTowerSlot(a.x, a.z);
           if (t) a.post = t.id;
@@ -1252,7 +1326,8 @@ export class World {
       const dx = gx - a.x, dz = gz - a.z;
       const d = hyp(dx, dz);
       if (d > 0.25) {
-        const sp = a.kind === 'knight' && hero.alive && !target ? Math.max(u.speed, this.heroStat('speed') * (d > 3 ? 1.15 : 0.9)) : u.speed;
+        const escort = (a.kind === 'knight' || a.follow || this.rally) && hero.alive && !target;
+        const sp = escort ? Math.max(u.speed, this.heroStat('speed') * (d > 3 ? 1.15 : 0.9)) : u.speed;
         const step = Math.min(d, sp * dt);
         a.x += (dx / d) * step; a.z += (dz / d) * step;
         if (!target || a.kind !== 'archer') a.yaw = Math.atan2(dx, dz);
@@ -1487,19 +1562,29 @@ export class World {
       e.retarget -= dt;
       if (e.retarget <= 0) {
         e.retarget = 0.3;
-        if (e.target && (e.target.gone || (e.target === hero && !hero.alive) || hyp(e.target.x - e.x, e.target.z - e.z) > def.aggro * 1.7)) e.target = null;
-        if (!e.target && def.aggro > 0) {
+        if (e.target && (e.target.gone || (e.target === hero && !hero.alive) || hyp(e.target.x - e.x, e.target.z - e.z) > (def.onPath ? def.range : def.aggro * 1.7))) e.target = null;
+        if (!e.target && def.onPath && !e.guard) {
+          // Bowmen keep to the road and shoot whoever is nearest in range.
+          let best = null, bd = def.range;
+          if (hero.alive) { const d = hyp(hero.x - e.x, hero.z - e.z); if (d < bd) { bd = d; best = hero; } }
+          for (const a of this.allies) { const d = hyp(a.x - e.x, a.z - e.z); if (d < bd) { bd = d; best = a; } }
+          e.target = best;
+        } else if (!e.target && def.aggro > 0) {
           let best = null, bd = e.guard ? Math.max(def.aggro, 8) : def.aggro;
           if (hero.alive) { const d = hyp(hero.x - e.x, hero.z - e.z); if (d < bd) { bd = d; best = hero; } }
           for (const a of this.allies) { const d = hyp(a.x - e.x, a.z - e.z); if (d < bd) { bd = d; best = a; } }
           e.target = best;
         }
-        if (e.target && hyp(e.x - homeX, e.z - homeZ) > 10) e.target = null;
+        if (e.target && hyp(e.x - homeX, e.z - homeZ) > (e.guard ? 10 : def.leash || 10)) e.target = null;
       }
 
       let mx = 0, mz = 0, want = 0;
       const t = e.target;
-      if (t) {
+      if (t && def.onPath && !e.guard) {
+        // Stand on the road and loose arrows.
+        e.yaw = Math.atan2(t.x - e.x, t.z - e.z);
+        if (e.atkCd <= 0) this.enemyAttack(e, t);
+      } else if (t) {
         const d = hyp(t.x - e.x, t.z - e.z);
         e.yaw = Math.atan2(t.x - e.x, t.z - e.z);
         if (d > def.range + 0.6) { mx = (t.x - e.x) / d; mz = (t.z - e.z) / d; want = e.speed * 1.1; }
@@ -1688,6 +1773,13 @@ export class World {
       else zMax = STRONGHOLD.gateZ - 3;
     }
     nz = Math.max(-BOUNDS, Math.min(zMax, nz));
+    // Gate down: in through the gateway only, and not through the walls.
+    if (this.siegeReady && this.sgGate && this.sgGate.hp <= 0 && !this.noclip) {
+      const S = STRONGHOLD, r = HERO.radius, open = 2.9 - r;
+      const z0 = S.gateZ - 1.1 - r, z1 = S.gateZ + 1.1 + r;
+      if (nz > z0 && nz < z1 && Math.abs(nx - S.x) > open) nz = h.z < S.gateZ ? z0 : z1;
+      if (nz >= z1) nx = Math.max(S.x - S.half + 1.1 + r, Math.min(S.x + S.half - 1.1 - r, nx));
+    }
 
     // The highland's crags: in and out only through the gorge, once cleared.
     if (!this.noclip && inHighland(nx, nz) !== inHighland(h.x, h.z)) {
@@ -1822,6 +1914,12 @@ export class World {
       this.emit('deliver', { x: h.x, z: h.z, res: h.load.res, amt: h.load.n });
       h.load = { res: null, n: 0 };
       h.warned = null;
+    }
+    // Coins go into the bank at a warehouse, safe and still spendable.
+    if (h.coins > 0 && this.list('warehouse').some((w) => w.state === 'built' && rectDist(h.x, h.z, w) < 2.5)) {
+      this.res.gold += h.coins;
+      this.emit('deposit', { x: h.x, z: h.z, n: h.coins });
+      h.coins = 0;
     }
     // Scoop up a hut's stockpile.
     for (const hut of [...this.list('lumber'), ...this.list('quarry')]) {
@@ -2012,6 +2110,7 @@ export class World {
       res: { ...this.res },
       funds: { ...this.funds },
       objective: this.objective,
+      rally: this.rally,
       level: this.level,
       camps: this.built('pass') ? this.campsAlive() : null,
       stats: { ...this.stats },
@@ -2029,7 +2128,8 @@ export class World {
   load(s) {
     this.phase = 'build';
     this.wave = s.wave;
-    this.res = { ...s.res };
+    this.res = { gold: 0, ...s.res };
+    this.rally = !!s.rally;
     this.funds = {};
     this.objective = s.objective;
     this.level = s.level || 1;

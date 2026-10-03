@@ -34,6 +34,7 @@
       <div class="hud-row">
         <div class="res">
           <div class="pill gold"><i class="coin"></i><b id="hud-coins">0</b><small id="hud-cap">/60</small></div>
+          <div class="pill bank" id="hud-bank" hidden><i>🏦</i><b id="hud-bank-n">0</b></div>
           <div class="pill"><i>🪵</i><b id="hud-wood">0</b></div>
           <div class="pill"><i>🪨</i><b id="hud-stone">0</b></div>
           <div class="pill"><i>👥</i><b id="hud-pop">0</b><small id="hud-beds">/4</small></div>
@@ -62,6 +63,12 @@
       <button id="btn-build" class="round-btn" type="button" aria-label="Build"><span>🔨</span><small>Build</small></button>
       <button id="btn-wave" class="btn primary wave-btn" type="button">⚔️ Start Wave 1</button>
     </div>
+    <button id="btn-follow" class="round-btn follow" type="button" aria-label="Troops follow me" hidden><span>🚩</span><small>Follow me</small></button>
+    <section id="tip" class="tip-card" hidden role="dialog" aria-modal="true" aria-labelledby="tip-title">
+      <h3 id="tip-title"></h3>
+      <div id="tip-text"></div>
+      <button id="tip-ok" class="btn primary" type="button">Got it</button>
+    </section>
     <button id="btn-recenter" class="round-btn recenter" type="button" aria-label="Back to the king" hidden><span>👑</span><small>King</small></button>
 
     <div id="place-bar" hidden>
@@ -130,7 +137,8 @@
         <li><b>🗼 Defences</b><span>Tap a tower to upgrade it: first with gold, then wood, then stone. Gates upgrade the same way from the castle.</span></li>
         <li><b>🔨 Build</b><span>Between waves, tap Build to put houses, farms and workshops anywhere inside your walls.</span></li>
         <li><b>👷 Workers</b><span>Tap a mine, lumber camp, quarry, farm or warehouse and use + to assign free villagers. More workers means faster resources, so build houses to grow your village.</span></li>
-        <li><b>📦 Warehouse</b><span>Woodcutters and masons stack what they cut at their camp. Warehouse haulers bring it home, and only then can you spend it.</span></li>
+        <li><b>📦 Warehouse</b><span>Woodcutters and masons stack what they cut at their camp. Warehouse haulers wheel it home, 5 at a time, and only then can you spend it. Ride past a warehouse to bank the coins on your horse: banked gold is safe and still spends.</span></li>
+        <li><b>🚩 Follow me</b><span>Tap 🚩 and your soldiers ride with you; tap again to send them back to their posts. At a tower, call posted archers down one at a time.</span></li>
         <li><b>👥 People</b><span>Houses bring villagers. They work the mine, chop wood in the forest and cut stone, then haul it home. Soldiers are villagers who enlist.</span></li>
         <li><b>⚔️ Waves</b><span>When you are ready, tap Start Wave. If the castle falls, you can retry the wave.</span></li>
         <li><b>⛺ The road</b><span>The enemy road leads south to their stronghold. Clear enough waves and build outposts along it to claim new land, then lay siege: break the gate and bring down the keep to win the level.</span></li>

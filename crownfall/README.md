@@ -53,6 +53,20 @@ It then launches full screen and works offline.
   the stacks from the camps and quarries and bring them to the warehouse,
   which is when wood and stone count as yours to spend. The king can also
   scoop up a camp's stack as he rides by and bank it himself.
+  Haulers push wheelbarrows at double walking speed, 5 items a trip, up to 4
+  per warehouse. Riding past a warehouse banks the coins on the king's horse
+  (🏦 in the HUD): banked gold is safe if he falls and still pays for anything.
+- **🚩 Follow me:** once you have soldiers in the field, tap it and they all
+  ride with the king (archers shoot as they go); tap again to send them back
+  to their posts. At a tower, *Call an archer* brings posted archers down one
+  at a time.
+- **Enemies:** swordsmen leave the road to chase the king or the nearest
+  soldier, bowmen hold the road and shoot whoever is nearest, outriders race
+  for the gates, brutes batter them, and war hounds (from wave 3) hunt the king.
+- **The guide:** objectives and their arrows step aside during waves. Houses,
+  archers, getting ready for the Mountain Fort and Follow me each get a short
+  tutorial card the first time. Waves 1 and 2 pay enough for the upgrades the
+  guide asks for next.
 - **Workers:** tap a gold mine, lumber camp, quarry, farm or warehouse to add or remove
   workers with − and +. Each worker adds output, each building has a set number
   of slots (upgrade it for more), and only free villagers can be assigned. More

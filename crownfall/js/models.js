@@ -3,6 +3,7 @@
 // are "rigs": a few merged parts that swing around pivots, drawn instanced.
 
 import * as THREE from './vendor/three.js';
+import { STRONGHOLD } from './map.js';
 
 export const C = {
   grass: 0x6cbf4f, grassDark: 0x5aa843, forest: 0x3f8c3a, sand: 0xe6c99a, sandDark: 0xd2b07a,
@@ -674,6 +675,25 @@ export const RIGS = {
     });
     parts.push(part((b) => b.cyl(0.18, 0.18, 1.3, 6, C.wood, { y: 1.55, z: -0.1, rz: Math.PI / 2 }), { show: 'wood' }));
     parts.push(part((b) => b.box(0.5, 0.4, 0.4, C.stone, { y: 1.45, z: -0.05 }), { show: 'stone' }));
+    // Warehouse haulers push a wheelbarrow, loaded or empty.
+    parts.push(part((b) => {
+      b.box(0.62, 0.3, 0.8, C.wood, { y: 0.5, z: 0.95 });
+      b.box(0.66, 0.06, 0.84, C.woodDark, { y: 0.66, z: 0.95 });
+      b.cyl(0.2, 0.2, 0.1, 10, C.woodDark, { y: 0.2, z: 1.45, rz: Math.PI / 2 });
+      for (const x of [-0.24, 0.24]) {
+        b.box(0.06, 0.06, 0.95, C.woodDark, { x, y: 0.62, z: 0.35, rx: -0.25 });
+        b.box(0.06, 0.38, 0.06, C.woodDark, { x, y: 0.28, z: 0.7 });
+      }
+    }, { show: ['barrow', 'barrow-wood', 'barrow-stone'] }));
+    parts.push(part((b) => {
+      for (let i = 0; i < 3; i++) b.cyl(0.11, 0.11, 0.72, 6, i % 2 ? C.wood : C.woodLight, { x: -0.18 + i * 0.18, y: 0.78, z: 0.95, rx: Math.PI / 2 });
+      b.cyl(0.11, 0.11, 0.72, 6, C.wood, { y: 0.96, z: 0.95, rx: Math.PI / 2 });
+    }, { show: 'barrow-wood' }));
+    parts.push(part((b) => {
+      b.box(0.3, 0.26, 0.3, C.stone, { x: -0.13, y: 0.8, z: 0.8 });
+      b.box(0.28, 0.24, 0.3, C.stoneDark || C.stone, { x: 0.14, y: 0.8, z: 1.08 });
+      b.box(0.26, 0.22, 0.24, C.stone, { y: 1.0, z: 0.95 });
+    }, { show: 'barrow-stone' }));
     return { parts, height: 1.9 };
   },
   grunt() {
@@ -731,6 +751,25 @@ export const RIGS = {
       }),
       height: 2.1,
     };
+  },
+  // War hound: a lean red-collared dog.
+  hound() {
+    const fur = 0x5a4636, dark = 0x3a2c22;
+    const parts = [part((b) => {
+      b.box(0.42, 0.42, 1.1, fur, { y: 0.72 });
+      b.box(0.34, 0.36, 0.42, fur, { y: 0.98, z: 0.66 });
+      b.box(0.22, 0.2, 0.32, dark, { y: 0.9, z: 0.98 });
+      b.box(0.36, 0.08, 0.1, 0xc0302a, { y: 0.84, z: 0.5 });
+      b.cone(0.07, 0.2, 4, dark, { x: 0.11, y: 1.24, z: 0.6 });
+      b.cone(0.07, 0.2, 4, dark, { x: -0.11, y: 1.24, z: 0.6 });
+      b.box(0.08, 0.08, 0.5, fur, { y: 0.92, z: -0.72, rx: -0.6 });
+      b.box(0.06, 0.04, 0.06, 0xffd84a, { x: 0.09, y: 1.04, z: 0.88 });
+      b.box(0.06, 0.04, 0.06, 0xffd84a, { x: -0.09, y: 1.04, z: 0.88 });
+    })];
+    for (const [x, z, anim] of [[-0.14, 0.38, 'legA'], [0.14, 0.38, 'legB'], [-0.14, -0.38, 'legB'], [0.14, -0.38, 'legA']]) {
+      parts.push(part((b) => b.box(0.12, 0.55, 0.14, dark, { x, y: 0.28, z }), { pivot: [x, 0.55, z], anim }));
+    }
+    return { parts, height: 1.3 };
   },
   boss() {
     return {
@@ -811,7 +850,7 @@ export function passGeo() {
 // ------------------------------------------------------------- the stronghold
 // Built around x = 0; z is in world space. Dark stone, red roofs, spikes.
 const DS = 0x4f4a57, DS2 = 0x3c3843, ROOF = 0x9c2a26, BAN = 0xc0302a;
-const SG = 179, SZ = 190, SH = 15;   // keep in step with STRONGHOLD in map.js
+const SG = STRONGHOLD.gateZ, SZ = STRONGHOLD.z, SH = STRONGHOLD.half;
 
 export function strongholdWallsGeo() {
   const b = new Builder();

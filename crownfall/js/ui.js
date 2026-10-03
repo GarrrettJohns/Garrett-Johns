@@ -20,6 +20,8 @@ export class UI {
       sheet: $('sheet'), sheetIcon: $('sheet-icon'), sheetName: $('sheet-name'), sheetSub: $('sheet-sub'), sheetList: $('sheet-list'),
       buildSheet: $('build-sheet'), buildList: $('build-list'),
       placeBar: $('place-bar'), placeText: $('place-text'), placeOk: $('btn-place-ok'), threats: $('threats'),
+      bank: $('hud-bank'), bankN: $('hud-bank-n'), follow: $('btn-follow'),
+      tip: $('tip'), tipTitle: $('tip-title'), tipText: $('tip-text'),
       load: $('hud-load'), loadN: $('hud-load-n'), loadCap: $('hud-load-cap'), loadI: $('hud-load-i'), padtip: $('padtip'),
     };
     this.prev = {};
@@ -36,6 +38,8 @@ export class UI {
     $('btn-place-ok').addEventListener('click', () => h.onPlaceOk());
     $('btn-place-cancel').addEventListener('click', () => h.onPlaceCancel());
     $('btn-pause').addEventListener('click', () => h.onPause());
+    this.el.follow.addEventListener('click', () => h.onFollow());
+    $('tip-ok').addEventListener('click', () => { h.tap(); this.el.tip.hidden = true; });
 
     this.el.sheetList.addEventListener('click', (e) => {
       const wk = e.target.closest('button[data-workers]');
@@ -70,6 +74,8 @@ export class UI {
       this.prev.coinsN = h.coins;
     });
     this.set('cap', world.carry, () => { e.cap.textContent = `/${world.carry}`; });
+    const bank = world.res.gold || 0;
+    this.set('bank', bank, () => { e.bank.hidden = !bank; e.bankN.textContent = bank; bump(e.bank); });
     this.set('wood', world.res.wood, () => { e.wood.textContent = world.res.wood; bump(e.wood.parentElement); });
     this.set('stone', world.res.stone, () => { e.stone.textContent = world.res.stone; bump(e.stone.parentElement); });
     this.set('pop', world.pop, () => { e.pop.textContent = world.pop; });
@@ -85,8 +91,9 @@ export class UI {
       e.castle.classList.toggle('low', cf < 0.35);
     });
 
+    // Tutorial prompts step aside while a wave is on.
     const obj = world.objectiveInfo();
-    const objText = obj ? obj.text : '';
+    const objText = obj && world.phase !== 'wave' ? obj.text : '';
     this.set('obj', objText, () => {
       e.objective.hidden = !objText;
       e.objectiveText.textContent = objText;
@@ -97,6 +104,13 @@ export class UI {
     });
 
     const inWave = world.phase === 'wave';
+    // 🚩 Follow me: shown once there are soldiers out in the field.
+    const field = world.allies.length;
+    this.set('follow', `${field > 0 || world.rally}|${world.rally}|${!!ctx.placing}`, () => {
+      e.follow.hidden = !(field > 0 || world.rally) || !!ctx.placing;
+      e.follow.classList.toggle('on', world.rally);
+      e.follow.innerHTML = world.rally ? '<span>🏰</span><small>To posts</small>' : '<span>🚩</span><small>Follow me</small>';
+    });
     const left = inWave ? world.enemiesLeft : 0;
     this.set('left', left, () => {
       e.left.hidden = !inWave;
@@ -171,14 +185,14 @@ export class UI {
     const p = ctx.view.project(best.x, 2.2, best.z - best.size / 2);
     if (p.behind) { el.hidden = true; return; }
     const tip = world.padTip(best);
-    const sig = JSON.stringify([best.id, tip, world.hero.coins >= (tip.cost.gold || 0), world.res]);
+    const sig = JSON.stringify([best.id, tip, world.gold >= (tip.cost.gold || 0), world.res]);
     if (sig !== this.tipSig) {
       this.tipSig = sig;
       const c = tip.cost;
       const lack = (k, have) => ((c[k] || 0) > have ? 'lack' : '');
       el.innerHTML = `<b>${tip.icon} ${esc(tip.title)}</b>${esc(tip.desc)}`
         + (tip.locked ? `<div class="lock">🔒 ${esc(tip.locked)}</div>`
-          : `<div class="cost">${c.gold ? `<span class="${lack('gold', world.hero.coins)}"><i class="coin"></i>${c.gold}</span>` : ''}${c.wood ? `<span class="${lack('wood', world.res.wood)}">🪵 ${c.wood}</span>` : ''}${c.stone ? `<span class="${lack('stone', world.res.stone)}">🪨 ${c.stone}</span>` : ''}</div>`);
+          : `<div class="cost">${c.gold ? `<span class="${lack('gold', world.gold)}"><i class="coin"></i>${c.gold}</span>` : ''}${c.wood ? `<span class="${lack('wood', world.res.wood)}">🪵 ${c.wood}</span>` : ''}${c.stone ? `<span class="${lack('stone', world.res.stone)}">🪨 ${c.stone}</span>` : ''}</div>`);
     }
     el.style.transform = `translate(${p.x}px, ${p.y - el.offsetHeight - 12}px)`;
     el.hidden = false;
@@ -228,6 +242,13 @@ export class UI {
     for (const [id, el] of Object.entries(this.threatEls)) if (!seen.has(id)) el.hidden = true;
   }
 
+  // A tutorial card that explains a new idea, with a Got it button.
+  showTip(title, html) {
+    this.el.tipTitle.textContent = title;
+    this.el.tipText.innerHTML = html;
+    this.el.tip.hidden = false;
+  }
+
   // Menus open only when a building is tapped.
   openMenu(id) {
     this.closeBuild();
@@ -250,7 +271,7 @@ export class UI {
     const tabs = world.menu(b);
     if (!tabs.some((g) => g.tab === this.tab)) this.tab = tabs[0].tab;
     const items = tabs.find((g) => g.tab === this.tab).items;
-    const sig = JSON.stringify([info, this.tab, items.map((i) => [i.key, i.locked, i.maxed, i.owned, i.equipped, i.level, i.cost, i.assigned, i.working, i.free]), world.hero.coins, world.res]);
+    const sig = JSON.stringify([info, this.tab, items.map((i) => [i.key, i.locked, i.maxed, i.owned, i.equipped, i.level, i.cost, i.assigned, i.working, i.free]), world.gold, world.res]);
     if (sig === this.sig) return;
     this.sig = sig;
 
@@ -279,7 +300,7 @@ export class UI {
       </div>`;
     }
     const gold = it.cost.gold || 0;
-    const lackG = gold > world.hero.coins;
+    const lackG = gold > world.gold;
     const lackW = (it.cost.wood || 0) > world.res.wood;
     const lackS = (it.cost.stone || 0) > world.res.stone;
     const pips = it.max > 1 ? `<span class="pips">${Array.from({ length: it.max }, (_, i) => `<i class="${i < it.level ? 'on' : ''}"></i>`).join('')}</span>` : '';

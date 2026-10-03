@@ -80,7 +80,44 @@ const ui = new UI({
   },
   onEquip: (w) => { world.equip(w); audio.buy(); dirty = true; },
   onWorkers: (id, d) => { world.setWorkers(id, d); audio.tap(); dirty = true; },
+  onFollow: () => { audio.tap(); world.setRally(!world.rally); dirty = true; },
 });
+
+// Tutorial cards: shown once each, when the guide first reaches them.
+const TIPS = {
+  house: ['🏠 Why build houses?', `
+    <p>Every person in your kingdom needs a bed. Houses add beds, and free beds draw new families who move in over time.</p>
+    <ul>
+      <li><b>Villagers work.</b> Tap a lumber camp, quarry, mine, farm or warehouse and use 👷 + to put them to work: chopping wood, cutting stone, digging gold and hauling it home.</li>
+      <li><b>Soldiers are villagers too.</b> Each one you train at the Barracks needs a free villager.</li>
+    </ul>
+    <p>More houses → more people → faster resources and a bigger army.</p>`],
+  archer: ['🏹 What archers do', `
+    <p>A trained archer walks to the nearest tower with a free post and climbs in. Every archer posted in a tower adds its own arrows, so the tower kills enemies much faster.</p>
+    <p>With no free post, archers guard a gate on the busiest road.</p>
+    <p>Want them with you instead? Tap <b>🚩 Follow me</b>, or tap a tower and <b>Call an archer</b> down.</p>`],
+  fortprep: ['⛰ Getting ready for the Mountain Fort', `
+    <p>The fort's two towers outshoot a starting bow and hit hard. Before you attack:</p>
+    <ul>
+      <li>Raise <b>Arrow damage</b> and <b>Fire rate</b> at the Castle.</li>
+      <li>Give your horse more <b>health</b> and your bow more <b>range</b>.</li>
+      <li>Bring a few <b>soldiers</b> with 🚩 Follow me.</li>
+    </ul>
+    <p>Then hit the towers, back off out of range to heal, and go again.</p>`],
+  follow: ['🚩 Follow me', `
+    <p>Tap it and every soldier in the field rides with you: knights fight at your side, archers shoot whatever comes near, raiders charge.</p>
+    <p>Tap it again to send them back to their posts. At a tower, use <b>Call an archer</b> to bring posted archers along one at a time.</p>`],
+};
+function checkTip() {
+  if (state !== 'play' || world.phase !== 'build' || placing || ui.sheetOpen) return;
+  const o = world.objectiveInfo();
+  if (!o || !o.tip) return;
+  const seen = save.settings.tips || [];
+  if (seen.includes(o.tip)) return;
+  save.setSetting('tips', [...seen, o.tip]);
+  const [title, html] = TIPS[o.tip];
+  ui.showTip(title, html);
+}
 
 // --------------------------------------------------------------- screens
 function show(id) {
@@ -376,6 +413,8 @@ function handle(ev, events = []) {
       dirty = true;
       break;
     case 'need': audio.deny(); ui.toast(ev.text, true); break;
+    case 'deposit': audio.spend(); ui.float(at(ev.x, 2.6, ev.z), `🏦 +${ev.n} banked`, '#ffe28a'); break;
+    case 'rally': ui.toast(ev.on ? '🚩 Your troops ride with you' : '🏰 Troops head back to their posts'); break;
     case 'toast': ui.toast(ev.text); break;
     case 'deliver':
       audio.deliver();
@@ -531,7 +570,9 @@ function frame(now) {
   $('btn-recenter').hidden = !renderer.free || state !== 'play';
 
   // Point the trail at the objective, or at a tower's range while its menu is open.
-  const obj = state === 'play' && !placing ? world.objectiveInfo() : null;
+  // No guide arrows during a battle.
+  const obj = state === 'play' && !placing && world.phase !== 'wave' ? world.objectiveInfo() : null;
+  checkTip();
   const menuB = ui.menuFor ? world.b[ui.menuFor] : null;
   const rangeOf = menuB && menuB.type === 'tower' ? { x: menuB.x, z: menuB.z, r: BUILDINGS.tower.levels[menuB.level].range } : null;
   renderer.frame(dt, world, { trail: obj && obj.target, placing, rangeOf, sheetOpen: ui.sheetOpen });

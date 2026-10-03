@@ -268,6 +268,25 @@ body:not([data-state="play"]) #threats { visibility: hidden; }
   border-color: #8a5a00; background: linear-gradient(#ffd25a, #f7a21a); box-shadow: 0 4px 0 #8a4d00, 0 8px 16px rgba(0, 0, 0, 0.25);
 }
 body:not([data-state="play"]) #btn-recenter { visibility: hidden; }
+.round-btn.follow {
+  right: auto; left: calc(var(--safe-l) + 14px);
+  border-color: #7a1f1a; background: linear-gradient(#ff7a5c, #d8402a); box-shadow: 0 4px 0 #7a1f1a, 0 8px 16px rgba(0, 0, 0, 0.25);
+}
+.round-btn.follow.on { border-color: #2d5a1f; background: linear-gradient(#7bd35a, #3e9a2a); box-shadow: 0 4px 0 #2d5a1f, 0 8px 16px rgba(0, 0, 0, 0.25); }
+body:not([data-state="play"]) #btn-follow { visibility: hidden; }
+.pill.bank { background: rgba(40, 70, 40, 0.82); }
+.tip-card {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: min(92vw, 380px); max-height: 78vh; overflow: auto; z-index: 30;
+  background: #fffaf0; color: #2b2b2b; border-radius: 18px; padding: 18px 18px 16px;
+  border: 3px solid #e2b04a; box-shadow: 0 10px 0 rgba(0, 0, 0, 0.15), 0 18px 40px rgba(0, 0, 0, 0.35);
+  font-family: var(--font);
+}
+.tip-card h3 { margin: 0 0 8px; font-size: 20px; }
+.tip-card p { margin: 0 0 10px; font-size: 15px; line-height: 1.4; }
+.tip-card ul { margin: 0 0 12px; padding-left: 20px; font-size: 15px; line-height: 1.4; }
+.tip-card .btn { width: 100%; }
+body:not([data-state="play"]) .tip-card { display: none; }
 .round-btn small { font-size: 11px; font-weight: 900; }
 .round-btn:active { transform: translateY(3px); }
 
