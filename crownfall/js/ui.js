@@ -1,0 +1,283 @@
+// DOM overlay: HUD, objective, banners, toasts, floating labels, the building
+// menu that opens when the king rides up to something, and the build picker.
+
+import { BUILDINGS, FINAL_WAVE } from './config.js';
+
+const $ = (id) => document.getElementById(id);
+const PLACEABLE = ['house', 'farm', 'barracks', 'stable', 'range'];
+const LIMIT = { stable: 1, range: 1, barracks: 2 };
+
+export class UI {
+  constructor(h) {
+    this.h = h;
+    this.el = {
+      coins: $('hud-coins'), cap: $('hud-cap'), wood: $('hud-wood'), stone: $('hud-stone'), pop: $('hud-pop'), beds: $('hud-beds'),
+      wave: $('hud-wave'), castle: $('hud-castle'), objective: $('objective'), objectiveText: $('objective-text'),
+      boss: $('boss-bar'), bossName: $('boss-name'), bossFill: $('boss-fill'), left: $('enemies-left'),
+      banner: $('banner'), toasts: $('toasts'), floats: $('floats'),
+      waveBtn: $('btn-wave'), buildBtn: $('btn-build'), controls: $('controls'),
+      sheet: $('sheet'), sheetIcon: $('sheet-icon'), sheetName: $('sheet-name'), sheetSub: $('sheet-sub'), sheetList: $('sheet-list'),
+      buildSheet: $('build-sheet'), buildList: $('build-list'),
+      placeBar: $('place-bar'), placeText: $('place-text'), placeOk: $('btn-place-ok'),
+    };
+    this.prev = {};
+    this.menuFor = null;
+    this.dismissed = null;
+    this.nearT = 0;
+    this.nearId = null;
+    this.sig = '';
+    this.sigT = 0;
+    this.bannerT = 0;
+    this.toastSeen = new Map();
+
+    this.el.waveBtn.addEventListener('click', () => h.onStartWave());
+    this.el.buildBtn.addEventListener('click', () => { h.tap(); this.openBuild(); });
+    $('build-close').addEventListener('click', () => { h.tap(); this.closeBuild(); });
+    $('sheet-close').addEventListener('click', () => { h.tap(); this.dismissed = this.menuFor; this.closeMenu(); });
+    $('btn-place-ok').addEventListener('click', () => h.onPlaceOk());
+    $('btn-place-cancel').addEventListener('click', () => h.onPlaceCancel());
+    $('btn-pause').addEventListener('click', () => h.onPause());
+
+    this.el.sheetList.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-key]');
+      if (!btn) return;
+      if (btn.dataset.equip) h.onEquip(btn.dataset.equip);
+      else h.onFund(btn.dataset.key, this.menuFor);
+      this.sig = '';
+    });
+    this.el.buildList.addEventListener('click', (e) => {
+      const card = e.target.closest('button[data-type]');
+      if (!card) return;
+      if (card.dataset.lock) { h.deny(card.dataset.lock); return; }
+      h.tap();
+      this.closeBuild();
+      h.onPickBuild(card.dataset.type);
+    });
+  }
+
+  get sheetOpen() { return !this.el.sheet.hidden || !this.el.buildSheet.hidden; }
+
+  // ------------------------------------------------------------------ HUD
+  update(world, dt, ctx) {
+    const e = this.el;
+    const h = world.hero;
+    this.set('coins', h.coins, () => {
+      e.coins.textContent = h.coins;
+      if (h.coins > (this.prev.coinsN || 0)) bump(e.coins.parentElement);
+      this.prev.coinsN = h.coins;
+    });
+    this.set('cap', world.carry, () => { e.cap.textContent = `/${world.carry}`; });
+    this.set('wood', world.res.wood, () => { e.wood.textContent = world.res.wood; bump(e.wood.parentElement); });
+    this.set('stone', world.res.stone, () => { e.stone.textContent = world.res.stone; bump(e.stone.parentElement); });
+    this.set('pop', world.pop, () => { e.pop.textContent = world.pop; });
+    this.set('beds', world.beds, () => { e.beds.textContent = `/${world.beds}`; });
+
+    const waveN = world.phase === 'wave' ? world.wave + 1 : world.wave + 1;
+    const label = world.wave >= FINAL_WAVE && world.phase !== 'wave' ? `Wave ${waveN}` : `Wave ${Math.min(waveN, 999)} / ${Math.max(FINAL_WAVE, waveN)}`;
+    this.set('wave', label, () => { e.wave.textContent = label; });
+    const cf = world.castleHp / world.castleMax;
+    this.set('castle', Math.round(cf * 100), () => {
+      e.castle.style.width = `${cf * 100}%`;
+      e.castle.classList.toggle('low', cf < 0.35);
+    });
+
+    const obj = world.objectiveInfo();
+    const objText = obj ? obj.text : '';
+    this.set('obj', objText, () => {
+      e.objective.hidden = !objText;
+      e.objectiveText.textContent = objText;
+      e.objective.classList.remove('done');
+      void e.objective.offsetWidth;
+      if (this.prev.objShown) e.objective.classList.add('done');
+      this.prev.objShown = true;
+    });
+
+    const inWave = world.phase === 'wave';
+    const left = inWave ? world.spawnQueue.length + world.enemies.length : 0;
+    this.set('left', left, () => {
+      e.left.hidden = !inWave;
+      e.left.textContent = `⚔️ ${left} ${left === 1 ? 'enemy' : 'enemies'} left`;
+    });
+    const boss = world.enemies.find((x) => x.name);
+    e.boss.hidden = !boss;
+    if (boss) {
+      e.bossName.textContent = boss.name;
+      e.bossFill.style.width = `${Math.max(0, boss.hp / boss.max) * 100}%`;
+    }
+
+    // Bottom controls.
+    const placing = !!ctx.placing;
+    const showControls = !inWave && !placing && !this.sheetOpen && world.phase === 'build';
+    e.controls.hidden = !showControls;
+    e.buildBtn.hidden = !showControls;
+    this.set('waveBtn', world.wave + 1, () => { e.waveBtn.textContent = `⚔️ Start Wave ${world.wave + 1}`; });
+    e.waveBtn.classList.toggle('pulse', !!obj && obj.text.startsWith('Tap Start Wave'));
+
+    e.placeBar.hidden = !placing;
+    if (placing) {
+      const def = BUILDINGS[ctx.placing.type];
+      const msg = ctx.placing.ok ? `${def.icon} ${def.name}: ride to move it, then tap Build here` : `${def.icon} ${ctx.placing.reason}`;
+      if (msg !== this.prev.placeMsg) { e.placeText.textContent = msg; this.prev.placeMsg = msg; }
+      e.placeOk.disabled = !ctx.placing.ok;
+    }
+
+    // Banner timeout.
+    if (this.bannerT > 0) {
+      this.bannerT -= dt;
+      if (this.bannerT <= 0) e.banner.classList.remove('show');
+    }
+
+    this.updateMenu(world, dt, ctx);
+    if (!e.buildSheet.hidden) this.renderBuild(world);
+  }
+
+  set(key, val, fn) {
+    if (this.prev[key] === val) return;
+    this.prev[key] = val;
+    fn();
+  }
+
+  // ----------------------------------------------------------- menu sheet
+  updateMenu(world, dt, ctx) {
+    const near = ctx.placing || world.phase === 'defeat' ? null : world.nearBuilding();
+    const id = near ? near.id : null;
+    if (id !== this.nearId) { this.nearId = id; this.nearT = 0; }
+    else this.nearT += dt;
+    if (this.dismissed && this.dismissed !== id) this.dismissed = null;
+
+    const slow = Math.hypot(world.hero.vx, world.hero.vz) < 3.5;
+    if (id && id !== this.menuFor && id !== this.dismissed && this.nearT > 0.3 && slow && this.el.buildSheet.hidden) {
+      this.menuFor = id;
+      this.sig = '';
+      this.el.sheet.hidden = false;
+    }
+    if (this.menuFor && (!world.b[this.menuFor] || (id !== this.menuFor && this.nearT > 0.15))) this.closeMenu();
+    if (!this.menuFor) return;
+
+    this.sigT -= dt;
+    if (this.sigT > 0 && this.sig) return;
+    this.sigT = 0.15;
+    const b = world.b[this.menuFor];
+    const info = world.info(b);
+    const items = world.menu(b);
+    const sig = JSON.stringify([info, items.map((i) => [i.key, world.funds[i.key] || 0, i.locked, i.maxed, i.owned, i.equipped, i.level, i.cost]), world.hero.coins > 0, world.res]);
+    if (sig === this.sig) return;
+    this.sig = sig;
+
+    this.el.sheetIcon.textContent = info.icon;
+    this.el.sheetName.textContent = info.max > 1 ? `${info.name} · Lv ${info.level}` : info.name;
+    this.el.sheetSub.textContent = info.desc;
+    const lines = info.lines.length ? `<div class="info-lines">${info.lines.map((l) => `<span>${esc(l)}</span>`).join('')}</div>` : '';
+    this.el.sheetList.innerHTML = lines + (items.length ? items.map((it) => this.row(world, it)).join('') : '<div class="row"><div class="rb"><div class="rd">Nothing to upgrade here yet.</div></div></div>');
+  }
+
+  row(world, it) {
+    const paid = world.funds[it.key] || 0;
+    const gold = it.cost.gold || 0;
+    const lackW = (it.cost.wood || 0) > world.res.wood;
+    const lackS = (it.cost.stone || 0) > world.res.stone;
+    const pips = it.max > 1 ? `<span class="pips">${Array.from({ length: it.max }, (_, i) => `<i class="${i < it.level ? 'on' : ''}"></i>`).join('')}</span>` : '';
+    let btn;
+    if (it.maxed) btn = '<button class="rbtn max" type="button" disabled>MAX</button>';
+    else if (it.owned) btn = it.equipped ? '<button class="rbtn max" type="button" disabled>Equipped</button>' : `<button class="rbtn blue" type="button" data-key="${it.key}" data-equip="${it.key.split(':')[1]}">Equip</button>`;
+    else if (it.locked) btn = `<button class="rbtn off" type="button" disabled>🔒 ${esc(it.locked)}</button>`;
+    else {
+      const verb = it.key.startsWith('train') ? 'Train' : it.key.startsWith('weapon') ? 'Unlock' : 'Upgrade';
+      const short = paid >= gold && (lackW || lackS);
+      const broke = world.hero.coins === 0 && paid < gold;
+      btn = `<button class="rbtn ${short || broke ? 'off' : ''}" type="button" data-key="${it.key}">${short ? 'Need ' + (lackW ? 'wood' : 'stone') : paid > 0 && paid < gold ? 'Pay' : verb}</button>`;
+    }
+    const cost = it.maxed || it.owned ? '' : `<div class="cost">
+      ${gold ? `<span><i class="coin"></i>${paid ? `${paid}/` : ''}${gold}</span>` : ''}
+      ${it.cost.wood ? `<span class="${lackW ? 'lack' : ''}">🪵 ${it.cost.wood}</span>` : ''}
+      ${it.cost.stone ? `<span class="${lackS ? 'lack' : ''}">🪨 ${it.cost.stone}</span>` : ''}
+    </div>${paid > 0 && gold ? `<div class="prog"><span style="width:${Math.min(100, (paid / gold) * 100)}%"></span></div>` : ''}`;
+    return `<div class="row">
+      <div class="ri">${it.icon}</div>
+      <div class="rb">
+        <div class="rt">${esc(it.title)} ${pips}</div>
+        ${it.desc ? `<div class="rd">${esc(it.desc)}</div>` : ''}
+        ${cost}
+      </div>
+      ${btn}
+    </div>`;
+  }
+
+  closeMenu() {
+    this.menuFor = null;
+    this.el.sheet.hidden = true;
+  }
+
+  // ---------------------------------------------------------- build sheet
+  openBuild() {
+    this.closeMenu();
+    this.el.buildSheet.hidden = false;
+    this.buildSig = '';
+  }
+
+  closeBuild() { this.el.buildSheet.hidden = true; }
+
+  renderBuild(world) {
+    const cards = PLACEABLE.map((type) => {
+      const t = BUILDINGS[type];
+      const cost = t.levels[0].cost;
+      let lock = world.lockReason({ castle: t.castle });
+      const have = world.list(type).length;
+      if (!lock && LIMIT[type] && have >= LIMIT[type]) lock = LIMIT[type] === 1 ? 'Already built' : `Limit ${LIMIT[type]}`;
+      const costTxt = [`${cost.gold} gold`, cost.wood ? `${cost.wood} wood` : '', cost.stone ? `${cost.stone} stone` : ''].filter(Boolean).join(' · ');
+      return { type, t, lock, costTxt };
+    });
+    const sig = JSON.stringify(cards.map((c) => [c.type, c.lock]));
+    if (sig === this.buildSig) return;
+    this.buildSig = sig;
+    this.el.buildList.innerHTML = cards.map((c) => `
+      <button class="bcard ${c.lock ? 'locked' : ''}" type="button" data-type="${c.type}" ${c.lock ? `data-lock="${esc(c.lock)}"` : ''}>
+        <span class="bi">${c.t.icon}</span>
+        <b>${c.t.name}</b>
+        <p>${esc(c.t.desc)}</p>
+        <p><b style="font-size:12px">${c.lock ? '🔒 ' + esc(c.lock) : esc(c.costTxt)}</b></p>
+      </button>`).join('');
+  }
+
+  // ---------------------------------------------------------- messaging
+  banner(text, sub = '', dur = 2.2) {
+    this.el.banner.innerHTML = `${esc(text)}${sub ? `<small>${esc(sub)}</small>` : ''}`;
+    this.el.banner.classList.add('show');
+    this.bannerT = dur;
+  }
+
+  toast(text, warn = false) {
+    // Don't stack the same message.
+    const now = performance.now();
+    if (now - (this.toastSeen.get(text) || 0) < 1800) return;
+    this.toastSeen.set(text, now);
+    const d = document.createElement('div');
+    d.className = `toast${warn ? ' warn' : ''}`;
+    d.textContent = text;
+    this.el.toasts.appendChild(d);
+    while (this.el.toasts.children.length > 3) this.el.toasts.firstChild.remove();
+    setTimeout(() => d.remove(), 2700);
+  }
+
+  float(pt, text, color = '#fff') {
+    if (!pt || pt.behind) return;
+    const d = document.createElement('div');
+    d.className = 'float';
+    d.style.left = `${pt.x}px`;
+    d.style.top = `${pt.y}px`;
+    d.style.color = color;
+    d.textContent = text;
+    this.el.floats.appendChild(d);
+    setTimeout(() => d.remove(), 1150);
+  }
+}
+
+function bump(el) {
+  el.classList.remove('bump');
+  void el.offsetWidth;
+  el.classList.add('bump');
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}

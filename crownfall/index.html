@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Crownfall</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="description" content="Ride out, gather gold, build your kingdom and hold the walls. A low-poly kingdom defence game for your phone.">
+<meta name="theme-color" content="#2b5d2a">
+<meta name="color-scheme" content="light">
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Crownfall">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png" sizes="192x192">
+<link rel="icon" href="icons/favicon.png" sizes="64x64">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+  <div id="stage">
+    <canvas id="game"></canvas>
+
+    <div id="joy" hidden><div id="joy-knob"></div></div>
+    <div id="floats"></div>
+
+    <div id="hud">
+      <div class="hud-row">
+        <div class="res">
+          <div class="pill gold"><i class="coin"></i><b id="hud-coins">0</b><small id="hud-cap">/60</small></div>
+          <div class="pill"><i>🪵</i><b id="hud-wood">0</b></div>
+          <div class="pill"><i>🪨</i><b id="hud-stone">0</b></div>
+          <div class="pill"><i>👥</i><b id="hud-pop">0</b><small id="hud-beds">/4</small></div>
+        </div>
+        <div class="hud-right">
+          <div class="wave-box">
+            <div class="wave-label" id="hud-wave">Wave 1</div>
+            <div class="bar castle"><span id="hud-castle"></span></div>
+          </div>
+          <button id="btn-pause" class="icon-btn" type="button" aria-label="Pause">❚❚</button>
+        </div>
+      </div>
+      <div id="objective" hidden><span id="objective-text"></span></div>
+      <div id="boss-bar" hidden>
+        <span id="boss-name">Warlord</span>
+        <div class="bar boss"><span id="boss-fill"></span></div>
+      </div>
+      <div id="enemies-left" hidden></div>
+    </div>
+
+    <div id="banner" aria-live="polite"></div>
+    <div id="toasts"></div>
+
+    <div id="controls">
+      <button id="btn-build" class="round-btn" type="button" aria-label="Build"><span>🔨</span><small>Build</small></button>
+      <button id="btn-wave" class="btn primary wave-btn" type="button">⚔️ Start Wave 1</button>
+    </div>
+
+    <div id="place-bar" hidden>
+      <div id="place-text">Ride to move the building</div>
+      <div class="place-btns">
+        <button id="btn-place-cancel" class="btn ghost" type="button">Cancel</button>
+        <button id="btn-place-ok" class="btn primary" type="button">Build here</button>
+      </div>
+    </div>
+
+    <section id="sheet" class="sheet-panel" hidden>
+      <header class="sheet-head">
+        <div class="sheet-icon" id="sheet-icon">🏰</div>
+        <div class="sheet-title">
+          <h3 id="sheet-name">Castle</h3>
+          <p id="sheet-sub"></p>
+        </div>
+        <button id="sheet-close" class="icon-btn dark" type="button" aria-label="Close">✕</button>
+      </header>
+      <div id="sheet-list" class="sheet-list"></div>
+    </section>
+
+    <section id="build-sheet" class="sheet-panel" hidden>
+      <header class="sheet-head">
+        <div class="sheet-icon">🔨</div>
+        <div class="sheet-title">
+          <h3>Build</h3>
+          <p>Pick a building, then ride to where it should go.</p>
+        </div>
+        <button id="build-close" class="icon-btn dark" type="button" aria-label="Close">✕</button>
+      </header>
+      <div id="build-list" class="build-grid"></div>
+    </section>
+  </div>
+</div>
+
+<div id="screens">
+  <section id="screen-title" class="screen">
+    <div class="card">
+      <div class="crest">👑</div>
+      <h1 class="logo">Crown<span>fall</span></h1>
+      <p class="tag">Ride out. Gather gold. Build a kingdom that holds.</p>
+      <button id="btn-continue" class="btn primary" type="button" hidden>Continue</button>
+      <button id="btn-new" class="btn primary" type="button">New kingdom</button>
+      <button id="btn-howto" class="btn ghost" type="button">How to play</button>
+      <div class="toggles"><button class="chip js-sound" type="button"></button></div>
+      <p id="install-tip" class="tip" hidden>
+        <b>Play it like an app:</b> tap <i>Share</i> in Safari, then <i>Add to Home Screen</i>.
+      </p>
+    </div>
+  </section>
+
+  <section id="screen-howto" class="screen">
+    <div class="card wide">
+      <h2>How to play</h2>
+      <ul class="howto">
+        <li><b>🐎 Ride</b><span>Touch anywhere and drag to steer the king. He shoots the nearest enemy all by himself.</span></li>
+        <li><b>🪙 Gold</b><span>Fallen enemies drop coins. Ride over them and they stack up on your horse. Miners fill the gold mine with more.</span></li>
+        <li><b>🏗️ Pads</b><span>Stand on a dashed pad to pour coins into it. When it's paid for, it's built.</span></li>
+        <li><b>⬆️ Upgrades</b><span>Ride up to any building to open its menu: castle, towers, barracks, stable, archery range and more.</span></li>
+        <li><b>🔨 Build</b><span>Between waves, tap Build to put houses, farms and workshops anywhere inside your walls.</span></li>
+        <li><b>👥 People</b><span>Houses bring villagers. They work the mine, chop wood in the forest and cut stone, then haul it home. Soldiers are villagers who enlist.</span></li>
+        <li><b>⚔️ Waves</b><span>When you are ready, tap Start Wave. If the castle falls, you can retry the wave.</span></li>
+      </ul>
+      <button id="btn-howto-back" class="btn primary" type="button">Got it</button>
+    </div>
+  </section>
+
+  <section id="screen-pause" class="screen">
+    <div class="card">
+      <h2>Paused</h2>
+      <button id="btn-resume" class="btn primary" type="button">Resume</button>
+      <div class="toggles"><button class="chip js-sound" type="button"></button></div>
+      <button id="btn-howto2" class="btn ghost" type="button">How to play</button>
+      <button id="btn-quit" class="btn ghost" type="button">Main menu</button>
+    </div>
+  </section>
+
+  <section id="screen-over" class="screen">
+    <div class="card">
+      <div class="crest">🔥</div>
+      <h2>The castle has fallen</h2>
+      <p class="sub" id="over-text">Wave 1 broke through.</p>
+      <button id="btn-retry" class="btn primary" type="button">Retry the wave</button>
+      <button id="btn-over-menu" class="btn ghost" type="button">Main menu</button>
+    </div>
+  </section>
+
+  <section id="screen-win" class="screen">
+    <div class="card">
+      <div class="crest">🏆</div>
+      <h2>The kingdom stands!</h2>
+      <p class="sub" id="win-text">You held every wave.</p>
+      <button id="btn-endless" class="btn primary" type="button">Keep building</button>
+    </div>
+  </section>
+
+  <section id="screen-confirm" class="screen">
+    <div class="card">
+      <h2>Start over?</h2>
+      <p class="sub">Your current kingdom will be lost.</p>
+      <button id="btn-confirm-yes" class="btn danger" type="button">Start a new kingdom</button>
+      <button id="btn-confirm-no" class="btn ghost" type="button">Keep my kingdom</button>
+    </div>
+  </section>
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
