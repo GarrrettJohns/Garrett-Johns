@@ -429,3 +429,27 @@ body:not([data-state="play"]) .tip-card { display: none; }
   .sheet-panel { max-height: 70%; left: auto; width: min(440px, 60%); border-radius: 22px 0 0 0; }
   #banner { font-size: 32px; top: 26%; }
 }
+
+/* Resource breakdown, opened by tapping a resource in the HUD */
+.pill.tap { pointer-events: auto; cursor: pointer; }
+.pill.tap:active { transform: scale(0.96); }
+.rates-card {
+  position: absolute; left: calc(var(--safe-l) + 10px); top: calc(var(--safe-t, 0px) + 112px);
+  width: min(calc(100vw - 20px), 360px); max-height: 60vh; overflow: auto; z-index: 25;
+  background: rgba(22, 28, 36, 0.94); color: #fff; border-radius: 16px; padding: 12px 14px 12px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4); font-family: var(--font);
+}
+.rates-card header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.rates-card h3 { margin: 0; font-size: 18px; }
+.rates-card .total { font-size: 28px; font-weight: 900; margin: 6px 0 2px; }
+.rates-card .total small { font-size: 14px; font-weight: 700; opacity: 0.75; }
+.rates-card .sub { font-size: 13px; opacity: 0.75; margin: 0 0 8px; }
+.rates-card h4 { margin: 10px 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.7; }
+.rates-card .row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 15px; }
+.rates-card .row .ic { width: 24px; text-align: center; }
+.rates-card .row .nm { flex: 1; }
+.rates-card .row .wk { opacity: 0.7; font-size: 13px; }
+.rates-card .row .v { font-weight: 900; font-variant-numeric: tabular-nums; }
+.rates-card .empty { opacity: 0.7; font-size: 14px; padding: 6px 0; }
+.rates-card .advice { margin-top: 10px; background: rgba(255, 196, 64, 0.16); border: 1px solid rgba(255, 196, 64, 0.5); border-radius: 10px; padding: 8px 10px; font-size: 14px; }
+body:not([data-state="play"]) .rates-card { display: none; }

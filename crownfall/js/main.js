@@ -104,6 +104,14 @@ const TIPS = {
       <li>Bring a few <b>soldiers</b> with 🚩 Follow me.</li>
     </ul>
     <p>Then hit the towers, back off out of range to heal, and go again.</p>`],
+  castle: ['🏰 Why upgrade the castle?', () => {
+    const un = world.castleUnlocks(world.b.castle.level + 2);
+    return `
+    <p>The castle is the heart of the kingdom: if it falls, so does everything. Each level makes it tougher and opens up new things to build and buy.</p>
+    <p><b>Castle Lv ${world.b.castle.level + 2} unlocks:</b></p>
+    <ul>${un.map((u) => `<li>${u}</li>`).join('')}</ul>
+    <p>Enemy waves keep growing. Without this, your towers and gates stop at their gold tiers and you can't cut stone, so the next waves will break through.</p>`;
+  }],
   follow: ['🚩 Follow me', `
     <p>Tap it and every soldier in the field rides with you: knights fight at your side, archers shoot whatever comes near, raiders charge.</p>
     <p>Tap it again to send them back to their posts. At a tower, use <b>Call an archer</b> to bring posted archers along one at a time.</p>`],
@@ -116,7 +124,7 @@ function checkTip() {
   if (seen.includes(o.tip)) return;
   save.setSetting('tips', [...seen, o.tip]);
   const [title, html] = TIPS[o.tip];
-  ui.showTip(title, html);
+  ui.showTip(title, typeof html === 'function' ? html() : html);
 }
 
 // --------------------------------------------------------------- screens
@@ -413,6 +421,7 @@ function handle(ev, events = []) {
       dirty = true;
       break;
     case 'need': audio.deny(); ui.toast(ev.text, true); break;
+    case 'advice': audio.villager(); ui.toast(`💡 ${ev.text}`); break;
     case 'deposit': audio.spend(); ui.float(at(ev.x, 2.6, ev.z), `🏦 +${ev.n} banked`, '#ffe28a'); break;
     case 'rally': ui.toast(ev.on ? '🚩 Your troops ride with you' : '🏰 Troops head back to their posts'); break;
     case 'toast': ui.toast(ev.text); break;

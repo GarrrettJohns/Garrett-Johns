@@ -23,9 +23,10 @@ const sizeClass = (s, lo, hi) => (s < lo ? 0 : s < hi ? 1 : 2);
 const CHOP_TREES = SCENE.trees.map((t, si) => ({ ...t, si })).filter((t) => t.forest);
 const MINE_ROCKS = SCENE.rocks.map((r, si) => ({ ...r, si })).filter((r) => r.highland);
 const SWING_EVERY = 0.75;    // a worker's swing
-const KING_SWING = 0.5;      // the king swings faster
+export const KING_SWING = 0.5;      // the king swings faster
 const HUT_REACH = 24;        // how far from their hut workers will go for trees and rocks
 const STOCK_CAP = 60;        // a hut's stockpile
+const GOLD_PER_ITEM = 5;     // a wheelbarrow "item" of gold is a sack of 5 coins
 const GATHER_REACH = 3.2;
 const GATHER_EVERY = 0.8;
 
@@ -163,7 +164,8 @@ const OBJECTIVES = [
     at: (w) => w.b.goldmine,
   },
   {
-    text: 'Tap the Castle and upgrade it',
+    text: 'Upgrade the Castle to Lv 2: Timber Forts, Timber gates, the Crossbow, Quarries',
+    tip: 'castle',
     done: (w) => w.b.castle.level >= 1,
     at: (w) => ({ x: 0, z: CASTLE_R + 1 }),
   },
@@ -253,6 +255,9 @@ export class World {
     this.wave = 0;
     this.res = { wood: 0, stone: 0, gold: 0 };   // gold here is banked at a warehouse
     this.rally = false;
+    this.income = [];     // recent production: { t, res, src, n, kind: 'made' | 'home' }
+    this.adviceT = 20;
+    this.adviceSeen = {};
     this.funds = {};
     this.objective = 0;
     this.stats = { kills: 0 };
@@ -353,6 +358,97 @@ export class World {
   count(type) { return this.list(type).filter((b) => b.state === 'built').length; }
   firstOf(type) { return this.list(type).find((b) => b.state === 'built') || null; }
   siteOf(type) { return this.list(type).find((b) => b.state === 'site') || null; }
+  // Production log for the resource breakdown (the HUD's per-minute rates).
+  // `made` is output where it's produced; `home` is what reaches the stores.
+  logIncome(res, src, n, kind = 'made') {
+    if (!(n > 0)) return;
+    this.income.push({ t: this.t, res, src, n, kind });
+    if (this.income.length > 600) this.income.splice(0, this.income.length - 500);
+  }
+
+  // Per-minute rates for one resource over the last two minutes, by source.
+  rates(res) {
+    const WIN = 120;
+    const span = Math.max(30, Math.min(WIN, this.t));
+    const since = this.t - WIN;
+    const made = {}, home = {};
+    for (const e of this.income) {
+      if (e.t < since || e.res !== res) continue;
+      const tgt = e.kind === 'home' ? home : made;
+      tgt[e.src] = (tgt[e.src] || 0) + e.n;
+    }
+    const perMin = (v) => Math.round((v * 60) / span * 10) / 10;
+    const label = (src) => {
+      if (src === 'king') return { icon: '👑', name: 'The king' };
+      if (src === 'battle') return { icon: '⚔️', name: 'Battle loot' };
+      if (src === 'wave') return { icon: '🎉', name: 'Wave rewards' };
+      const b = this.b[src];
+      if (!b) return { icon: '•', name: src };
+      const t = BUILDINGS[b.type];
+      const same = this.list(b.type).filter((x) => x.state === 'built');
+      const n = same.length > 1 ? ` ${same.indexOf(b) + 1}` : '';
+      return { icon: t.icon, name: `${t.name}${n}`, workers: JOB_TYPES.includes(b.type) ? `${b.assigned || 0} 👷` : '' };
+    };
+    const rows = Object.entries(made).map(([src, v]) => ({ ...label(src), src, perMin: perMin(v) })).sort((a, b) => b.perMin - a.perMin);
+    const homeRows = Object.entries(home).map(([src, v]) => ({ ...label(src), src, perMin: perMin(v) })).sort((a, b) => b.perMin - a.perMin);
+    const waiting = res === 'gold'
+      ? this.list('goldmine').reduce((a, m) => a + (m.state === 'built' ? m.pile : 0), 0)
+      : this.list(res === 'wood' ? 'lumber' : 'quarry').reduce((a, h) => a + (h.stock || 0), 0);
+    return {
+      res, rows, homeRows, waiting, span: Math.round(span),
+      total: perMin(Object.values(made).reduce((a, v) => a + v, 0)),
+      homeTotal: perMin(Object.values(home).reduce((a, v) => a + v, 0)),
+      advice: this.stockAdvice(res),
+    };
+  }
+
+  // Stock piling up at camps, quarries or mines: what would move it home?
+  stockAdvice(res = null) {
+    const srcs = [
+      ...(res && res !== 'wood' ? [] : this.list('lumber')),
+      ...(res && res !== 'stone' ? [] : this.list('quarry')),
+      ...(res && res !== 'gold' ? [] : this.list('goldmine')),
+    ].filter((b) => b.state === 'built');
+    const full = srcs.find((b) => (b.type === 'goldmine' ? b.pile / BUILDINGS.goldmine.levels[b.level].pile : (b.stock || 0) / STOCK_CAP) >= 0.6);
+    if (!full) return null;
+    const what = full.type === 'goldmine' ? 'Gold is piling up at the Gold Mine' : `${full.type === 'lumber' ? 'Logs' : 'Stone'} are piling up at the ${BUILDINGS[full.type].name}`;
+    const whs = this.list('warehouse').filter((w) => w.state === 'built');
+    if (!whs.length) return { key: 'nowh', text: `${what}: build a Warehouse so haulers bring it home`, at: full };
+    const open = whs.find((w) => (w.assigned || 0) < this.workerSlots(w));
+    if (open && this.freeVillagers > 0) return { key: 'haulers', text: `${what}: tap the Warehouse and add haulers (👷 +)`, at: open };
+    if (open) return { key: 'houses', text: `${what}: build Houses so more villagers can haul`, at: null };
+    const up = whs.find((w) => w.level < BUILDINGS.warehouse.levels.length - 1);
+    if (up) return { key: 'whup', text: `${what}: upgrade the Warehouse for more haulers`, at: up };
+    return { key: 'wh2', text: `${what}: build another Warehouse near it`, at: full };
+  }
+
+  // Remind the player (now and then, between waves) when stock is stuck.
+  updateAdvice(dt) {
+    this.adviceT -= dt;
+    if (this.adviceT > 0) return;
+    this.adviceT = 8;
+    if (this.phase !== 'build') return;
+    const a = this.stockAdvice();
+    if (!a) return;
+    const last = this.adviceSeen[a.key] || -1e9;
+    if (this.t - last < 75) return;
+    this.adviceSeen[a.key] = this.t;
+    this.emit('advice', { text: a.text, x: a.at?.x, z: a.at?.z });
+  }
+
+  // What the next castle level opens up, read from the requirements.
+  castleUnlocks(lv) {
+    const out = [];
+    const army = BUILDINGS.castle.levels[lv - 1]?.army - (BUILDINGS.castle.levels[lv - 2]?.army || 0);
+    if (army > 0) out.push(`+${army} army size`);
+    for (const [k, w] of Object.entries(WEAPONS)) if (w.castle === lv) out.push(`${w.icon} ${w.name}`);
+    BUILDINGS.tower.levels.forEach((t) => { if (t.castle === lv) out.push(`🗼 ${t.name} towers`); });
+    WALLS.gates.forEach((g) => { if (g.castle === lv) out.push(`🚪 ${g.name}`); });
+    WALLS.levels.forEach((w) => { if (w.castle === lv) out.push(`🧱 Walls out to ${w.radius} m`); });
+    for (const [k, t] of Object.entries(BUILDINGS)) if (t.castle === lv && !t.place) out.push(`${t.icon} ${t.name}`);
+    return out;
+  }
+
   // Gold to spend: on the king's horse plus what's banked in warehouses.
   get gold() { return this.hero.coins + (this.res.gold || 0); }
 
@@ -378,7 +474,7 @@ export class World {
 
   heroStat(k) { return HERO_UPGRADES[k].values[this.hero.up[k]]; }
   // How many logs or stones the king can carry home himself.
-  get loadCap() { return 20 + 10 * this.hero.up.carry; }
+  get loadCap() { return 120 + 30 * this.hero.up.carry; }
   get carry() { return this.heroStat('carry'); }
   get heroMaxHp() { return this.heroStat('hp'); }
 
@@ -988,7 +1084,7 @@ export class World {
         } else if (b.type === 'goldmine') {
           if (v.t <= 0) {
             v.t = lv.every;
-            if (b.pile < lv.pile) { b.pile++; this.emit('dig', { x: b.x, z: b.z }); }
+            if (b.pile < lv.pile) { b.pile++; this.logIncome('gold', b.id, 1); this.emit('dig', { x: b.x, z: b.z }); }
           }
         } else if (v.t <= 0) {
           v.state = 'haul';
@@ -1053,6 +1149,7 @@ export class World {
       case 'return':
         if (v.carry) {
           b.stock = Math.min(STOCK_CAP, (b.stock || 0) + v.carry.amt);
+          this.logIncome(v.carry.res, b.id, v.carry.amt);
           this.emit('stock', { x: b.x, z: b.z, res, amt: v.carry.amt });
         }
         v.carry = null;
@@ -1092,10 +1189,11 @@ export class World {
         v.src = null;
         if (!src) { v.state = 'seek'; return; }
         src.reserved = Math.max(0, (src.reserved || 0) - v.plan);
-        const take = Math.min(src.stock || 0, lv.carry);
+        const gold = src.type === 'goldmine';
+        const take = gold ? Math.min(src.pile || 0, lv.carry * GOLD_PER_ITEM) : Math.min(src.stock || 0, lv.carry);
         v.plan = 0;
-        src.stock = (src.stock || 0) - take;
-        v.carry = take ? { res: src.type === 'lumber' ? 'wood' : 'stone', amt: take } : null;
+        if (gold) src.pile -= take; else src.stock = (src.stock || 0) - take;
+        v.carry = take ? { res: gold ? 'gold' : src.type === 'lumber' ? 'wood' : 'stone', amt: take, from: src.id } : null;
         v.state = 'deliver';
         v.path = this.route(v.x, v.z, b.x + rand(-1.5, 1.5), b.z + b.size / 2 + 0.8);
         return;
@@ -1103,6 +1201,7 @@ export class World {
       case 'deliver':
         if (v.carry) {
           this.res[v.carry.res] += v.carry.amt;
+          this.logIncome(v.carry.res, b.id, v.carry.amt, 'home');
           this.emit('deliver', { x: v.x, z: v.z, res: v.carry.res, amt: v.carry.amt });
         }
         v.carry = null;
@@ -1114,17 +1213,19 @@ export class World {
         return;
       default: {
         let best = null, bs = 0;
-        for (const src of [...this.list('lumber'), ...this.list('quarry')]) {
+        // Whichever camp, quarry or mine has the most loads waiting.
+        for (const src of [...this.list('lumber'), ...this.list('quarry'), ...this.list('goldmine')]) {
           if (src.state !== 'built') continue;
-          const avail = (src.stock || 0) - (src.reserved || 0);
-          if (avail > bs) { bs = avail; best = src; }
+          const per = src.type === 'goldmine' ? GOLD_PER_ITEM : 1;
+          const avail = ((src.type === 'goldmine' ? src.pile : src.stock || 0) - (src.reserved || 0)) / per;
+          if (avail >= 1 && avail > bs) { bs = avail; best = src; }
         }
         if (!best) {
           v.state = 'wait'; v.t = 3;
           if (hyp(v.x - b.x, v.z - b.z) > b.size) v.path = [{ x: b.x + rand(-2, 2), z: b.z + b.size / 2 + 1 }];
           return;
         }
-        v.plan = Math.min(bs, lv.carry);
+        v.plan = Math.min(bs, lv.carry) * (best.type === 'goldmine' ? GOLD_PER_ITEM : 1);
         best.reserved = (best.reserved || 0) + v.plan;
         v.src = best.id;
         v.state = 'fetch';
@@ -1137,7 +1238,7 @@ export class World {
   hitNode(n, wood, x, z) {
     if (n.state !== 'up') return;
     n.hp--;
-    this.emit('nodeHit', { x: n.x, z: n.z, wood });
+    this.emit('nodeHit', { x: n.x, z: n.z, wood, si: n.si });
     if (n.hp <= 0) {
       n.state = 'down';
       n.pieces = NODE_YIELD[n.cls];
@@ -1856,6 +1957,7 @@ export class World {
           }
           const take = Math.min(c.value, cap - h.coins);
           h.coins += take;
+          this.logIncome('gold', 'battle', take);
           c.value -= take;
           got += take;
           if (c.value <= 0) this.coins.splice(i, 1);
@@ -1870,7 +1972,7 @@ export class World {
       if (rectDist(h.x, h.z, m) < 2.2 && h.coins < cap) {
         m.pileAcc = (m.pileAcc || 0) + dt * 45;
         const n = Math.min(Math.floor(m.pileAcc), m.pile, cap - h.coins);
-        if (n > 0) { m.pileAcc -= n; m.pile -= n; h.coins += n; this.emit('pickup', { n, from: m.id }); }
+        if (n > 0) { m.pileAcc -= n; m.pile -= n; h.coins += n; this.logIncome('gold', m.id, n, 'home'); this.emit('pickup', { n, from: m.id }); }
       }
     }
 
@@ -1904,13 +2006,14 @@ export class World {
     h.tool = null;
     const room = () => this.loadCap - h.load.n;
     const can = (res) => (h.load.n === 0 || h.load.res === res) && room() > 0;
-    const add = (res, k) => { h.load.res = res; h.load.n += k; this.emit('gather', { res, x: h.x, z: h.z, k, n: h.load.n, cap: this.loadCap }); };
+    const add = (res, k) => { h.load.res = res; h.load.n += k; this.logIncome(res, 'king', k); this.emit('gather', { res, x: h.x, z: h.z, k, n: h.load.n, cap: this.loadCap }); };
     // Bank the load.
     const depot = this.atCastle()
       || this.list('outpost').some((o) => o.state === 'built' && hyp(o.x - h.x, o.z - h.z) < 6)
       || this.list('warehouse').some((w) => w.state === 'built' && rectDist(h.x, h.z, w) < 2.5);
     if (h.load.n > 0 && depot) {
       this.res[h.load.res] += h.load.n;
+      this.logIncome(h.load.res, 'king', h.load.n, 'home');
       this.emit('deliver', { x: h.x, z: h.z, res: h.load.res, amt: h.load.n });
       h.load = { res: null, n: 0 };
       h.warned = null;
@@ -1954,8 +2057,12 @@ export class World {
       return;
     }
     h.tool = wood ? 'axe' : 'pick';
+    h.toolAt = node;
+    // Face the tree or boulder being worked.
+    h.yaw = turn(h.yaw, Math.atan2(node.x - h.x, node.z - h.z), dt * 10);
     if (h.gatherT >= KING_SWING) {
       h.gatherT = 0;
+      h.swings = (h.swings || 0) + 1;
       this.hitNode(node, wood, h.x, h.z);
       if (node.state === 'down') { const k = Math.min(node.pieces, room()); this.takePieces(node, k); add(res, k); }
     }
@@ -2073,6 +2180,7 @@ export class World {
     this.updateVillagers(dt);
     this.updateNature(dt);
     this.updateAllies(dt);
+    this.updateAdvice(dt);
     this.updateTowers(dt);
     this.updateEnemies(dt);
     this.updateProjectiles(dt);
@@ -2224,7 +2332,11 @@ function fmt(v) { return Number.isInteger(v) ? v : v.toFixed(1); }
 
 function upgradeDesc(type, cur, next) {
   switch (type) {
-    case 'castle': return `Castle strength ${cur.hp} → ${next.hp}, unlocks new buildings`;
+    case 'castle': {
+      const lv = BUILDINGS.castle.levels.indexOf(next) + 1;
+      const un = World.prototype.castleUnlocks(lv);
+      return `Castle strength ${cur.hp} → ${next.hp}${un.length ? `. Unlocks: ${un.join(', ')}` : ''}`;
+    }
     case 'house': return `Beds ${cur.beds} → ${next.beds}`;
     case 'farm': return `Growth +${Math.round(cur.growth * 100)}% → +${Math.round(next.growth * 100)}%, farmer slots ${cur.workers} → ${next.workers}`;
     case 'barracks': return `Army size ${cur.army} → ${next.army}, unlocks Raiders`;

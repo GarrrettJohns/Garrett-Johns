@@ -622,7 +622,7 @@ export const RIGS = {
         b.box(0.08, 0.08, 1.15, C.woodLight, { x: 0.5, y: 2.05, z: 0.6 });
         if (tool === 'axe') b.box(0.06, 0.42, 0.34, C.iron, { x: 0.5, y: 1.9, z: 1.05 });
         else { b.box(0.06, 0.12, 0.7, C.iron, { x: 0.5, y: 2.05, z: 1.15, rx: Math.PI / 2 }); b.cone(0.06, 0.25, 4, C.iron, { x: 0.5, y: 1.62, z: 1.15, rx: Math.PI }); }
-      }, { pivot: [0.42, 2.3, 0], anim: 'arm', show: tool }));
+      }, { pivot: [0.42, 2.3, 0], anim: tool === 'axe' ? 'sweep' : 'smash', show: tool }));
     }
     return { parts, height: 3.6 };
   },

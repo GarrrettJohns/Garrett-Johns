@@ -15,6 +15,7 @@ import {
   FORT, RIVER_X1,
 } from './map.js';
 import { BUILDINGS, HERO } from './config.js';
+import { KING_SWING } from './world.js';
 
 const TAU = Math.PI * 2;
 const TOWER_TOP = [3.15, 3.15, 3.15, 3.55, 3.95];   // platform height per tower level
@@ -83,7 +84,13 @@ class RigMesh {
       else if (p.anim === 'legB') a = -s * 0.65 * walk;
       else if (p.anim === 'arm') a = -(st.swing || 0) * 1.5 + s * 0.35 * walk;
       else if (p.anim === 'aim') a = -(st.swing || 0) * 0.5;
-      if (a) {
+      else if (p.anim === 'smash') a = st.smash || 0;
+      const yawA = p.anim === 'sweep' ? st.sweep || 0 : 0;
+      if (yawA) {
+        this.rot.makeRotationY(yawA);
+        _m2.copy(_m).multiply(pt.T).multiply(this.rot).multiply(pt.Ti);
+        pt.m.setMatrixAt(pt.n, _m2);
+      } else if (a) {
         this.rot.makeRotationX(a);
         _m2.copy(_m).multiply(pt.T).multiply(this.rot).multiply(pt.Ti);
         pt.m.setMatrixAt(pt.n, _m2);
@@ -305,11 +312,14 @@ export class Renderer {
       mesh.count = list.length;
       mesh.castShadow = true;
       mesh.receiveShadow = true;
+      mesh.setColorAt(0, _c.setRGB(1, 1, 1));   // so a struck tree can light up
       scene.add(mesh);
     });
 
     const rock = new THREE.InstancedMesh(rockGeo(), vcMat, sc.rocks.length);
+    rock.setColorAt(0, _c.setRGB(1, 1, 1));
     this.rockMesh = rock;
+    this.nodeFx = new Map();
     this.rockList = sc.rocks;
     this.natureSig = null;
     sc.rocks.forEach((t, i) => {
@@ -417,6 +427,42 @@ export class Renderer {
 
   // Trees and boulders: hide felled ones, scale regrowing saplings, show
   // stumps and the pieces waiting to be carried off, and the huts' stockpiles.
+  // A struck tree lights up and shakes; a struck boulder flashes and jolts.
+  syncNodeFx(world) {
+    if (!this.nodeFx || !this.nodeFx.size) return;
+    const DUR = 0.45;
+    const touched = new Set();
+    for (const [key, fx] of this.nodeFx) {
+      const age = this.time - fx.t0;
+      const done = age >= DUR;
+      const k = done ? 0 : 1 - age / DUR;
+      const n = (fx.wood ? world.trees : world.stones).find((x) => x.si === fx.si);
+      const standing = n && n.state === 'up';
+      if (fx.wood) {
+        const ti = this.treeInst.get(fx.si);
+        if (!ti) { this.nodeFx.delete(key); continue; }
+        const sc = standing ? 1 : 0;
+        const tilt = Math.sin(age * 42) * 0.09 * k;
+        _q.setFromEuler(_e.set(tilt, ti.t.r, tilt * 0.6, 'YXZ'));
+        _m.compose(_v.set(ti.t.x, 0, ti.t.z), _q, _s.set(ti.t.s * sc, ti.t.s * ti.sy * sc, ti.t.s * sc));
+        ti.mesh.setMatrixAt(ti.i, _m);
+        ti.mesh.setColorAt(ti.i, _c.setRGB(1 + 0.9 * k, 1 + 0.75 * k, 1 + 0.3 * k));
+        touched.add(ti.mesh);
+      } else {
+        const r = this.rockList[fx.si];
+        if (!r) { this.nodeFx.delete(key); continue; }
+        const sc = (standing ? 1 : 0) * (1 + 0.08 * k * Math.abs(Math.sin(age * 30)));
+        _q.setFromAxisAngle(UP, r.r + Math.sin(age * 50) * 0.05 * k);
+        _m.compose(_v.set(r.x, 0, r.z), _q, _s.set(r.s * sc, r.s * sc, r.s * sc));
+        this.rockMesh.setMatrixAt(fx.si, _m);
+        this.rockMesh.setColorAt(fx.si, _c.setRGB(1 + 0.8 * k, 1 + 0.7 * k, 1 + 0.45 * k));
+        touched.add(this.rockMesh);
+      }
+      if (done) this.nodeFx.delete(key);
+    }
+    for (const m of touched) { m.instanceMatrix.needsUpdate = true; if (m.instanceColor) m.instanceColor.needsUpdate = true; }
+  }
+
   syncNature(world, dt, t) {
     const sig = `${world.natureVer}`;
     if (world !== this.natureWorld || sig !== this.natureSig) {
@@ -870,10 +916,12 @@ export class Renderer {
       const v = Math.hypot(hero.vx, hero.vz);
       const gallop = Math.min(1, v / 4);
       const bob = Math.abs(Math.sin(hero.anim * 1.2)) * 0.12 * gallop;
-      const chop = hero.tool ? Math.max(0, Math.sin(t * 7.8)) : 0;
-      this.rigs.hero.add(hero.x, bob, hero.z, hero.yaw, HERO_S, { walk: gallop, anim: hero.anim * 2.2, swing: hero.tool ? chop : hero.shootT * 5, flash: hero.flash, load: hero.tool });
-      if (hero.tool && chop > 0.97 && !this.chopped) { this.chopped = true; this.spark(hero.x + Math.sin(hero.yaw) * 1.6, 0.8, hero.z + Math.cos(hero.yaw) * 1.6, hero.tool === 'axe' ? 0xc08a55 : 0xb8b8c0, 4, 0.16, 3, 0.4); }
-      if (chop < 0.5) this.chopped = false;
+      // Tools: the axe sweeps side to side through the trunk (180°, striking
+      // as it passes the middle); the pickaxe rises overhead and slams down.
+      const u = Math.min(1, (hero.gatherT || 0) / KING_SWING);
+      const sweep = hero.tool === 'axe' ? (Math.PI / 2) * Math.sin(Math.PI * ((hero.swings || 0) + u)) : 0;
+      const smash = hero.tool === 'pick' ? (u < 0.72 ? -2.1 * (u / 0.72) : -2.1 + 2.7 * ((u - 0.72) / 0.28)) : 0;
+      this.rigs.hero.add(hero.x, bob, hero.z, hero.yaw, HERO_S, { walk: gallop, anim: hero.anim * 2.2, swing: hero.tool ? 0 : hero.shootT * 5, sweep, smash, flash: hero.flash, load: hero.tool });
     }
     const UNIT_RIG = { knight: 'knight', archer: 'archer', raider: 'raider' };
     for (const a of world.allies) {
@@ -927,10 +975,11 @@ export class Renderer {
     cp.end();
     this.stonePool.begin();
     this.syncNature(world, dt, t);
+    this.syncNodeFx(world);
     // What the king is carrying home, strapped to the horse's side.
     if (hero.alive && hero.load.n > 0) {
       const rx = Math.cos(hero.yaw), rz = -Math.sin(hero.yaw);
-      const k = Math.min(4, Math.ceil(hero.load.n / 6));
+      const k = Math.min(8, Math.ceil(hero.load.n / 15));
       for (let i = 0; i < k; i++) {
         const side = i % 2 ? -1 : 1, up = Math.floor(i / 2);
         const x = hero.x + rx * side * 0.75 * HERO_S, z = hero.z + rz * side * 0.75 * HERO_S, y = 1.35 * HERO_S + up * 0.3;
@@ -1338,7 +1387,10 @@ export class Renderer {
         this.spark(ev.x, 0.4, ev.z, 0xe6dccb, 10, 0.5, 2, 0.6, 3);
         break;
       case 'nodeHit':
-        if (Math.random() < 0.6) this.spark(ev.x, 1, ev.z, ev.wood ? 0xc08a55 : 0xbfbab0, 3, 0.13, 2.5, 0.35);
+        // The tree or boulder flashes and shudders; chips fly.
+        this.nodeFx.set(`${ev.wood ? 't' : 'r'}${ev.si}`, { t0: this.time, wood: ev.wood, si: ev.si });
+        this.spark(ev.x, ev.wood ? 1.4 : 0.8, ev.z, ev.wood ? 0xc08a55 : 0xd8d3c6, ev.wood ? 7 : 9, 0.15, 3.5, 0.45);
+        if (!ev.wood) this.spark(ev.x, 0.9, ev.z, 0xffe9a8, 4, 0.08, 4, 0.25);
         break;
       case 'blocked': if (Math.random() < 0.3) this.spark(ev.x, 3, ev.z - 4, 0xbfc4cc, 2, 0.2, 2, 0.3); break;
       default: break;

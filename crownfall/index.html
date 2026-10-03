@@ -33,10 +33,10 @@
     <div id="hud">
       <div class="hud-row">
         <div class="res">
-          <div class="pill gold"><i class="coin"></i><b id="hud-coins">0</b><small id="hud-cap">/60</small></div>
-          <div class="pill bank" id="hud-bank" hidden><i>🏦</i><b id="hud-bank-n">0</b></div>
-          <div class="pill"><i>🪵</i><b id="hud-wood">0</b></div>
-          <div class="pill"><i>🪨</i><b id="hud-stone">0</b></div>
+          <div class="pill gold tap" data-res="gold"><i class="coin"></i><b id="hud-coins">0</b><small id="hud-cap">/60</small></div>
+          <div class="pill bank tap" id="hud-bank" data-res="gold" hidden><i>🏦</i><b id="hud-bank-n">0</b></div>
+          <div class="pill tap" data-res="wood"><i>🪵</i><b id="hud-wood">0</b></div>
+          <div class="pill tap" data-res="stone"><i>🪨</i><b id="hud-stone">0</b></div>
           <div class="pill"><i>👥</i><b id="hud-pop">0</b><small id="hud-beds">/4</small></div>
           <div class="pill load" id="hud-load" hidden><i>🎒</i><b id="hud-load-n">0</b><small id="hud-load-cap">/20</small><i id="hud-load-i">🪵</i></div>
         </div>
@@ -64,6 +64,10 @@
       <button id="btn-wave" class="btn primary wave-btn" type="button">⚔️ Start Wave 1</button>
     </div>
     <button id="btn-follow" class="round-btn follow" type="button" aria-label="Troops follow me" hidden><span>🚩</span><small>Follow me</small></button>
+    <section id="rates" class="rates-card" hidden aria-live="polite">
+      <header><h3 id="rates-title"></h3><button id="rates-close" class="icon-btn dark" type="button" aria-label="Close">✕</button></header>
+      <div id="rates-body"></div>
+    </section>
     <section id="tip" class="tip-card" hidden role="dialog" aria-modal="true" aria-labelledby="tip-title">
       <h3 id="tip-title"></h3>
       <div id="tip-text"></div>
@@ -138,6 +142,7 @@
         <li><b>🔨 Build</b><span>Between waves, tap Build to put houses, farms and workshops anywhere inside your walls.</span></li>
         <li><b>👷 Workers</b><span>Tap a mine, lumber camp, quarry, farm or warehouse and use + to assign free villagers. More workers means faster resources, so build houses to grow your village.</span></li>
         <li><b>📦 Warehouse</b><span>Woodcutters and masons stack what they cut at their camp. Warehouse haulers wheel it home, 5 at a time, and only then can you spend it. Ride past a warehouse to bank the coins on your horse: banked gold is safe and still spends.</span></li>
+        <li><b>📊 Rates</b><span>Tap gold, wood or stone at the top to see how much you get per minute and from where.</span></li>
         <li><b>🚩 Follow me</b><span>Tap 🚩 and your soldiers ride with you; tap again to send them back to their posts. At a tower, call posted archers down one at a time.</span></li>
         <li><b>👥 People</b><span>Houses bring villagers. They work the mine, chop wood in the forest and cut stone, then haul it home. Soldiers are villagers who enlist.</span></li>
         <li><b>⚔️ Waves</b><span>When you are ready, tap Start Wave. If the castle falls, you can retry the wave.</span></li>

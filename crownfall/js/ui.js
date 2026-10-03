@@ -22,6 +22,7 @@ export class UI {
       placeBar: $('place-bar'), placeText: $('place-text'), placeOk: $('btn-place-ok'), threats: $('threats'),
       bank: $('hud-bank'), bankN: $('hud-bank-n'), follow: $('btn-follow'),
       tip: $('tip'), tipTitle: $('tip-title'), tipText: $('tip-text'),
+      rates: $('rates'), ratesTitle: $('rates-title'), ratesBody: $('rates-body'),
       load: $('hud-load'), loadN: $('hud-load-n'), loadCap: $('hud-load-cap'), loadI: $('hud-load-i'), padtip: $('padtip'),
     };
     this.prev = {};
@@ -40,6 +41,17 @@ export class UI {
     $('btn-pause').addEventListener('click', () => h.onPause());
     this.el.follow.addEventListener('click', () => h.onFollow());
     $('tip-ok').addEventListener('click', () => { h.tap(); this.el.tip.hidden = true; });
+    // Tap a resource in the HUD for where it comes from, per minute.
+    for (const pill of document.querySelectorAll('.pill[data-res]')) {
+      pill.addEventListener('click', () => {
+        h.tap();
+        const res = pill.dataset.res;
+        this.ratesFor = this.ratesFor === res && !this.el.rates.hidden ? null : res;
+        this.el.rates.hidden = !this.ratesFor;
+        this.ratesT = 0;
+      });
+    }
+    $('rates-close').addEventListener('click', () => { h.tap(); this.ratesFor = null; this.el.rates.hidden = true; });
 
     this.el.sheetList.addEventListener('click', (e) => {
       const wk = e.target.closest('button[data-workers]');
@@ -157,6 +169,7 @@ export class UI {
       e.loadI.textContent = ld.res === 'stone' ? '🪨' : '🪵';
     });
     this.updateThreats(world, ctx);
+    this.updateRates(world, dt);
     this.updatePadTip(world, ctx);
     this.updateMenu(world, dt, ctx);
     if (!e.buildSheet.hidden) this.renderBuild(world);
@@ -240,6 +253,26 @@ export class UI {
       el.hidden = false;
     }
     for (const [id, el] of Object.entries(this.threatEls)) if (!seen.has(id)) el.hidden = true;
+  }
+
+  updateRates(world, dt) {
+    if (!this.ratesFor) return;
+    this.ratesT -= dt;
+    if (this.ratesT > 0) return;
+    this.ratesT = 1;
+    const r = world.rates(this.ratesFor);
+    const NAME = { gold: ['🪙', 'Gold'], wood: ['🪵', 'Wood'], stone: ['🪨', 'Stone'] }[r.res];
+    this.el.ratesTitle.textContent = `${NAME[0]} ${NAME[1]}`;
+    const row = (x) => `<div class="row"><span class="ic">${x.icon}</span><span class="nm">${esc(x.name)}${x.workers ? ` <span class="wk">${x.workers}</span>` : ''}</span><span class="v">${x.perMin}/min</span></div>`;
+    const stored = r.res === 'gold' ? `${world.hero.coins} on your horse · ${world.res.gold || 0} banked` : `${world.res[r.res]} in your stores`;
+    let html = `<div class="total">${r.total}<small> /min</small></div><p class="sub">${stored} · last ${r.span}s</p>`;
+    html += '<h4>Made by</h4>' + (r.rows.length ? r.rows.map(row).join('') : `<div class="empty">Nothing yet. ${r.res === 'gold' ? 'Fallen enemies drop coins; the Gold Mine is in the eastern mountains.' : r.res === 'wood' ? 'Build a Lumber Camp in the forest, or let the king chop trees.' : 'Take the Mountain Fort, then build a Quarry or let the king break boulders.'}</div>`);
+    if (r.res !== 'gold' || r.homeRows.length) {
+      html += `<h4>Brought home</h4>` + (r.homeRows.length ? r.homeRows.map(row).join('') : '<div class="empty">Nothing brought home yet.</div>');
+    }
+    if (r.waiting) html += `<p class="sub">${r.waiting} waiting at ${r.res === 'gold' ? 'the mines' : r.res === 'wood' ? 'lumber camps' : 'quarries'}</p>`;
+    if (r.advice) html += `<div class="advice">💡 ${esc(r.advice.text)}</div>`;
+    this.el.ratesBody.innerHTML = html;
   }
 
   // A tutorial card that explains a new idea, with a Got it button.

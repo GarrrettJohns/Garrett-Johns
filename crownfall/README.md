@@ -56,6 +56,19 @@ It then launches full screen and works offline.
   Haulers push wheelbarrows at double walking speed, 5 items a trip, up to 4
   per warehouse. Riding past a warehouse banks the coins on the king's horse
   (🏦 in the HUD): banked gold is safe if he falls and still pays for anything.
+- **Where it comes from:** tap gold, wood or stone in the HUD for a breakdown:
+  per-minute output by camp, quarry, mine (with its workers) and the king,
+  what actually reaches your stores, what's waiting, and a tip if something
+  is backing up. When stock piles up the game also suggests the fix: build a
+  warehouse, add haulers, build houses, upgrade or add a warehouse.
+- **Haulers carry gold too:** warehouse haulers also wheel sacks of coins (5
+  per item) from gold mines into the bank.
+- **The king's tools:** his axe sweeps side to side through the trunk and his
+  pickaxe rises overhead and slams down; each hit makes the tree or boulder
+  flash and shudder. He can carry 120 logs or stones (more with Saddlebags).
+- **Castle upgrades** list exactly what they unlock (army size, weapons,
+  tower tiers, gates, wall sizes, quarries), and the guide explains why when
+  it asks for one.
 - **🚩 Follow me:** once you have soldiers in the field, tap it and they all
   ride with the king (archers shoot as they go); tap again to send them back
   to their posts. At a tower, *Call an archer* brings posted archers down one
