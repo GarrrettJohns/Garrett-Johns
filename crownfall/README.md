@@ -65,7 +65,8 @@ It then launches full screen and works offline.
   per item) from gold mines into the bank.
 - **The king's tools:** his axe sweeps side to side through the trunk and his
   pickaxe rises overhead and slams down; each hit makes the tree or boulder
-  flash and shudder. He can carry 120 logs or stones (more with Saddlebags).
+  flash and shudder. He carries 30 logs or stones to start; each Saddlebags upgrade raises both
+  his coin and his log/stone limits (up to 2000 coins and 240 logs or stones).
 - **Castle upgrades** list exactly what they unlock (army size, weapons,
   tower tiers, gates, wall sizes, quarries), and the guide explains why when
   it asks for one.

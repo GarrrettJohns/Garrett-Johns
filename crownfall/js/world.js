@@ -175,11 +175,6 @@ const OBJECTIVES = [
     at: (w) => w.list('tower').find((t) => t.state === 'built' && t.level < 2) || null,
   },
   {
-    text: 'Tap the Castle → Castle tab and fit Timber gates',
-    done: (w) => w.walls.gate >= 2,
-    at: (w) => ({ x: 0, z: CASTLE_R + 1 }),
-  },
-  {
     text: 'Defences holding? Now build a Quarry for stone',
     done: (w) => w.count('quarry') >= 1,
     at: (w) => w.b['quarry-1'],
@@ -474,7 +469,7 @@ export class World {
 
   heroStat(k) { return HERO_UPGRADES[k].values[this.hero.up[k]]; }
   // How many logs or stones the king can carry home himself.
-  get loadCap() { return 120 + 30 * this.hero.up.carry; }
+  get loadCap() { return HERO_UPGRADES.carry.load[this.hero.up.carry]; }
   get carry() { return this.heroStat('carry'); }
   get heroMaxHp() { return this.heroStat('hp'); }
 
@@ -569,7 +564,8 @@ export class World {
       return {
         key, icon: u.icon, title: u.name, level: lv + 1, max: u.values.length,
         cost: next ? costText(next) : {}, maxed: !next,
-        desc: next ? `${fmt(v)} → ${fmt(nv)} ${u.unit}` : `${fmt(v)} ${u.unit} · max`,
+        desc: (next ? `${fmt(v)} → ${fmt(nv)} ${u.unit}` : `${fmt(v)} ${u.unit} · max`)
+          + (u.load ? ` · ${u.load[lv]}${next ? ` → ${u.load[lv + 1]}` : ''} logs or stones` : ''),
         apply: () => { w.hero.up[a]++; if (a === 'hp') w.hero.hp = w.heroMaxHp; },
       };
     }

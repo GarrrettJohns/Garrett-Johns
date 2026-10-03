@@ -53,6 +53,8 @@ export const HERO_UPGRADES = {
   carry: {
     at: 'stable', icon: '🎒', name: 'Saddlebags', unit: 'coins',
     values: [250, 400, 600, 900, 1300, 2000],
+    // Logs or stones the king can carry home himself, by level.
+    load: [30, 50, 80, 120, 170, 240],
     costs: [{ gold: 40 }, { gold: 90, wood: 20 }, { gold: 160, wood: 40 }, { gold: 250, stone: 50 }, { gold: 400, stone: 90 }],
   },
   magnet: {

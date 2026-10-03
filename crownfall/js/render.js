@@ -979,7 +979,7 @@ export class Renderer {
     // What the king is carrying home, strapped to the horse's side.
     if (hero.alive && hero.load.n > 0) {
       const rx = Math.cos(hero.yaw), rz = -Math.sin(hero.yaw);
-      const k = Math.min(8, Math.ceil(hero.load.n / 15));
+      const k = Math.min(8, Math.ceil(hero.load.n / 8));
       for (let i = 0; i < k; i++) {
         const side = i % 2 ? -1 : 1, up = Math.floor(i / 2);
         const x = hero.x + rx * side * 0.75 * HERO_S, z = hero.z + rz * side * 0.75 * HERO_S, y = 1.35 * HERO_S + up * 0.3;
