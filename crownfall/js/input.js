@@ -21,6 +21,10 @@ export class Input {
     this.enabled = true;
     this.onFirstTouch = null;
     this.onTap = null;
+    // While placing a building, one finger drags the building instead of steering.
+    this.dragMode = false;
+    this.onDrag = null;
+    this.dragId = null;
     this.mouseDrag = null;
 
     stage.addEventListener('pointerdown', (e) => this.down(e));
@@ -63,6 +67,11 @@ export class Input {
       return;
     }
     if (this.pointers.size > 2 || this.stick) return;
+    if (this.dragMode) {
+      this.dragId = e.pointerId;
+      if (this.onDrag) this.onDrag(p.x, p.y);
+      return;
+    }
     this.stick = { id: e.pointerId, ox: p.x, oy: p.y, sx: p.x, sy: p.y, t: performance.now(), moved: false };
     if (!this.enabled) return;
     this.joyEl.style.left = `${p.x}px`;
@@ -93,6 +102,11 @@ export class Input {
       this.pan.y += now.cy - this.two.cy;
       this.zoom = Math.max(0.6, Math.min(1.6, this.two.zoom * (this.two.d / now.d)));
       this.two.cx = now.cx; this.two.cy = now.cy;
+      return;
+    }
+    if (this.dragMode && e.pointerId === this.dragId && !this.two) {
+      e.preventDefault();
+      if (this.onDrag) this.onDrag(p.x, p.y);
       return;
     }
     const s = this.stick;
@@ -127,6 +141,7 @@ export class Input {
     const s = this.stick;
     const wasTwo = !!this.two;
     this.pointers.delete(e.pointerId);
+    if (e.pointerId === this.dragId) this.dragId = null;
     if (this.pointers.size < 2) this.two = null;
     if (s && e.pointerId === s.id) {
       const quick = performance.now() - s.t < TAP_MS;

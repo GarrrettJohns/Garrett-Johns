@@ -6,7 +6,7 @@ import { Input } from './input.js';
 import { UI } from './ui.js';
 import { audio } from './audio.js';
 import { save } from './save.js';
-import { BUILDINGS, FINAL_WAVE } from './config.js';
+import { BUILDINGS, levelInfo } from './config.js';
 
 const $ = (id) => document.getElementById(id);
 const stage = $('stage');
@@ -22,6 +22,18 @@ let saveT = 0;
 let dirty = false;
 let pickStreak = 0;
 let pickT = 0;
+
+// The closest grid spot to (x, z) where a building of this type fits.
+function nearestSpot(type, x, z) {
+  const R = world.wallRadius;
+  let best = null, bd = Infinity;
+  for (let gx = -R; gx <= R; gx += 2) for (let gz = -R; gz <= R; gz += 2) {
+    const p = snapToGrid(type, gx, gz);
+    const d = Math.hypot(p.x - x, p.z - z);
+    if (d < bd && world.canPlace(type, p.x, p.z).ok) { bd = d; best = p; }
+  }
+  return best || snapToGrid(type, x, z);
+}
 
 function safeLoad(snap) {
   try { return new World(snap); } catch (err) { console.warn('Save could not be loaded', err); return new World(); }
@@ -42,6 +54,10 @@ const ui = new UI({
   },
   onPickBuild: (type) => {
     placing = { type, x: 0, z: 0, ok: false, reason: '' };
+    // Start at the nearest open spot to the middle of the view; drag to move it.
+    const c = renderer.groundAt(renderer.w / 2, renderer.h * 0.42);
+    const spot = nearestSpot(type, c.x, c.z);
+    placing.x = spot.x; placing.z = spot.z;
   },
   onPlaceOk: () => {
     if (!placing || !placing.ok) { audio.deny(); return; }
@@ -71,7 +87,7 @@ function refreshTitle() {
   const k = save.kingdom;
   const btn = $('btn-continue');
   btn.hidden = !k;
-  if (k) btn.textContent = `Continue · Wave ${k.wave + 1}`;
+  if (k) btn.textContent = `Continue · Level ${k.level || 1} · Wave ${k.wave + 1}`;
   $('btn-new').className = k ? 'btn ghost' : 'btn primary';
   const standalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
   $('install-tip').hidden = standalone || !/iPhone|iPad|iPod/.test(navigator.userAgent);
@@ -115,7 +131,7 @@ function newGame() {
   placing = null;
   persist();
   play();
-  ui.banner('Crownfall', 'Gather gold and build your kingdom', 2.6);
+  ui.banner('Crownfall', 'Build your kingdom, then march on the enemy stronghold', 2.8);
 }
 
 $('btn-continue').addEventListener('click', () => {
@@ -123,7 +139,7 @@ $('btn-continue').addEventListener('click', () => {
   world = safeLoad(save.kingdom);
   renderer.reset();
   play();
-  ui.banner(`Wave ${world.wave + 1}`, 'Welcome back, your majesty', 2);
+  ui.banner(`${world.levelInfo.name} · Wave ${world.wave + 1}`, 'Welcome back, your majesty', 2);
 });
 $('btn-new').addEventListener('click', () => {
   audio.unlock(); audio.tap();
@@ -146,7 +162,17 @@ $('btn-retry').addEventListener('click', () => {
   ui.banner(`Wave ${world.wave + 1}`, 'Shore up the defences and try again', 2.4);
 });
 $('btn-over-menu').addEventListener('click', () => { audio.tap(); world = safeLoad(save.kingdom); toTitle(); });
-$('btn-endless').addEventListener('click', () => { audio.tap(); play(); });
+// On to the next level: a new land, with the king's upgrades and army.
+$('btn-endless').addEventListener('click', () => {
+  audio.tap();
+  const carry = world.carryOver();
+  world = new World(null, { level: world.level + 1, carry });
+  renderer.reset();
+  placing = null;
+  play();
+  persist();
+  ui.banner(world.levelInfo.name, `Level ${world.level}: build anew and march on the stronghold`, 3);
+});
 for (const c of document.querySelectorAll('.js-sound')) {
   c.addEventListener('click', () => {
     audio.unlock();
@@ -159,6 +185,13 @@ for (const c of document.querySelectorAll('.js-sound')) {
 audio.setEnabled(save.settings.sound);
 input.onFirstTouch = () => audio.unlock();
 // Tap a building to open its menu; tap open ground to close it.
+input.onDrag = (x, y) => {
+  if (!placing) return;
+  // Hold the building a little above the finger so it stays in view.
+  const g = renderer.groundAt(x, y - 50);
+  const p = snapToGrid(placing.type, g.x, g.z);
+  placing.x = p.x; placing.z = p.z;
+};
 input.onTap = (x, y) => {
   if (state !== 'play' || placing) return;
   const b = renderer.pick(x, y, world);
@@ -225,7 +258,8 @@ function handle(ev) {
     case 'waveStart': {
       audio.horn();
       const extra = ev.fresh.length ? `New attack from the ${ev.fresh.join(' & ')}!` : `${ev.total} enemies approach`;
-      ui.banner(`Wave ${ev.n}`, ev.boss ? `${ev.boss} leads the attack!` : extra, 2.4);
+      if (ev.siege) ui.banner('The Siege begins!', 'Ride south, break the gate, bring down the keep', 3);
+      else ui.banner(`Wave ${ev.n}`, ev.boss ? `${ev.boss} leads the attack!` : extra, 2.4);
       if (ev.fresh.length && ev.boss) ui.toast(extra, true);
       break;
     }
@@ -236,13 +270,25 @@ function handle(ev) {
       // Save once the bonus is on the ground.
       setTimeout(persist, 0);
       break;
-    case 'victory':
+    case 'levelWon': {
       audio.victory();
+      const next = levelInfo(ev.level + 1);
+      ui.banner('Victory!', 'The stronghold has fallen', 3);
       setTimeout(() => {
-        $('win-text').textContent = `You held all ${FINAL_WAVE} waves. Keep building — the waves keep coming.`;
+        $('win-title').textContent = `Level ${ev.level} complete!`;
+        $('win-text').textContent = `The enemy stronghold has fallen. Your king and his army march on to ${next.name}, where a new kingdom must be built.`;
+        $('btn-endless').textContent = `March on to ${next.name} →`;
         state = 'win';
         show('screen-win');
-      }, 1600);
+      }, 2200);
+      break;
+    }
+    case 'gateFallen': audio.crash(); ui.banner('The gate is down!', 'Storm the keep — its warlord rides out', 2.6); break;
+    case 'blocked': ui.toast('Break the stronghold gate first!', true); break;
+    case 'outpost':
+      audio.victory();
+      ui.banner(`${ev.name} claimed!`, ev.last ? 'The stronghold is in sight. Start the next battle to lay siege!' : 'New land to the south is yours', 3);
+      dirty = true;
       break;
     case 'heroHurt': audio.hurt(); break;
     case 'heroDown':
@@ -259,7 +305,9 @@ function handle(ev) {
       audio.defeat();
       state = 'over';
       input.release();
-      $('over-text').textContent = `Wave ${ev.wave} broke through. Your kingdom is saved from before the wave.`;
+      $('over-text').textContent = world.siege
+        ? 'The enemy broke through while the king was away. Your kingdom is saved from before the siege.'
+        : `Wave ${ev.wave} broke through. Your kingdom is saved from before the wave.`;
       setTimeout(() => show('screen-over'), 900);
       break;
     case 'objective': if (ev.text) audio.villager(); break;
@@ -284,14 +332,11 @@ function frame(now) {
   pickT -= dt;
 
   if (state === 'play') {
-    if (placing && (world.phase !== 'build' || !world.hero.alive)) placing = null;
-    world.update(dt, input.read());
+    if (placing && world.phase !== 'build') placing = null;
+    input.dragMode = !!placing;
+    world.update(dt, placing ? { x: 0, z: 0 } : input.read());
     if (placing) {
-      const def = BUILDINGS[placing.type];
-      const h = world.hero;
-      const p = snapToGrid(placing.type, h.x, h.z - (def.size / 2 + 2.4));
-      placing.x = p.x; placing.z = p.z;
-      const chk = world.canPlace(placing.type, p.x, p.z);
+      const chk = world.canPlace(placing.type, placing.x, placing.z);
       placing.ok = chk.ok;
       placing.reason = chk.reason || '';
     }
@@ -309,8 +354,7 @@ function frame(now) {
   renderer.zoom = input.zoom;
   const pan = input.takePan();
   if (state === 'play') renderer.panBy(pan.x, pan.y);
-  // Placing a building needs the view on the king.
-  if (placing && renderer.free) renderer.recenter();
+  renderer.setBiome(world.levelInfo.biome);
   $('btn-recenter').hidden = !renderer.free || state !== 'play';
 
   // Point the trail at the objective, or at a tower's range while its menu is open.

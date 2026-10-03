@@ -3,11 +3,10 @@
 // a little at a time; wood and stone come out of the kingdom stores when the
 // gold is complete.
 
-export const FINAL_WAVE = 15;
 
 export const HERO = {
   hp: 100,
-  speed: 14,
+  speed: 12,
   damage: 12,
   interval: 0.7,
   range: 9,
@@ -18,7 +17,7 @@ export const HERO = {
   healRadius: 3.2,    // how close to the castle walls counts as "inside"
   regenDelay: 3,
   respawn: 5,
-  radius: 0.8,
+  radius: 0.55,
 };
 
 // Hero upgrades. Each entry: per-level values (index 0 = base) and costs to
@@ -43,7 +42,7 @@ export const HERO_UPGRADES = {
   // Stable
   speed: {
     at: 'stable', icon: '🐎', name: 'Horse speed', unit: 'm/s',
-    values: [14, 15.5, 17, 18.5, 20, 22],
+    values: [12, 13.3, 14.6, 16, 17.3, 19],
     costs: [{ gold: 30 }, { gold: 60, wood: 15 }, { gold: 110, wood: 30 }, { gold: 180, stone: 40 }, { gold: 260, stone: 70 }],
   },
   hp: {
@@ -87,10 +86,10 @@ export const BUILDINGS = {
     name: 'Castle', icon: '🏰', size: 9,
     desc: 'The heart of the kingdom. If it falls, the kingdom falls.',
     levels: [
-      { hp: 900 },
-      { hp: 1250, cost: { gold: 120, wood: 40 } },
-      { hp: 1700, cost: { gold: 280, wood: 90, stone: 60 } },
-      { hp: 2200, cost: { gold: 520, wood: 160, stone: 150 } },
+      { hp: 900, army: 4 },
+      { hp: 1250, army: 6, cost: { gold: 120, wood: 40 } },
+      { hp: 1700, army: 8, cost: { gold: 280, wood: 90, stone: 60 } },
+      { hp: 2200, army: 10, cost: { gold: 520, wood: 160, stone: 150 } },
     ],
   },
   house: {
@@ -133,7 +132,12 @@ export const BUILDINGS = {
   pass: {
     name: 'Mountain Pass', icon: '⛰️', size: 5,
     desc: 'Clear the rockfall to open the mountains: gold to mine and stone to cut.',
-    levels: [{ cost: { gold: 60 } }],
+    levels: [{ cost: { gold: 60, wood: 30 } }],
+  },
+  outpost: {
+    name: 'Outpost', icon: '⛺', size: 6,
+    desc: 'A forward camp on the road to the enemy stronghold. Its watchtower fires on passing enemies, and workers can drop off loads here.',
+    levels: [{ dmg: 14, interval: 0.9, range: 13 }],   // costs and wave requirements live in map.js OUTPOSTS
   },
   goldmine: {
     name: 'Gold Mine', icon: '⛏️', size: 5, needs: 'pass',
@@ -181,9 +185,9 @@ export const BUILDINGS = {
 // Walls and gates, bought from the castle.
 export const WALLS = {
   levels: [
-    { radius: 17 },
-    { radius: 23, cost: { gold: 80, wood: 60 }, castle: 2 },
-    { radius: 30, cost: { gold: 180, wood: 90, stone: 80 }, castle: 3 },
+    { radius: 16 },
+    { radius: 20, cost: { gold: 80, wood: 60 }, castle: 2 },
+    { radius: 24, cost: { gold: 180, wood: 90, stone: 80 }, castle: 3 },
   ],
   gates: [
     { name: 'Palisade gates', hp: 450 },
@@ -222,28 +226,43 @@ export const ENEMIES = {
   brute: { name: 'Brute', hp: 170, dmg: 18, interval: 1.4, range: 1.7, speed: 1.45, aggro: 4.5, coins: 8, radius: 0.85, armor: 3, scale: 1.55 },
   archer: { name: 'Bowman', hp: 24, dmg: 6, interval: 1.5, range: 9, speed: 2.1, aggro: 9, coins: 4, radius: 0.5, ranged: true },
   raider: { name: 'Outrider', hp: 42, dmg: 7, interval: 0.8, range: 1.4, speed: 4.6, aggro: 0, coins: 4, radius: 0.55 },
+  treant: { name: 'Elder Treant', hp: 1300, dmg: 30, interval: 1.8, range: 2.6, speed: 1.15, aggro: 6, coins: 50, wood: 45, radius: 1.5, armor: 1, scale: 2.6, slam: 3.4 },
+  // The enemy stronghold's defences: they never move.
+  sgate: { name: 'Stronghold Gate', hp: 2600, dmg: 0, interval: 9, range: 0, speed: 0, aggro: 0, coins: 80, radius: 3.4, armor: 3, structure: true },
+  stower: { name: 'Stronghold Tower', hp: 1300, dmg: 13, interval: 1.2, range: 14, speed: 0, aggro: 14, coins: 50, radius: 2.2, armor: 2, structure: true, ranged: true },
+  skeep: { name: 'Stronghold Keep', hp: 4200, dmg: 0, interval: 9, range: 0, speed: 0, aggro: 0, coins: 250, radius: 4.5, armor: 3, structure: true },
   boss: { name: 'Warlord', hp: 1100, dmg: 34, interval: 1.7, range: 2.6, speed: 1.25, aggro: 6, coins: 60, radius: 1.5, armor: 2, scale: 2.8, slam: 3.2 },
 };
 
-const BOSS_NAMES = { 5: 'Warlord Grosk', 10: 'Warlord Vexa', 15: 'The Iron King' };
+const BOSS_NAMES = { 5: 'Elder Treant', 10: 'Warlord Vexa', 15: 'The Iron King' };
 
-// Wave n: what spawns, from which lanes, and how hard it hits.
-export function waveSpec(n, lanesOpen) {
-  const hpMul = 1 + 0.1 * (n - 1) + 0.004 * (n - 1) ** 2;
+// The levels: each one a new land on the way through the enemy's realm.
+export const LEVELS = [
+  { name: 'The Greenwood', biome: 'grass' },
+  { name: 'The Sunscorch', biome: 'desert' },
+  { name: 'The Frostmarch', biome: 'snow' },
+];
+export const levelInfo = (level) => ({ ...LEVELS[(level - 1) % LEVELS.length], n: level });
+export const levelMul = (level) => 1 + 0.55 * (level - 1);
+
+// Wave n of a level: what spawns, from which lanes, and how hard it hits.
+export function waveSpec(n, lanesOpen, level = 1) {
+  const hpMul = (1 + 0.1 * (n - 1) + 0.004 * (n - 1) ** 2) * levelMul(level);
+  const more = 1 + 0.2 * (level - 1);
   const groups = [];
   const add = (kind, count) => { if (count > 0) groups.push({ kind, count }); };
-  add('grunt', 5 + Math.round(n * 2.3));
-  add('brute', n >= 3 ? Math.floor((n - 1) / 2) : 0);
-  add('archer', n >= 4 ? Math.floor(n / 1.6) : 0);
-  add('raider', n >= 6 ? Math.round((n - 4) * 1.2) : 0);
+  add('grunt', Math.round((5 + n * 2.3) * more));
+  add('brute', n >= 3 ? Math.floor(((n - 1) / 2) * more) : 0);
+  add('archer', n >= 4 ? Math.floor((n / 1.6) * more) : 0);
+  add('raider', n >= 6 ? Math.round((n - 4) * 1.2 * more) : 0);
 
   let boss = null;
   if (n % 5 === 0) {
     const tier = n / 5;
     boss = {
-      kind: 'boss',
+      kind: n === 5 ? 'treant' : 'boss',
       name: BOSS_NAMES[n] || `Warlord of wave ${n}`,
-      hpMul: [1, 0.8, 1.4, 2.2][Math.min(3, tier)] * (n > 15 ? 1 + (n - 15) * 0.25 : 1),
+      hpMul: [1, 0.6, 1.4, 2.2][Math.min(3, tier)] * (n > 15 ? 1 + (n - 15) * 0.25 : 1),
       coins: [0, 60, 120, 250][Math.min(3, tier)] || 250,
       scale: n >= 15 ? 3.4 : 2.8,
     };
@@ -253,7 +272,7 @@ export function waveSpec(n, lanesOpen) {
   return {
     n,
     hpMul,
-    dmgMul: 1 + 0.05 * (n - 1),
+    dmgMul: (1 + 0.05 * (n - 1)) * (1 + 0.3 * (level - 1)),
     groups,
     boss,
     total,

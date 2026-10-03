@@ -1,11 +1,12 @@
 // DOM overlay: HUD, objective, banners, toasts, floating labels, the building
 // menu that opens when the king rides up to something, and the build picker.
 
-import { BUILDINGS, FINAL_WAVE } from './config.js';
+import { BUILDINGS } from './config.js';
 
 const $ = (id) => document.getElementById(id);
-const PLACEABLE = ['house', 'farm', 'barracks', 'stable', 'range'];
-const LIMIT = { stable: 1, range: 1, barracks: 2 };
+const PLACEABLE = ['house', 'farm', 'barracks'];
+const LIMIT = { barracks: 2 };
+const TAB_ICON = { King: '👑', Army: '⚔️', Castle: '🏰' };
 
 export class UI {
   constructor(h) {
@@ -36,6 +37,8 @@ export class UI {
     $('btn-pause').addEventListener('click', () => h.onPause());
 
     this.el.sheetList.addEventListener('click', (e) => {
+      const tab = e.target.closest('button[data-tab]');
+      if (tab) { h.tap(); this.tab = tab.dataset.tab; this.sig = ''; this.sigT = 0; return; }
       const btn = e.target.closest('button[data-key]');
       if (!btn) return;
       if (btn.dataset.equip) h.onEquip(btn.dataset.equip);
@@ -70,7 +73,7 @@ export class UI {
     this.set('beds', world.beds, () => { e.beds.textContent = `/${world.beds}`; });
 
     const waveN = world.phase === 'wave' ? world.wave + 1 : world.wave + 1;
-    const label = world.wave >= FINAL_WAVE && world.phase !== 'wave' ? `Wave ${waveN}` : `Wave ${Math.min(waveN, 999)} / ${Math.max(FINAL_WAVE, waveN)}`;
+    const label = world.siege ? `L${world.level} · Siege` : `L${world.level} · Wave ${waveN}`;
     this.set('wave', label, () => { e.wave.textContent = label; });
     const cf = world.castleHp / world.castleMax;
     this.set('castle', Math.round(cf * 100), () => {
@@ -90,15 +93,17 @@ export class UI {
     });
 
     const inWave = world.phase === 'wave';
-    const left = inWave ? world.spawnQueue.length + world.enemies.length : 0;
+    const left = inWave ? world.enemiesLeft : 0;
     this.set('left', left, () => {
       e.left.hidden = !inWave;
-      e.left.textContent = `⚔️ ${left} ${left === 1 ? 'enemy' : 'enemies'} left`;
+      e.left.textContent = world.siege ? `⚔️ ${left} enemies in the field` : `⚔️ ${left} ${left === 1 ? 'enemy' : 'enemies'} left`;
     });
-    const boss = world.enemies.find((x) => x.name);
+    // Boss bar: a named boss, or during a siege whatever stands in the way.
+    const boss = world.enemies.find((x) => x.name)
+      || (world.siege && (world.enemies.find((x) => x.kind === 'sgate') || world.enemies.find((x) => x.kind === 'skeep')));
     e.boss.hidden = !boss;
     if (boss) {
-      e.bossName.textContent = boss.name;
+      e.bossName.textContent = boss.name || boss.def.name;
       e.bossFill.style.width = `${Math.max(0, boss.hp / boss.max) * 100}%`;
     }
 
@@ -107,13 +112,15 @@ export class UI {
     const showControls = !inWave && !placing && !this.sheetOpen && world.phase === 'build';
     e.controls.hidden = !showControls;
     e.buildBtn.hidden = !showControls;
-    this.set('waveBtn', world.wave + 1, () => { e.waveBtn.textContent = `⚔️ Start Wave ${world.wave + 1}`; });
-    e.waveBtn.classList.toggle('pulse', !!obj && obj.text.startsWith('Tap Start Wave'));
+    this.set('waveBtn', `${world.wave + 1}|${world.siegeReady}`, () => {
+      e.waveBtn.textContent = world.siegeReady ? '🏰 Lay Siege!' : `⚔️ Start Wave ${world.wave + 1}`;
+    });
+    e.waveBtn.classList.toggle('pulse', world.siegeReady || (!!obj && obj.text.startsWith('Tap Start Wave')));
 
     e.placeBar.hidden = !placing;
     if (placing) {
       const def = BUILDINGS[ctx.placing.type];
-      const msg = ctx.placing.ok ? `${def.icon} ${def.name}: ride to move it, then tap Build here` : `${def.icon} ${ctx.placing.reason}`;
+      const msg = ctx.placing.ok ? `${def.icon} ${def.name}: drag it into place, then tap Build here` : `${def.icon} ${ctx.placing.reason}`;
       if (msg !== this.prev.placeMsg) { e.placeText.textContent = msg; this.prev.placeMsg = msg; }
       e.placeOk.disabled = !ctx.placing.ok;
     }
@@ -138,6 +145,7 @@ export class UI {
   // Menus open only when a building is tapped.
   openMenu(id) {
     this.closeBuild();
+    if (id !== this.menuFor) this.tab = null;
     this.menuFor = id;
     this.sig = '';
     this.sigT = 0;
@@ -153,8 +161,10 @@ export class UI {
     this.sigT = 0.15;
     const b = world.b[this.menuFor];
     const info = world.info(b);
-    const items = world.menu(b);
-    const sig = JSON.stringify([info, items.map((i) => [i.key, i.locked, i.maxed, i.owned, i.equipped, i.level, i.cost]), world.hero.coins, world.res]);
+    const tabs = world.menu(b);
+    if (!tabs.some((g) => g.tab === this.tab)) this.tab = tabs[0].tab;
+    const items = tabs.find((g) => g.tab === this.tab).items;
+    const sig = JSON.stringify([info, this.tab, items.map((i) => [i.key, i.locked, i.maxed, i.owned, i.equipped, i.level, i.cost]), world.hero.coins, world.res]);
     if (sig === this.sig) return;
     this.sig = sig;
 
@@ -162,7 +172,8 @@ export class UI {
     this.el.sheetName.textContent = info.max > 1 ? `${info.name} · Lv ${info.level}` : info.name;
     this.el.sheetSub.textContent = info.desc;
     const lines = info.lines.length ? `<div class="info-lines">${info.lines.map((l) => `<span>${esc(l)}</span>`).join('')}</div>` : '';
-    this.el.sheetList.innerHTML = lines + (items.length ? items.map((it) => this.row(world, it)).join('') : '<div class="row"><div class="rb"><div class="rd">Nothing to upgrade here yet.</div></div></div>');
+    const tabBar = tabs.length > 1 ? `<div class="tabs">${tabs.map((g) => `<button type="button" class="tab ${g.tab === this.tab ? 'on' : ''}" data-tab="${esc(g.tab)}">${esc(TAB_ICON[g.tab] || '')} ${esc(g.tab)}</button>`).join('')}</div>` : '';
+    this.el.sheetList.innerHTML = tabBar + lines + (items.length ? items.map((it) => this.row(world, it)).join('') : '<div class="row"><div class="rb"><div class="rd">Nothing to upgrade here yet.</div></div></div>');
   }
 
   row(world, it) {

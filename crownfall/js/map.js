@@ -8,23 +8,38 @@
 
 import { mulberry32 } from './util.js';
 
-export const BOUNDS = 56;          // hero and units stay inside ±BOUNDS
+export const BOUNDS = 56;          // hero stays inside ±BOUNDS across (and north)
 export const RIVER_Z = -29;        // centre line of the river
 export const RIVER_HALF = 2.2;     // half width of the water
 export const FOREST_Z = -32;       // the forest starts north of this line
-export const WALL_RADII = [17, 23, 30];
-export const CASTLE_R = 4.6;       // castle footprint radius
+export const WALL_HALF = [16, 20, 24];  // the square fortress walls, by level (half widths)
+export const CASTLE_R = 4.5;       // half width of the (square) castle
+export const GATE_GAP = 2.5;       // half width of the opening a gate fills
 export const PATH_HALF = 1.7;      // half width of a dirt road
 export const GRID = 2;             // placement grid cell size
 
+// The enemy stronghold at the far end of the south road, and the stretch of
+// road the king claims on the way there. Each outpost pushes the frontier
+// (how far south he can ride, and where southern enemies muster) further on.
+export const STRONGHOLD = { x: 0, z: 190, gateZ: 179, half: 15 };
+export const FRONTIERS = [62, 110, 156, 212];
+export const OUTPOSTS = [
+  { id: 'outpost-1', name: 'Riverford Outpost', wave: 4, cost: { gold: 120, wood: 40 } },
+  { id: 'outpost-2', name: 'Stonehill Outpost', wave: 9, cost: { gold: 220, wood: 80, stone: 60 } },
+  { id: 'outpost-3', name: 'Siege Camp', wave: 14, cost: { gold: 340, wood: 120, stone: 120 } },
+];
+
 // The rocky highland east of the castle. Its gold and stone stay sealed until
 // the king clears the rockfall at the pass.
-export const MOUNTAIN = { x: 29, z: -16, r: 9.5 };
+export const MOUNTAIN = { x: 35, z: -15, r: 8.5 };
 
 // Enemy lanes, from the map edge in to the castle. `opens` is the first wave
 // that uses the lane.
 const LANE_DEFS = [
-  { id: 'S', name: 'South', opens: 1, pts: [[8, 64], [14, 48], [4, 38], [-8, 30], [-6, 20], [0, 12], [0, 5]] },
+  {
+    id: 'S', name: 'South', opens: 1,
+    pts: [[0, 179], [-10, 166], [-8, 148], [9, 133], [11, 117], [-3, 102], [-9, 86], [1, 73], [8, 63], [14, 48], [4, 38], [-8, 30], [-6, 20], [0, 12], [0, 5]],
+  },
   { id: 'E', name: 'East', opens: 4, pts: [[64, -4], [48, 2], [38, -6], [28, 2], [18, 0], [5, 0]] },
   { id: 'W', name: 'West', opens: 8, pts: [[-64, 10], [-48, 4], [-36, 12], [-24, 6], [-14, 2], [-5, 0]] },
   { id: 'N', name: 'Forest', opens: 11, pts: [[-4, -64], [-10, -48], [0, -38], [-5, -26], [-2, -14], [0, -5]] },
@@ -93,13 +108,19 @@ export function lanePoint(lane, s, out = { x: 0, z: 0, dx: 0, dz: 1 }) {
   return out;
 }
 
-// Distance along the lane where it first comes within radius r of the centre.
-export function laneCrossing(lane, r) {
+// Distance along the lane where it first enters the square of half width h.
+export function laneCrossing(lane, h) {
   for (let i = 0; i < lane.pts.length; i++) {
     const [x, z] = lane.pts[i];
-    if (Math.hypot(x, z) <= r) return lane.cum[i];
+    if (Math.max(Math.abs(x), Math.abs(z)) <= h) return lane.cum[i];
   }
   return lane.length;
+}
+
+// Distance along a lane where it first comes south of (below) z.
+export function laneAtZ(lane, z) {
+  for (let i = 0; i < lane.pts.length; i++) if (lane.pts[i][1] <= z) return lane.cum[i];
+  return 0;
 }
 
 // Shortest distance from a point to any lane centreline.
@@ -166,32 +187,45 @@ function towerPads() {
 // Every fixed pad. `size` is the footprint in metres.
 export const FIXED_PADS = [
   { id: 'bridge', type: 'bridge', x: BRIDGE.x, z: BRIDGE.z },
-  { id: 'pass', type: 'pass', x: 22, z: -11 },
-  { id: 'goldmine', type: 'goldmine', x: 31, z: -22 },
+  { id: 'pass', type: 'pass', x: 28, z: -13 },
+  { id: 'goldmine', type: 'goldmine', x: 39, z: -19 },
   { id: 'lumber-1', type: 'lumber', x: -14, z: -38 },
   { id: 'lumber-2', type: 'lumber', x: 13, z: -38 },
   { id: 'lumber-3', type: 'lumber', x: 27, z: -43 },
-  { id: 'quarry-1', type: 'quarry', x: 23, z: -19 },
-  { id: 'quarry-2', type: 'quarry', x: 37, z: -15 },
+  { id: 'quarry-1', type: 'quarry', x: 32, z: -21 },
+  { id: 'quarry-2', type: 'quarry', x: 41, z: -12 },
+  // The road south.
+  { id: 'outpost-1', type: 'outpost', x: 1, z: 58 },
+  { id: 'outpost-2', type: 'outpost', x: -12, z: 106 },
+  { id: 'outpost-3', type: 'outpost', x: 9, z: 151 },
+  { id: 'goldmine-2', type: 'goldmine', x: -24, z: 82, needs: 'outpost-1' },
+  { id: 'lumber-4', type: 'lumber', x: 27, z: 92, needs: 'outpost-1' },
+  { id: 'quarry-3', type: 'quarry', x: -26, z: 126, needs: 'outpost-2' },
+  { id: 'goldmine-3', type: 'goldmine', x: 28, z: 128, needs: 'outpost-2' },
   ...towerPads(),
 ];
 
 // Where the starting buildings stand.
 export const START = {
-  house: { x: -6, z: 6 },
+  house: { x: -10, z: 8 },
   hero: { x: 3, z: 9 },
   tower: 'tower-S1',
   coins: { x: 4, z: 13, n: 30 },
 };
 
-// Scenery: trees in the forest and scattered across the grassland, rocks by
-// the quarry and the mine. Seeded so the kingdom looks the same every load.
+// Scenery: trees in the forest and scattered across the land, rocks by the
+// quarries and mines, crags around the highland and cliffs walling in the
+// map. Seeded so the kingdom looks the same every load.
+const outside = (x, z, pad) => Math.max(Math.abs(x), Math.abs(z)) > WALL_HALF[2] + pad;
+const nearStronghold = (x, z, pad) => Math.abs(x - STRONGHOLD.x) < STRONGHOLD.half + pad && z > STRONGHOLD.gateZ - 8 - pad;
+
 export function scenery() {
   const rnd = mulberry32(1337);
   const trees = [];
   const rocks = [];
   const pads = FIXED_PADS;
   const clearOf = (x, z, r) => pads.every((p) => Math.hypot(p.x - x, p.z - z) > r);
+  const spaced = (x, z, d) => !trees.some((t) => Math.abs(t.x - x) < d && Math.abs(t.z - z) < d && Math.hypot(t.x - x, t.z - z) < d);
 
   // The forest: dense pines north of the river.
   for (let i = 0; i < 2600 && trees.length < 520; i++) {
@@ -199,7 +233,7 @@ export function scenery() {
     const z = FOREST_Z - 1 - rnd() * 32;
     if (distToLanes(x, z, [LANE.N]) < PATH_HALF + 1.4) continue;
     if (!clearOf(x, z, 4.6)) continue;
-    if (trees.some((t) => Math.hypot(t.x - x, t.z - z) < 1.7)) continue;
+    if (!spaced(x, z, 1.7)) continue;
     trees.push({ x, z, s: 0.8 + rnd() * 0.6, r: rnd() * 6.28, forest: true });
   }
   // A thinner fringe on the grassland side of the river bank.
@@ -207,26 +241,35 @@ export function scenery() {
     const x = -60 + rnd() * 120;
     const z = RIVER_Z + RIVER_HALF + 1 + rnd() * 3;
     if (distToLanes(x, z) < PATH_HALF + 2) continue;
-    if (Math.hypot(x, z) < WALL_RADII[2] + 3) continue;
+    if (!outside(x, z, 3)) continue;
     if (rnd() < 0.7) continue;
     trees.push({ x, z, s: 0.7 + rnd() * 0.4, r: rnd() * 6.28 });
   }
-  // Scattered pines out in the grassland, beyond the outermost wall.
-  for (let i = 0; i < 900 && trees.length < 640; i++) {
-    const x = -60 + rnd() * 120;
-    const z = RIVER_Z + RIVER_HALF + 2 + rnd() * (62 - RIVER_Z);
-    const r = Math.hypot(x, z);
-    if (r < WALL_RADII[2] + 4) continue;
+  // Scattered pines across the grassland and down the road south.
+  for (let i = 0; i < 3000 && trees.length < 900; i++) {
+    const x = -54 + rnd() * 108;
+    const z = RIVER_Z + RIVER_HALF + 2 + rnd() * (215 - RIVER_Z);
+    if (!outside(x, z, 4)) continue;
     if (Math.hypot(x - MOUNTAIN.x, z - MOUNTAIN.z) < MOUNTAIN.r + 3) continue;
+    if (nearStronghold(x, z, 4)) continue;
     if (distToLanes(x, z) < PATH_HALF + 2.5) continue;
     if (!clearOf(x, z, 5)) continue;
-    if (trees.some((t) => Math.hypot(t.x - x, t.z - z) < 4)) continue;
-    // Clumps: more likely near the map edge.
-    if (rnd() > 0.25 + (r - 30) / 50) continue;
+    if (!spaced(x, z, 3.6)) continue;
+    // Clumps: thicker towards the cliffs at the edges.
+    if (rnd() > 0.18 + Math.abs(x) / 70) continue;
     trees.push({ x, z, s: 0.8 + rnd() * 0.5, r: rnd() * 6.28 });
   }
+  // A grove around the southern lumber camp.
+  const grove = pads.find((p) => p.id === 'lumber-4');
+  for (let i = 0; i < 300; i++) {
+    const a = rnd() * Math.PI * 2, d = 4.6 + rnd() * 11;
+    const x = grove.x + Math.cos(a) * d, z = grove.z + Math.sin(a) * d;
+    if (distToLanes(x, z) < PATH_HALF + 2) continue;
+    if (!clearOf(x, z, 4.6) || !spaced(x, z, 1.9)) continue;
+    trees.push({ x, z, s: 0.8 + rnd() * 0.5, r: rnd() * 6.28, forest: true });
+  }
 
-  // Rocks around the quarries and the mine.
+  // Rocks around the quarries and the mines.
   for (const p of pads) {
     if (p.type !== 'quarry' && p.type !== 'goldmine') continue;
     for (let k = 0; k < 7; k++) {
@@ -238,17 +281,16 @@ export function scenery() {
     }
   }
   // A few loose boulders.
-  for (let i = 0; i < 40 && rocks.length < 70; i++) {
-    const x = -55 + rnd() * 110, z = -24 + rnd() * 80;
-    if (Math.hypot(x, z) < WALL_RADII[2] + 3) continue;
+  for (let i = 0; i < 80 && rocks.length < 110; i++) {
+    const x = -50 + rnd() * 100, z = -24 + rnd() * 190;
+    if (!outside(x, z, 3)) continue;
+    if (nearStronghold(x, z, 2)) continue;
     if (distToLanes(x, z) < PATH_HALF + 2) continue;
     if (!clearOf(x, z, 5)) continue;
     rocks.push({ x, z, s: 0.4 + rnd() * 0.5, r: rnd() * 6.28 });
   }
 
-  // Mountains ringing the map, like the cliffs in the reference shots.
   const cliffs = [];
-
   // Crags around the highland, leaving the side that faces the pass open.
   const pass = pads.find((p) => p.id === 'pass');
   const open = Math.atan2(pass.z - MOUNTAIN.z, pass.x - MOUNTAIN.x);
@@ -272,20 +314,16 @@ export function scenery() {
     if (distToLanes(x, z) < PATH_HALF + 1.5) continue;
     rocks.push({ x, z, s: 0.35 + rnd() * 0.6, r: rnd() * 6.28 });
   }
-  for (let i = 0; i < 120; i++) {
-    const t = i / 120;
-    const side = Math.floor(t * 4);
-    const u = (t * 4 - side) * 2 - 1;
-    const e = 60 + rnd() * 8;
-    let x, z;
-    if (side === 0) { x = u * 68; z = -e; }
-    else if (side === 1) { x = e; z = u * 68; }
-    else if (side === 2) { x = -u * 68; z = e; }
-    else { x = -e; z = -u * 68; }
-    // Leave the lane mouths open.
-    if (distToLanes(x, z) < 6) continue;
+
+  // Mountains walling in the map: the north edge, both sides all the way down
+  // the road, and behind the stronghold. Lane mouths stay open.
+  const wall = (x, z) => {
+    if (distToLanes(x, z) < 6) return;
     cliffs.push({ x, z, w: 7 + rnd() * 6, h: 4 + rnd() * 7, d: 7 + rnd() * 6, r: rnd() * 6.28 });
-  }
+  };
+  for (let x = -68; x <= 68; x += 4.6) wall(x, -60 - rnd() * 8);
+  for (let z = -68; z <= 222; z += 4.6) { wall(60 + rnd() * 8, z); wall(-60 - rnd() * 8, z); }
+  for (let x = -68; x <= 68; x += 4.6) wall(x, 214 + rnd() * 8);
 
   return { trees, rocks, cliffs };
 }

@@ -103,11 +103,49 @@ export function rockGeo() {
   return b.build();
 }
 
-export function cliffGeo() {
+export function cliffGeo(color = 0x7b7f86, top = 0x6fae4f) {
   const b = new Builder();
-  b.box(1, 1, 1, 0x7b7f86);
-  b.box(0.8, 0.12, 0.8, 0x6fae4f, { y: 1 });
+  b.box(1, 1, 1, color);
+  b.box(0.8, 0.12, 0.8, top, { y: 1 });
   return b.build();
+}
+
+export function palmGeo() {
+  const b = new Builder();
+  for (let i = 0; i < 5; i++) b.cyl(0.2 - i * 0.015, 0.24 - i * 0.015, 0.75, 6, i % 2 ? 0x9a7448 : 0x8a6640, { x: i * 0.08, y: i * 0.72, rz: -0.05 });
+  for (let k = 0; k < 6; k++) {
+    const a = (k / 6) * Math.PI * 2;
+    b.box(0.5, 0.08, 1.9, k % 2 ? 0x4c9a3c : 0x5db04a, { x: 0.4 + Math.sin(a) * 0.9, y: 3.55, z: Math.cos(a) * 0.9, ry: a, rx: 0.35 });
+  }
+  b.ball(0.3, 0x7a5a32, { x: 0.4, y: 3.5 });
+  return b.build();
+}
+
+export function cactusGeo() {
+  const b = new Builder();
+  b.cyl(0.32, 0.36, 2.6, 7, 0x4f9a4a);
+  b.cyl(0.18, 0.2, 1.0, 6, 0x4f9a4a, { x: 0.55, y: 1.0 });
+  b.cyl(0.18, 0.2, 0.5, 6, 0x4f9a4a, { x: 0.35, y: 1.0, rz: Math.PI / 2 });
+  b.cyl(0.16, 0.18, 0.8, 6, 0x5aa954, { x: -0.5, y: 1.4 });
+  b.cyl(0.16, 0.18, 0.4, 6, 0x5aa954, { x: -0.3, y: 1.4, rz: Math.PI / 2 });
+  b.ball(0.32, 0x5aa954, { y: 2.6, sy: 0.6 });
+  b.ball(0.12, 0xe85a8a, { y: 2.85 });
+  return b.build();
+}
+
+export function snowPineGeo() {
+  const b = new Builder();
+  b.cyl(0.18, 0.24, 1.0, 6, C.trunk);
+  b.cone(1.25, 1.7, 7, 0x2f6d48, { y: 0.7 });
+  b.cone(1.27, 0.5, 7, 0xf4f8fc, { y: 1.15 });
+  b.cone(1.0, 1.5, 7, 0x3a7a52, { y: 1.6 });
+  b.cone(1.02, 0.45, 7, 0xf4f8fc, { y: 2.05 });
+  b.cone(0.7, 1.3, 7, 0xf4f8fc, { y: 2.45 });
+  return b.build();
+}
+
+export function treeGeo(kind) {
+  return { pine: pineGeo, palm: palmGeo, cactus: cactusGeo, snowpine: snowPineGeo }[kind]();
 }
 
 // ----------------------------------------------------------------- walls
@@ -170,7 +208,7 @@ function windowRow(b, w, y, z, n, color = 0x3b4b63) {
 export function castleGeo(level) {
   const b = new Builder();
   // Courtyard plinth.
-  b.cyl(4.5, 4.7, 0.3, 10, C.sandDark);
+  b.box(9.4, 0.3, 9.4, C.sandDark);
   // Keep.
   const kh = 4.6 + level * 0.9;
   b.box(4.4, kh, 4.0, C.stone, { y: 0.3 });
@@ -730,3 +768,155 @@ export function passGeo() {
   b.add(new THREE.DodecahedronGeometry(0.5, 0), C.rockDark, { x: 2.7, y: 0.3, z: -1.2 });
   return b.build();
 }
+
+
+// ------------------------------------------------------------- the stronghold
+// Built around x = 0; z is in world space. Dark stone, red roofs, spikes.
+const DS = 0x4f4a57, DS2 = 0x3c3843, ROOF = 0x9c2a26, BAN = 0xc0302a;
+const SG = 179, SZ = 190, SH = 15;   // keep in step with STRONGHOLD in map.js
+
+export function strongholdWallsGeo() {
+  const b = new Builder();
+  const back = SZ + 12;
+  // Front wall either side of the gate, side walls, back wall.
+  for (const sgn of [-1, 1]) {
+    b.box(SH - 6.5, 6, 2.2, DS, { x: sgn * (6.5 + (SH - 6.5) / 2), z: SG });
+    b.box(2.2, 6, back - SG, DS, { x: sgn * SH, z: (SG + back) / 2 });
+    for (let i = 0; i < 4; i++) b.cone(0.4, 1.2, 4, DS2, { x: sgn * (8 + i * 2), y: 6, z: SG - 0.6 });
+  }
+  b.box(SH * 2 + 2.2, 6, 2.2, DS, { z: back });
+  // Crenellations.
+  for (let x = -SH; x <= SH; x += 2.4) b.box(1.1, 0.9, 2.3, DS2, { x, y: 6, z: back });
+  // Spiked barricades out front.
+  for (let i = -3; i <= 3; i++) {
+    if (Math.abs(i) < 1) continue;
+    b.box(0.25, 0.25, 2.6, 0x5a3a24, { x: i * 3.2, y: 0.7, z: SG - 4, rx: 0.6 });
+    b.box(0.25, 0.25, 2.6, 0x5a3a24, { x: i * 3.2, y: 0.7, z: SG - 4, rx: -0.6 });
+  }
+  // War banners.
+  for (const x of [-13.5, 13.5]) {
+    b.box(0.15, 9, 0.15, 0x2a2a2e, { x, z: SG - 1.2 });
+    b.box(1.6, 2.6, 0.06, BAN, { x: x + (x < 0 ? 0.85 : -0.85), y: 6, z: SG - 1.2 });
+  }
+  return b.build();
+}
+
+export function strongholdGateGeo(broken) {
+  const b = new Builder();
+  for (const sgn of [-1, 1]) {
+    b.box(3.2, broken ? 4 : 9, 3.4, DS2, { x: sgn * 4.8, z: SG });
+    if (!broken) b.cone(2.4, 2.8, 4, ROOF, { x: sgn * 4.8, y: 9, z: SG, ry: Math.PI / 4 });
+  }
+  if (broken) {
+    for (let i = 0; i < 9; i++) b.add(new THREE.DodecahedronGeometry(0.6 + (i % 3) * 0.35, 0), i % 2 ? DS : DS2, { x: -3 + (i % 5) * 1.5, y: 0.4, z: SG - 1 + Math.floor(i / 5) * 1.4 });
+    b.box(5, 0.3, 1.2, 0x3a2a1c, { y: 0.15, z: SG - 2.5, ry: 0.3 });
+  } else {
+    b.box(6.4, 1.6, 3.4, DS2, { y: 6, z: SG });
+    for (let i = 0; i < 6; i++) b.box(0.18, 6, 0.3, 0x2a2a2e, { x: -2.5 + i, z: SG - 1 });
+    for (let i = 0; i < 4; i++) b.box(6, 0.18, 0.3, 0x2a2a2e, { y: 1 + i * 1.4, z: SG - 1 });
+    b.cyl(0.5, 0.5, 0.2, 8, 0xd4a42a, { y: 7.2, z: SG - 1.75, rx: Math.PI / 2 });
+  }
+  return b.build();
+}
+
+export function strongholdTowerGeo(x, broken) {
+  const b = new Builder();
+  const z = SG + 3;
+  if (broken) {
+    b.cyl(2.2, 2.5, 3, 8, DS2, { x, z });
+    for (let i = 0; i < 6; i++) b.add(new THREE.DodecahedronGeometry(0.7, 0), DS, { x: x - 2 + (i % 3) * 2, y: 0.4, z: z - 3 + Math.floor(i / 3) * 1.4 });
+    return b.build();
+  }
+  b.cyl(2.0, 2.4, 10, 8, DS, { x, z });
+  b.cyl(2.6, 2.6, 0.6, 8, DS2, { x, y: 10, z });
+  for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2; b.box(0.7, 0.8, 0.5, DS2, { x: x + Math.cos(a) * 2.4, y: 10.6, z: z + Math.sin(a) * 2.4, ry: -a }); }
+  b.cone(2.4, 3.2, 8, ROOF, { x, y: 11.2, z });
+  b.box(0.5, 1, 0.1, 0xffb030, { x, y: 6, z: z - 2.2 });
+  return b.build();
+}
+
+export function strongholdKeepGeo(broken) {
+  const b = new Builder();
+  const z = SZ + 4;
+  if (broken) {
+    b.box(10, 3.5, 8, DS2, { z });
+    for (let i = 0; i < 12; i++) b.add(new THREE.DodecahedronGeometry(0.8 + (i % 3) * 0.4, 0), i % 2 ? DS : DS2, { x: -5 + (i % 6) * 2, y: 3.5, z: z - 3 + Math.floor(i / 6) * 4 });
+    b.box(0.2, 4, 0.2, 0x2a2a2e, { x: 2, y: 3.5, z });
+    b.box(2, 1.2, 0.06, 0x2a5fd0, { x: 3, y: 6.3, z });   // the king's banner flies over the ruin
+    return b.build();
+  }
+  b.box(11, 12, 9, DS, { z });
+  b.box(11.6, 0.6, 9.6, DS2, { y: 12, z });
+  for (let x = -5; x <= 5; x += 2) b.box(1, 1, 9.8, DS2, { x, y: 12.6, z });
+  for (const sx of [-5.5, 5.5]) for (const sz of [-4.5, 4.5]) {
+    b.cyl(1.3, 1.5, 15, 8, DS2, { x: sx, z: z + sz });
+    b.cone(1.8, 3.4, 8, ROOF, { x: sx, y: 15, z: z + sz });
+  }
+  b.roof(8, 4, 6, ROOF, { y: 12.6, z });
+  for (let i = 0; i < 3; i++) b.box(0.8, 1.6, 0.1, 0xffb030, { x: -3 + i * 3, y: 8, z: z - 4.55 });
+  b.box(2.4, 3.4, 0.1, BAN, { y: 4.5, z: z - 4.55 });
+  b.box(0.2, 5, 0.2, 0x2a2a2e, { y: 16.6, z });
+  b.box(2.2, 1.4, 0.06, BAN, { x: 1.2, y: 20.4, z });
+  return b.build();
+}
+
+// A forward camp: palisade square, tents, a watchtower and the king's flag.
+export function outpostGeo() {
+  const b = new Builder();
+  b.box(5.8, 0.1, 5.8, 0xb59a6a);
+  for (const sgn of [-1, 1]) {
+    for (let i = 0; i < 9; i++) {
+      const t = -2.6 + i * 0.65;
+      b.cyl(0.14, 0.16, 1.4, 5, C.wood, { x: t, z: sgn * 2.8 });
+      if (Math.abs(t) > 0.8 || sgn > 0) b.cyl(0.14, 0.16, 1.4, 5, C.wood, { x: sgn * 2.8, z: t });
+    }
+  }
+  b.roof(1.8, 1.3, 1.6, C.cloth, { x: -1.2, y: 0.1, z: 1.0 });
+  b.roof(1.8, 1.3, 1.6, 0xd8cfb8, { x: -1.0, y: 0.1, z: -1.2, ry: Math.PI / 2 });
+  // Watchtower in the corner the bolts fly from.
+  for (const dx of [-0.6, 0.6]) for (const dz of [-0.6, 0.6]) b.box(0.18, 4.4, 0.18, C.woodDark, { x: 1.8 + dx, z: -1.8 + dz });
+  b.box(1.8, 0.2, 1.8, C.plank, { x: 1.8, y: 4.3, z: -1.8 });
+  b.roof(2.0, 0.9, 2.0, C.roofBlue, { x: 1.8, y: 5.3, z: -1.8 });
+  b.box(0.08, 3, 0.08, C.ironDark, { x: 0.8, y: 0.1, z: 1.6 });
+  b.box(1.2, 0.8, 0.05, C.blue, { x: 1.45, y: 2.6, z: 1.6 });
+  b.cyl(0.25, 0.25, 0.08, 8, C.gold, { x: 1.45, y: 2.6, z: 1.64, rx: Math.PI / 2 });
+  // Crates and a fire.
+  b.box(0.6, 0.6, 0.6, C.woodLight, { x: 0.6, y: 0.1, z: -0.2 });
+  b.box(0.5, 0.5, 0.5, C.wood, { x: 1.1, y: 0.1, z: 0.4 });
+  b.cyl(0.4, 0.45, 0.2, 7, C.stoneDark, { x: -0.2, y: 0.1, z: -0.2 });
+  b.cone(0.25, 0.5, 5, 0xff8a2a, { x: -0.2, y: 0.3, z: -0.2 });
+  return b.build();
+}
+
+export function logGeo() {
+  const b = new Builder();
+  b.cyl(0.18, 0.18, 1.0, 7, C.wood, { y: -0.5, rz: Math.PI / 2, m: null });
+  b.cyl(0.16, 0.16, 0.9, 7, C.woodLight, { y: -0.1, z: 0.22, rz: Math.PI / 2 });
+  b.cyl(0.16, 0.16, 0.9, 7, C.woodDark, { y: -0.1, z: -0.22, rz: Math.PI / 2 });
+  return b.build();
+}
+
+// The tree boss: bark body, leafy crown, branch arms.
+RIGS.treant = () => {
+  const bark = 0x6a4a2e, barkDark = 0x4e3420, leaf = 0x3f8f3a;
+  const parts = humanoid({
+    body: bark, legs: barkDark, head: 0x7a5a3a, bulk: 1.45,
+    hat: (b, y) => {
+      b.ball(0.65, leaf, { y: y + 0.35 }, 0);
+      b.ball(0.45, 0x4fa64a, { x: 0.35, y: y + 0.6, z: -0.1 }, 0);
+      b.ball(0.4, 0x357a32, { x: -0.35, y: y + 0.55, z: 0.1 }, 0);
+      b.box(0.36, 0.08, 0.06, 0xffd84a, { y: y - 0.02, z: 0.3 });
+    },
+    extra: (b, y) => {
+      b.box(0.14, 0.7, 0.14, barkDark, { x: -0.5, y: y + 0.45, rz: 0.7 });
+      b.ball(0.3, leaf, { x: -0.85, y: y + 0.9 }, 0);
+      b.box(0.9, 0.2, 0.5, 0x4fa64a, { y: y + 0.62 });
+    },
+    arm: (b, y) => {
+      b.box(0.24, 0.6, 0.24, bark, { x: 0.46, y: y - 0.5 });
+      b.box(0.12, 0.5, 0.12, barkDark, { x: 0.46, y: y - 0.75, z: 0.25, rx: 0.8 });
+      b.ball(0.32, leaf, { x: 0.46, y: y - 0.55, z: 0.45 }, 0);
+    },
+  });
+  return { parts, height: 2.6 };
+};

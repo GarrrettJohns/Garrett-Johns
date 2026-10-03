@@ -5,12 +5,16 @@
 
 import {
   BUILDINGS, HERO, HERO_UPGRADES, WEAPONS, WALLS, UNITS, ENEMIES, VILLAGER,
-  ARMOR_UPGRADE, FINAL_WAVE, waveSpec,
+  ARMOR_UPGRADE, waveSpec, levelInfo, levelMul,
 } from './config.js';
 import {
-  LANES, LANE, lanePoint, laneCrossing, FIXED_PADS, START, BRIDGE, RIVER_Z,
-  RIVER_HALF, BOUNDS, CASTLE_R, distToLanes, PATH_HALF, GRID,
+  LANES, LANE, lanePoint, laneCrossing, laneAtZ, FIXED_PADS, START, BRIDGE, RIVER_Z,
+  RIVER_HALF, BOUNDS, CASTLE_R, distToLanes, PATH_HALF, GRID, STRONGHOLD, FRONTIERS, OUTPOSTS,
 } from './map.js';
+
+const OUTPOST = Object.fromEntries(OUTPOSTS.map((o, i) => [o.id, { ...o, index: i }]));
+// Distance from a point to the castle's square footprint (0 inside).
+const castleDist = (x, z) => hyp(Math.max(Math.abs(x) - CASTLE_R, 0), Math.max(Math.abs(z) - CASTLE_R, 0));
 
 const TAU = Math.PI * 2;
 const MAX_GROUND_COINS = 360;
@@ -61,6 +65,11 @@ const OBJECTIVES = [
     at: () => null,
   },
   {
+    text: 'Tap the Castle and upgrade your bow',
+    done: (w) => w.hero.up.damage + w.hero.up.rate + w.hero.up.range >= 1,
+    at: (w) => ({ x: 0, z: CASTLE_R + 1 }),
+  },
+  {
     text: 'Tap 🔨 Build and place a House inside the walls',
     done: (w) => w.count('house') >= 2,
     at: (w) => w.siteOf('house'),
@@ -76,7 +85,7 @@ const OBJECTIVES = [
     at: (w) => w.b['lumber-1'],
   },
   {
-    text: 'Clear the Mountain Pass to reach the gold',
+    text: 'Clear the Mountain Pass (it needs wood)',
     done: (w) => w.built('pass'),
     at: (w) => w.b.pass,
   },
@@ -91,14 +100,9 @@ const OBJECTIVES = [
     at: (w) => ({ x: 0, z: CASTLE_R + 1 }),
   },
   {
-    text: 'Build Barracks to raise an army',
-    done: (w) => w.count('barracks') >= 1,
-    at: (w) => w.siteOf('barracks'),
-  },
-  {
-    text: 'Tap the Barracks and train an Archer',
+    text: 'Tap the Castle, open Army and train an Archer',
     done: (w) => w.armyCount('archer') >= 1,
-    at: (w) => w.firstOf('barracks'),
+    at: (w) => ({ x: 0, z: CASTLE_R + 1 }),
   },
   {
     text: 'Build a Quarry to cut stone',
@@ -106,29 +110,65 @@ const OBJECTIVES = [
     at: (w) => w.b['quarry-1'],
   },
   {
-    text: 'Build a Stable and an Archery Range',
-    done: (w) => w.count('stable') >= 1 && w.count('range') >= 1,
-    at: (w) => w.siteOf('stable') || w.siteOf('range'),
-  },
-  {
     text: 'Tap the Castle to expand the walls',
     done: (w) => w.walls.level >= 1,
     at: (w) => ({ x: 0, z: CASTLE_R + 1 }),
   },
   {
-    text: `Hold the kingdom through wave ${FINAL_WAVE}`,
-    done: (w) => w.wave >= FINAL_WAVE,
-    at: () => null,
+    text: 'Claim the road south: build the Riverford Outpost',
+    done: (w) => w.built('outpost-1'),
+    at: (w) => w.b['outpost-1'],
+  },
+  {
+    text: 'Push on: build the Stonehill Outpost',
+    done: (w) => w.built('outpost-2'),
+    at: (w) => w.b['outpost-2'],
+  },
+  {
+    text: 'Build the Siege Camp in sight of the stronghold',
+    done: (w) => w.built('outpost-3'),
+    at: (w) => w.b['outpost-3'],
+  },
+  {
+    text: 'Lay siege! Break the gate and bring down the keep',
+    done: (w) => w.won,
+    at: (w) => (w.phase === 'wave' ? { x: STRONGHOLD.x, z: STRONGHOLD.gateZ - 2 } : null),
   },
 ];
 
 export class World {
-  constructor(snapshot = null) {
+  // `carry` brings the king's upgrades and army into a new level.
+  constructor(snapshot = null, { level = 1, carry = null } = {}) {
     this.events = [];
     this.nextId = 1;
     this.t = 0;
+    this.level = level;
     this.reset();
+    if (carry) this.applyCarry(carry);
     if (snapshot) this.load(snapshot);
+  }
+
+  get levelInfo() { return levelInfo(this.level); }
+
+  // What the king takes with him when a level is won.
+  carryOver() {
+    const h = this.hero;
+    return {
+      up: { ...h.up }, weapons: { ...h.weapons }, weapon: h.weapon, armor: this.armor,
+      army: [...this.allies.map((a) => a.kind), ...this.list('tower').flatMap((t) => Array(t.garrison).fill('archer'))],
+      coins: Math.min(h.coins, 150),
+    };
+  }
+
+  applyCarry(c) {
+    const h = this.hero;
+    h.up = { ...h.up, ...c.up };
+    h.weapons = { ...c.weapons };
+    h.weapon = c.weapon;
+    h.hp = this.heroMaxHp;
+    h.coins = c.coins || 0;
+    this.armor = c.armor || 0;
+    for (const k of c.army || []) this.addSoldier(k, rand(-3, 3), CASTLE_R + 2 + rand(0, 2));
   }
 
   emit(type, data = {}) { this.events.push({ type, ...data }); }
@@ -141,11 +181,10 @@ export class World {
     this.res = { wood: 0, stone: 0 };
     this.funds = {};
     this.objective = 0;
-    this.victoryShown = false;
     this.stats = { kills: 0 };
 
     this.hero = {
-      x: START.hero.x, z: START.hero.z, vx: 0, vz: 0, yaw: Math.PI,
+      x: START.hero.x, z: START.hero.z, vx: 0, vz: 0, yaw: Math.PI, healing: false,
       hp: HERO.hp, alive: true, respawnT: 0, atkCd: 0, lastHurt: -99,
       coins: 0, moving: false, fundT: 0, fundAcc: 0, fundId: null,
       up: { damage: 0, rate: 0, range: 0, speed: 0, hp: 0, carry: 0, magnet: 0 },
@@ -155,11 +194,13 @@ export class World {
     this.b = {};
     this.walls = { level: 0, gate: 0 };
     this.armor = 0;
+    this.siege = false;
+    this.won = false;
 
     this.addBuilding({ id: 'castle', type: 'castle', x: 0, z: 0, state: 'built', level: 0 });
     this.castleHp = BUILDINGS.castle.levels[0].hp;
     for (const p of FIXED_PADS) {
-      this.addBuilding({ id: p.id, type: p.type, x: p.x, z: p.z, lane: p.lane, fixed: true, state: 'site', level: 0 });
+      this.addBuilding({ id: p.id, type: p.type, x: p.x, z: p.z, lane: p.lane, needs: p.needs, fixed: true, state: 'site', level: 0 });
     }
     this.addBuilding({ id: 'house-start', type: 'house', ...START.house, state: 'built', level: 0 });
     this.b[START.tower].state = 'built';
@@ -207,7 +248,14 @@ export class World {
   get soldiers() { return this.allies.length + this.list('tower').reduce((a, b) => a + b.garrison, 0); }
   get beds() { return this.list('house').filter((b) => b.state === 'built').reduce((a, b) => a + BUILDINGS.house.levels[b.level].beds, 0); }
   get pop() { return this.villagers.length + this.soldiers; }
-  get armyCap() { return this.list('barracks').filter((b) => b.state === 'built').reduce((a, b) => a + BUILDINGS.barracks.levels[b.level].army, 0); }
+  get armyCap() {
+    return BUILDINGS.castle.levels[this.b.castle.level].army
+      + this.list('barracks').filter((b) => b.state === 'built').reduce((a, b) => a + BUILDINGS.barracks.levels[b.level].army, 0);
+  }
+  // How far south the king has claimed the road.
+  get outposts() { return OUTPOSTS.filter((o) => this.built(o.id)).length; }
+  get frontier() { return FRONTIERS[this.outposts]; }
+  get siegeReady() { return this.outposts === OUTPOSTS.length; }
   get wallRadius() { return WALLS.levels[this.walls.level].radius; }
   get castleMax() { return BUILDINGS.castle.levels[this.b.castle.level].hp; }
   get lanesOpen() { return LANES.filter((l) => l.opens <= Math.max(1, this.wave + (this.phase === 'wave' ? 0 : 1))); }
@@ -219,6 +267,7 @@ export class World {
   nearestCoin() {
     let best = null, bd = Infinity;
     for (const c of this.coins) {
+      if (c.res) continue;
       const d = hyp(c.x - this.hero.x, c.z - this.hero.z);
       if (d < bd) { bd = d; best = c; }
     }
@@ -230,6 +279,8 @@ export class World {
     if (b.state === 'built') return true;
     const t = BUILDINGS[b.type];
     if (b.type === 'tower') return LANE[b.lane].opens <= this.wave + 3;
+    if (b.type === 'outpost') return OUTPOST[b.id].index === 0 || this.built(OUTPOSTS[OUTPOST[b.id].index - 1].id);
+    if (b.needs && !this.built(b.needs)) return false;
     if (t.needs && !this.built(t.needs)) return false;
     if (b.id === 'lumber-3') return this.b.castle.level >= 1;
     if (b.id === 'quarry-2') return this.count('quarry') >= 1;
@@ -258,6 +309,14 @@ export class World {
       const b = this.b[a];
       const t = BUILDINGS[b.type];
       const lvl = t.levels[0];
+      if (b.type === 'outpost') {
+        const o = OUTPOST[b.id];
+        return {
+          key, icon: t.icon, title: o.name, cost: costText(o.cost),
+          locked: this.wave < o.wave ? `Clear wave ${o.wave}` : null,
+          apply: () => w.finishBuilding(b),
+        };
+      }
       return {
         key, icon: t.icon, title: b.type === 'tower' ? lvl.name : t.name, cost: costText(lvl.cost),
         locked: this.lockReason({ castle: t.castle || lvl.castle }),
@@ -344,36 +403,42 @@ export class World {
     return null;
   }
 
-  // Menu contents for a built building.
+  // Menu contents for a built building, as tabs of items. The castle holds
+  // the king's own upgrades and trains troops as well as upgrading itself.
   menu(b) {
-    const items = [];
     const t = b.type;
+    let tabs;
     if (t === 'castle') {
-      items.push('up:castle', 'walls', 'gates');
+      tabs = [
+        { tab: 'King', items: ['hero:damage', 'hero:rate', 'hero:range', 'weapon:bow', 'weapon:crossbow', 'weapon:fire', 'weapon:multi', 'hero:speed', 'hero:hp', 'hero:carry', 'hero:magnet'] },
+        { tab: 'Army', items: ['train:castle:knight', 'train:castle:archer', 'train:castle:raider', 'armor'] },
+        { tab: 'Castle', items: ['up:castle', 'walls', 'gates'] },
+      ];
     } else if (t === 'barracks') {
-      items.push(`train:${b.id}:knight`, `train:${b.id}:archer`, `train:${b.id}:raider`, `up:${b.id}`, 'armor');
+      tabs = [{ tab: 'Barracks', items: [`train:${b.id}:knight`, `train:${b.id}:archer`, `train:${b.id}:raider`, `up:${b.id}`, 'armor'] }];
     } else if (t === 'stable') {
-      items.push('hero:speed', 'hero:hp', 'hero:carry', 'hero:magnet');
+      tabs = [{ tab: 'Stable', items: ['hero:speed', 'hero:hp', 'hero:carry', 'hero:magnet'] }];
     } else if (t === 'range') {
-      items.push('hero:damage', 'hero:rate', 'hero:range', 'weapon:bow', 'weapon:crossbow', 'weapon:fire', 'weapon:multi');
-    } else if (BUILDINGS[t].levels.length > 1) {
-      items.push(`up:${b.id}`);
+      tabs = [{ tab: 'Range', items: ['hero:damage', 'hero:rate', 'hero:range', 'weapon:bow', 'weapon:crossbow', 'weapon:fire', 'weapon:multi'] }];
+    } else {
+      tabs = [{ tab: BUILDINGS[t].name, items: BUILDINGS[t].levels.length > 1 ? [`up:${b.id}`] : [] }];
     }
-    return items.map((k) => this.item(k)).filter(Boolean);
+    return tabs.map((g) => ({ tab: g.tab, items: g.items.map((k) => this.item(k)).filter(Boolean) }));
   }
 
   info(b) {
     const t = BUILDINGS[b.type];
     const lv = t.levels[b.level];
     const lines = [];
-    if (b.type === 'castle') lines.push(`Castle ${Math.ceil(this.castleHp)}/${this.castleMax}`, `${this.pop}/${this.beds} people · ${this.villagers.length} villagers`);
+    if (b.type === 'castle') lines.push(`Castle ${Math.ceil(this.castleHp)}/${this.castleMax}`, `Army ${this.soldiers}/${this.armyCap}`, `${this.pop}/${this.beds} people · ${this.villagers.length} free`);
+    if (b.type === 'outpost') lines.push(`${OUTPOST[b.id].name} · fires on passing enemies`);
     if (b.type === 'house') lines.push(`${lv.beds} beds`);
     if (b.type === 'farm') lines.push(`${this.workersAt(b)}/${lv.workers} farmers`);
     if (b.type === 'goldmine') lines.push(`${this.workersAt(b)}/${lv.workers} miners · pile ${b.pile}/${lv.pile}`);
     if (b.type === 'lumber' || b.type === 'quarry') lines.push(`${this.workersAt(b)}/${lv.workers} workers · ${lv.carry} per trip`);
     if (b.type === 'tower') lines.push(`${lv.name} · ${b.garrison}/${lv.slots} archers posted`);
     if (b.type === 'barracks') lines.push(`Army ${this.soldiers}/${this.armyCap} · ${this.villagers.length} villagers free to enlist`);
-    return { name: b.type === 'tower' ? lv.name : t.name, icon: t.icon, level: b.level + 1, max: t.levels.length, desc: t.desc, lines };
+    return { name: b.type === 'tower' ? lv.name : b.type === 'outpost' ? OUTPOST[b.id].name : t.name, icon: t.icon, level: b.level + 1, max: t.levels.length, desc: t.desc, lines };
   }
 
   missing(cost) {
@@ -383,7 +448,6 @@ export class World {
     return m;
   }
 
-  // Pay up to `amount` coins into an item. Returns coins paid.
   // Everything the king is short of, gold included.
   shortfall(cost) {
     const m = [];
@@ -422,6 +486,11 @@ export class World {
     b.born = this.t;
     this.emit('built', { id: b.id, x: b.x, z: b.z, type: b.type });
     if (b.type === 'bridge') this.emit('toast', { text: 'The forest is open! Build a Lumber Camp.' });
+    if (b.type === 'pass') this.emit('toast', { text: 'The mountains are open: gold to mine, stone to cut.' });
+    if (b.type === 'outpost') {
+      this.emit('outpost', { name: OUTPOST[b.id].name, last: this.siegeReady });
+      // Anyone already beyond the old frontier stays put; new troops muster further back.
+    }
   }
 
   levelUp(b) {
@@ -439,16 +508,15 @@ export class World {
     const lock = this.lockReason({ castle: t.castle });
     if (lock) return { ok: false, reason: lock };
     const h = t.size / 2;
-    const R = this.wallRadius - 1.2;
-    const corners = [[x - h, z - h], [x + h, z - h], [x - h, z + h], [x + h, z + h]];
-    if (corners.some(([cx, cz]) => hyp(cx, cz) > R)) return { ok: false, reason: 'Must be inside the walls' };
-    // Square vs castle circle.
-    const dx = Math.max(Math.abs(x) - h, 0), dz = Math.max(Math.abs(z) - h, 0);
-    if (hyp(dx, dz) < CASTLE_R + 0.8) return { ok: false, reason: 'Too close to the castle' };
+    const R = this.wallRadius - 1.4;
+    if (Math.abs(x) + h > R || Math.abs(z) + h > R) return { ok: false, reason: 'Must be inside the walls' };
+    // Keep a lane open around everything so the king can always ride between.
+    const GAP = 2;
+    if (Math.abs(x) < CASTLE_R + h + GAP && Math.abs(z) < CASTLE_R + h + GAP) return { ok: false, reason: 'Too close to the castle' };
     for (const o of Object.values(this.b)) {
       if (o.type === 'castle') continue;
-      const oh = o.size / 2 + 0.4;
-      if (Math.abs(o.x - x) < h + oh && Math.abs(o.z - z) < h + oh) return { ok: false, reason: 'Something is in the way' };
+      const oh = o.size / 2 + GAP;
+      if (Math.abs(o.x - x) < h + oh && Math.abs(o.z - z) < h + oh) return { ok: false, reason: 'Too close to another building' };
     }
     for (let i = 0; i <= 2; i++) for (let j = 0; j <= 2; j++) {
       const px = x - h + i * h, pz = z - h + j * h;
@@ -487,7 +555,13 @@ export class World {
       const p = lanePoint(lane, s);
       const prev = old[lane.id];
       const frac = prev ? prev.hp / prev.max : 1;
-      this.gates[lane.id] = { gate: true, lane: lane.id, s, x: p.x, z: p.z, dx: p.dx, dz: p.dz, max, hp: this.phase === 'wave' ? max * frac : max };
+      // Sit the gate squarely in the wall it passes through.
+      const ns = Math.abs(p.z) >= Math.abs(p.x);
+      const x = ns ? p.x : Math.sign(p.x) * R, z = ns ? Math.sign(p.z) * R : p.z;
+      this.gates[lane.id] = {
+        gate: true, lane: lane.id, s, x, z, side: ns ? 'ns' : 'ew', dx: ns ? 0 : Math.sign(p.x), dz: ns ? Math.sign(p.z) : 0,
+        max, hp: this.phase === 'wave' ? max * frac : max,
+      };
     }
   }
 
@@ -496,20 +570,47 @@ export class World {
     if (this.phase !== 'build') return false;
     const n = this.wave + 1;
     const lanes = LANES.filter((l) => l.opens <= n);
-    const spec = waveSpec(n, lanes.map((l) => l.id));
+    const spec = waveSpec(n, lanes.map((l) => l.id), this.level);
+    // During a siege the king is away, so the attack on home is lighter.
+    if (this.siegeReady) for (const g of spec.groups) g.count = Math.ceil(g.count * 0.5);
     const list = [];
     for (const g of spec.groups) for (let i = 0; i < g.count; i++) list.push(g.kind);
     // Grunts lead, heavier units are mixed into the back half.
     list.sort((a, b) => order(a) - order(b) + rand(-1.2, 1.2));
     this.spawnQueue = list.map((kind, i) => ({ kind, lane: lanes[i % lanes.length].id }));
-    if (spec.boss) this.spawnQueue.push({ kind: 'boss', lane: lanes[0].id, boss: spec.boss });
+    this.siege = this.siegeReady;
+    // The siege's warlord waits inside the keep instead of marching.
+    if (spec.boss && !this.siege) this.spawnQueue.push({ kind: spec.boss.kind, lane: lanes[0].id, boss: spec.boss });
     this.spec = spec;
     this.spawnT = 1;
     this.phase = 'wave';
     for (const g of Object.values(this.gates)) g.hp = g.max;
+    if (this.siege) this.raiseStronghold();
     const fresh = lanes.filter((l) => l.opens === n && n > 1);
-    this.emit('waveStart', { n, total: spec.total, fresh: fresh.map((l) => l.name), boss: spec.boss?.name });
+    this.emit('waveStart', { n, total: spec.total, fresh: fresh.map((l) => l.name), boss: spec.boss?.name, siege: this.siege });
     return true;
+  }
+
+  // The siege: the stronghold's gate, two towers and keep become targets.
+  // The keep can't be harmed until the gate is down.
+  raiseStronghold() {
+    const S = STRONGHOLD;
+    const mul = levelMul(this.level);
+    const add = (kind, x, z, extra = {}) => {
+      const def = ENEMIES[kind];
+      const e = {
+        id: this.id(), kind, static: true, lane: LANE.S, s: 0, off: 0, x, z, yaw: 0,
+        hp: def.hp * mul, max: def.hp * mul, dmg: def.dmg * mul, atkCd: rand(0, 1), speed: 0, target: null, retarget: 0,
+        burn: 0, burnDps: 0, flash: 0, anim: 0, moving: false, attackT: 0, def, scale: 1, coins: def.coins, name: null, ...extra,
+      };
+      this.enemies.push(e);
+      return e;
+    };
+    this.sgGate = add('sgate', S.x, S.gateZ + 1);
+    add('stower', S.x - 11, S.gateZ + 3);
+    add('stower', S.x + 11, S.gateZ + 3);
+    this.sgKeep = add('skeep', S.x, S.z + 4, { invuln: true });
+    this.reinforceT = 30;
   }
 
   spawnEnemy(q) {
@@ -517,15 +618,17 @@ export class World {
     const spec = this.spec;
     const hp = def.hp * spec.hpMul * (q.boss ? q.boss.hpMul : 1);
     const lane = LANE[q.lane];
+    // Southern troops muster just past the frontier (or at the stronghold gate).
+    const s0 = q.s ?? (lane.id === 'S' ? laneAtZ(lane, Math.min(STRONGHOLD.gateZ, this.frontier + 10)) : 0);
     const e = {
-      id: this.id(), kind: q.kind, lane, s: 0, off: rand(-1, 1) * (q.kind === 'boss' ? 0 : 1.1),
+      id: this.id(), kind: q.kind, lane, s: s0, off: rand(-1, 1) * (q.kind === 'boss' ? 0 : 1.1),
       x: 0, z: 0, yaw: 0, hp, max: hp, dmg: def.dmg * spec.dmgMul, atkCd: rand(0, 0.5),
       speed: def.speed * rand(0.92, 1.08), target: null, retarget: Math.random() * 0.25,
       burn: 0, burnDps: 0, flash: 0, anim: Math.random() * 10, moving: true, attackT: 0,
       def, scale: q.boss ? q.boss.scale : def.scale || 1, coins: q.boss ? q.boss.coins : def.coins,
       name: q.boss ? q.boss.name : null,
     };
-    lanePoint(lane, 0, tmpP);
+    lanePoint(lane, s0, tmpP);
     e.x = tmpP.x - tmpP.dz * e.off;
     e.z = tmpP.z + tmpP.dx * e.off;
     this.enemies.push(e);
@@ -533,21 +636,23 @@ export class World {
   }
 
   // --------------------------------------------------------------- coins
-  dropCoin(x, z, value = 1, pop = 1) {
+  // Coins on the ground. `res: 'wood'` makes it a bundle of logs instead,
+  // which goes to the kingdom's stores rather than the king's stack.
+  dropCoin(x, z, value = 1, pop = 1, res = null) {
     if (this.coins.length >= MAX_GROUND_COINS) {
       // Fold into the nearest coin rather than spawn another.
-      let best = this.coins[0], bd = Infinity;
-      for (const c of this.coins) { const d = hyp(c.x - x, c.z - z); if (d < bd) { bd = d; best = c; } }
-      best.value += value;
-      return;
+      let best = null, bd = Infinity;
+      for (const c of this.coins) { if (c.res !== res) continue; const d = hyp(c.x - x, c.z - z); if (d < bd) { bd = d; best = c; } }
+      if (best) { best.value += value; return; }
     }
     const a = Math.random() * TAU;
     const sp = pop ? rand(1.5, 4) : 0;
     this.coins.push({
       id: this.id(), x, z, y: pop ? 0.6 : 0.15, vx: Math.cos(a) * sp, vz: Math.sin(a) * sp, vy: pop ? rand(4, 7) : 0,
-      value, fly: false, age: 0, spin: Math.random() * TAU,
+      value, fly: false, age: 0, spin: Math.random() * TAU, res,
     });
   }
+
 
   burstCoins(x, z, total) {
     const n = Math.min(total, 30);
@@ -585,9 +690,18 @@ export class World {
     return [{ x: bx, z: bz }];
   }
 
+  // Loads go to the castle, or to an outpost if one is closer.
   deliveryPoint(v) {
     const a = Math.atan2(v.z, v.x);
-    return { x: Math.cos(a) * (CASTLE_R + 0.6), z: Math.sin(a) * (CASTLE_R + 0.6) };
+    let best = { x: Math.cos(a) * (CASTLE_R + 1), z: Math.sin(a) * (CASTLE_R + 1) };
+    let bd = hyp(best.x - v.x, best.z - v.z);
+    for (const o of this.list('outpost')) {
+      if (o.state !== 'built') continue;
+      const p = { x: o.x - 3.6, z: o.z };
+      const d = hyp(p.x - v.x, p.z - v.z);
+      if (d < bd) { bd = d; best = p; }
+    }
+    return best;
   }
 
   updateVillagers(dt) {
@@ -704,13 +818,18 @@ export class World {
     if (!v) v = [...this.villagers].sort((a, c) => jobPriority(this.b[c.job]) - jobPriority(this.b[a.job]))[0];
     if (!v) return;
     this.villagers.splice(this.villagers.indexOf(v), 1);
+    const a = this.addSoldier(kind, b.x, b.z + b.size / 2 + 0.6);
+    this.emit('trained', { kind, x: a.x, z: a.z });
+  }
+
+  addSoldier(kind, x, z) {
     const u = UNITS[kind];
     const a = {
-      id: this.id(), kind, x: b.x, z: b.z + b.size / 2 + 0.6, yaw: 0, hp: u.hp, max: u.hp, atkCd: 0,
+      id: this.id(), kind, x, z, yaw: 0, hp: u.hp, max: u.hp, atkCd: 0,
       target: null, post: null, lastHurt: -99, flash: 0, anim: 0, moving: false, slot: this.allies.length, attackT: 0,
     };
     this.allies.push(a);
-    this.emit('trained', { kind, x: a.x, z: a.z });
+    return a;
   }
 
   freeTowerSlot(x, z) {
@@ -828,7 +947,7 @@ export class World {
   nearestEnemy(x, z, range) {
     let best = null, bd = range;
     for (const e of this.enemies) {
-      if (e.hp <= 0) continue;
+      if (e.hp <= 0 || e.invuln) continue;
       const d = hyp(e.x - x, e.z - z) - e.def.radius;
       if (d < bd) { bd = d; best = e; }
     }
@@ -838,9 +957,10 @@ export class World {
   nearestEnemies(x, z, range, n) {
     const list = [];
     for (const e of this.enemies) {
-      if (e.hp <= 0) continue;
-      const d = hyp(e.x - x, e.z - z) - e.def.radius;
-      if (d < range) list.push([d, e]);
+      if (e.hp <= 0 || e.invuln) continue;
+      // Soldiers come before walls: structures only when nothing else is near.
+      const d = hyp(e.x - x, e.z - z) - e.def.radius + (e.static ? 6 : 0);
+      if (d - (e.static ? 6 : 0) < range) list.push([d, e]);
     }
     list.sort((a, b) => a[0] - b[0]);
     return list.slice(0, n).map((p) => p[1]);
@@ -928,6 +1048,7 @@ export class World {
 
   damageEnemy(e, dmg, src) {
     if (e.hp <= 0) return;
+    if (e.invuln) { if (src !== 'burn') this.emit('blocked', { x: e.x, z: e.z }); return; }
     const armor = e.def.armor || 0;
     const real = src === 'burn' ? dmg : Math.max(dmg * 0.25, dmg - armor);
     e.hp -= real;
@@ -938,10 +1059,30 @@ export class World {
 
   killEnemy(e) {
     this.stats.kills++;
-    this.emit('kill', { x: e.x, z: e.z, kind: e.kind, scale: e.scale, boss: !!e.name });
+    this.emit('kill', { x: e.x, z: e.z, kind: e.kind, scale: e.scale, boss: !!e.name, structure: !!e.static });
     const n = e.coins;
     if (n > 12) this.burstCoins(e.x, e.z, n);
     else for (let i = 0; i < n; i++) this.dropCoin(e.x, e.z, 1, 1);
+    // The treant drops bundles of logs.
+    if (e.def.wood) for (let i = 0; i < 9; i++) this.dropCoin(e.x, e.z, Math.ceil(e.def.wood / 9), 1, 'wood');
+    if (e.kind === 'sgate') {
+      this.sgKeep.invuln = false;
+      this.emit('gateFallen', {});
+      // The warlord comes out of the keep to meet the king.
+      const n2 = this.wave + 1;
+      this.spawnEnemy({
+        kind: 'boss', lane: 'S', s: 0,
+        boss: { name: 'Warlord of the Stronghold', hpMul: 2.2 * (1 + (n2 - 15) * 0.1), coins: 250, scale: 3.4 },
+      });
+    }
+    if (e.kind === 'skeep') this.winLevel();
+  }
+
+  winLevel() {
+    this.phase = 'won';
+    this.won = true;
+    this.siege = false;
+    this.emit('levelWon', { level: this.level });
   }
 
   // ---------------------------------------------------------------- hurt
@@ -1006,6 +1147,7 @@ export class World {
         if (e.hp <= 0) continue;
       }
       const def = e.def;
+      if (e.static) { this.updateStructure(e); continue; }
       const lane = e.lane;
       lanePoint(lane, e.s, tmpP);
       const homeX = tmpP.x - tmpP.dz * e.off, homeZ = tmpP.z + tmpP.dx * e.off;
@@ -1062,8 +1204,23 @@ export class World {
     }
     // Clear out the dead.
     for (let i = this.enemies.length - 1; i >= 0; i--) if (this.enemies[i].hp <= 0) { this.enemies[i].gone = true; this.enemies.splice(i, 1); }
-    separate(this.enemies, 0.5);
+    separate(this.enemies.filter((e) => !e.static), 0.5);
   }
+
+  // Stronghold towers shoot whoever comes in range; gates and keeps just stand.
+  updateStructure(e) {
+    const def = e.def;
+    if (!def.ranged || e.atkCd > 0) return;
+    const hero = this.hero;
+    let best = null, bd = def.range;
+    if (hero.alive) { const d = hyp(hero.x - e.x, hero.z - e.z); if (d < bd) { bd = d; best = hero; } }
+    for (const a of this.allies) { const d = hyp(a.x - e.x, a.z - e.z); if (d < bd) { bd = d; best = a; } }
+    if (best) this.enemyAttack(e, best);
+    else e.atkCd = 0.3;
+  }
+
+  // Enemies still to beat this wave (the stronghold itself isn't counted).
+  get enemiesLeft() { return this.spawnQueue.length + this.enemies.filter((e) => !e.static).length; }
 
   enemyAttack(e, t) {
     const def = e.def;
@@ -1136,18 +1293,21 @@ export class World {
       if (this.built('bridge') && Math.abs(nx - BRIDGE.x) < 3.2) nx += (BRIDGE.x - nx) * Math.min(1, dt * 6);
     }
     nx = Math.max(-BOUNDS, Math.min(BOUNDS, nx));
-    nz = Math.max(-BOUNDS, Math.min(BOUNDS, nz));
+    // South, the king can ride as far as the road he has claimed. At the
+    // stronghold its gate holds him out until it is broken.
+    let zMax = this.frontier - 1.5;
+    if (this.siegeReady) {
+      const gateUp = !this.sgGate || this.sgGate.hp > 0;
+      if (Math.abs(nx - STRONGHOLD.x) < STRONGHOLD.half + 1) zMax = gateUp ? STRONGHOLD.gateZ - 2.5 : STRONGHOLD.z + 4;
+      else zMax = STRONGHOLD.gateZ - 3;
+    }
+    nz = Math.max(-BOUNDS, Math.min(zMax, nz));
 
     // Buildings are solid; pads and sites are not.
     const R = HERO.radius;
     for (const b of this.noclip ? [] : Object.values(this.b)) {
       if (b.state !== 'built' || b.type === 'bridge') continue;
-      if (b.type === 'castle') {
-        const d = hyp(nx, nz);
-        if (d < CASTLE_R + R) { nx = (nx / (d || 1)) * (CASTLE_R + R); nz = (nz / (d || 1)) * (CASTLE_R + R); }
-        continue;
-      }
-      const hs = b.size / 2 * 0.86 + R;
+      const hs = (b.type === 'castle' ? CASTLE_R : b.size / 2 * 0.8) + R;
       const dx = nx - b.x, dz = nz - b.z;
       if (Math.abs(dx) < hs && Math.abs(dz) < hs) {
         const px = hs - Math.abs(dx), pz = hs - Math.abs(dz);
@@ -1189,7 +1349,8 @@ export class World {
       const c = this.coins[i];
       if (c.vy !== 0 || c.y > 0.2) continue;
       const d = hyp(c.x - h.x, c.z - h.z);
-      if (h.coins >= cap) { c.fly = false; continue; }
+      const wood = c.res === 'wood';   // logs go to the stores, so they never fill the stack
+      if (!wood && h.coins >= cap) { c.fly = false; continue; }
       if (d < mag) c.fly = true;
       else if (d > mag + 3) c.fly = false;   // outran it: let it drop
       if (c.fly) {
@@ -1197,6 +1358,12 @@ export class World {
         c.x += ((h.x - c.x) / (d || 1)) * s;
         c.z += ((h.z - c.z) / (d || 1)) * s;
         if (d < 0.7) {
+          if (wood) {
+            this.res.wood += c.value;
+            this.emit('deliver', { x: h.x, z: h.z, res: 'wood', amt: c.value });
+            this.coins.splice(i, 1);
+            continue;
+          }
           const take = Math.min(c.value, cap - h.coins);
           h.coins += take;
           c.value -= take;
@@ -1238,14 +1405,14 @@ export class World {
     }
   }
 
-  atCastle() { return hyp(this.hero.x, this.hero.z) < CASTLE_R + HERO.healRadius; }
+  atCastle() { return Math.max(Math.abs(this.hero.x), Math.abs(this.hero.z)) < CASTLE_R + HERO.healRadius; }
 
   // Which built building is at this ground point? Used for tapping buildings.
   buildingAt(x, z, pad = 0.6) {
     let best = null, bd = Infinity;
     for (const b of Object.values(this.b)) {
       if (b.state !== 'built' || b.type === 'bridge' || b.type === 'pass') continue;
-      const d = b.type === 'castle' ? Math.max(0, hyp(x - b.x, z - b.z) - CASTLE_R) : rectDist(x, z, b);
+      const d = b.type === 'castle' ? castleDist(x, z) : rectDist(x, z, b);
       if (d <= pad && d < bd) { bd = d; best = b; }
     }
     return best;
@@ -1258,7 +1425,7 @@ export class World {
     let best = null, bd = Infinity;
     for (const b of Object.values(this.b)) {
       if (b.state !== 'built' || b.type === 'bridge') continue;
-      const d = b.type === 'castle' ? hyp(h.x, h.z) - CASTLE_R : rectDist(h.x, h.z, b);
+      const d = b.type === 'castle' ? castleDist(h.x, h.z) : rectDist(h.x, h.z, b);
       if (d < 1.9 && d < bd) { bd = d; best = b; }
     }
     return best;
@@ -1287,6 +1454,19 @@ export class World {
           this.shoot(t.x + (k - 1) * 0.5, t.z, 4.6, e, { dmg: UNITS.archer.dmg * (1 + this.armor * 0.15), speed: 28, from: 'ally' });
         } else t.slotCd[k] = 0.2;
       }
+    }
+    // Outpost watchtowers.
+    const ol = BUILDINGS.outpost.levels[0];
+    for (const o of this.list('outpost')) {
+      if (o.state !== 'built') continue;
+      o.atkCd -= dt;
+      if (o.atkCd > 0) continue;
+      const e = this.nearestEnemy(o.x, o.z, ol.range);
+      if (e && !e.static) {
+        o.atkCd = ol.interval;
+        o.aim = Math.atan2(e.x - o.x, e.z - o.z);
+        this.shoot(o.x + 1.8, o.z - 1.8, 5, e, { dmg: ol.dmg * levelMul(this.level) * 0.8, speed: 30, from: 'tower', kind: 'bolt' });
+      } else o.atkCd = 0.2;
     }
   }
 
@@ -1321,6 +1501,16 @@ export class World {
         }
         this.spawnT = this.spec.spawnGap;
       }
+      // During a siege the enemy keeps sending reinforcements from the gate.
+      if (this.siege && !this.spawnQueue.length) {
+        this.reinforceT -= dt;
+        if (this.reinforceT <= 0) {
+          this.reinforceT = 26;
+          const lanes = this.lanesOpen;
+          const kinds = ['grunt', 'grunt', 'grunt', 'archer', 'brute', 'raider', 'grunt', 'archer'];
+          this.spawnQueue = kinds.map((kind, i) => ({ kind, lane: i < 4 ? 'S' : lanes[i % lanes.length].id }));
+        }
+      }
     }
 
     this.updateHero(dt, input);
@@ -1331,7 +1521,7 @@ export class World {
     this.updateProjectiles(dt);
     this.updateCoins(dt);
 
-    if (this.phase === 'wave' && !this.spawnQueue.length && !this.enemies.length) this.endWave();
+    if (this.phase === 'wave' && !this.siege && !this.spawnQueue.length && !this.enemies.length) this.endWave();
 
     // Objectives.
     let o = OBJECTIVES[this.objective];
@@ -1351,10 +1541,6 @@ export class World {
     const bonus = this.spec.bonus;
     this.burstCoins(0, CASTLE_R + 2.5, bonus);
     this.emit('waveClear', { n: this.wave, bonus });
-    if (this.wave >= FINAL_WAVE && !this.victoryShown) {
-      this.victoryShown = true;
-      this.emit('victory', { n: this.wave });
-    }
   }
 
   // --------------------------------------------------------------- saving
@@ -1367,7 +1553,7 @@ export class World {
       res: { ...this.res },
       funds: { ...this.funds },
       objective: this.objective,
-      victoryShown: this.victoryShown,
+      level: this.level,
       stats: { ...this.stats },
       walls: { ...this.walls },
       armor: this.armor,
@@ -1386,7 +1572,7 @@ export class World {
     this.res = { ...s.res };
     this.funds = {};
     this.objective = s.objective;
-    this.victoryShown = s.victoryShown;
+    this.level = s.level || 1;
     this.stats = { ...this.stats, ...s.stats };
     this.walls = { ...s.walls };
     this.armor = s.armor || 0;

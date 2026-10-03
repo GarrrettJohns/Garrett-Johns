@@ -62,7 +62,7 @@
     <button id="btn-recenter" class="round-btn recenter" type="button" aria-label="Back to the king" hidden><span>👑</span><small>King</small></button>
 
     <div id="place-bar" hidden>
-      <div id="place-text">Ride to move the building</div>
+      <div id="place-text">Drag the building into place</div>
       <div class="place-btns">
         <button id="btn-place-cancel" class="btn ghost" type="button">Cancel</button>
         <button id="btn-place-ok" class="btn primary" type="button">Build here</button>
@@ -119,11 +119,13 @@
         <li><b>🎥 Look</b><span>Drag with two fingers to look around, pinch to zoom. Tap 👑 to snap back to the king.</span></li>
         <li><b>🪙 Gold</b><span>Fallen enemies drop coins. Ride over them and they stack up on your horse. Clear the mountain pass to dig for more.</span></li>
         <li><b>🏗️ Pads</b><span>A pad turns green when you can afford it. Stand on it to build.</span></li>
-        <li><b>⬆️ Upgrades</b><span>Tap any building to open its menu: castle, towers, barracks, stable, archery range and more. You need the full cost to buy.</span></li>
+        <li><b>👑 The castle</b><span>Tap the castle to upgrade the king (bow, horse, weapons), train troops and upgrade the castle and walls. You need the full cost to buy anything.</span></li>
+        <li><b>🔨 Placing</b><span>Between waves tap Build, pick a building, then drag it on the grid and tap Build here.</span></li>
         <li><b>❤️ Healing</b><span>During a wave the king only heals at the castle — ride back inside the green ring. Between waves he heals anywhere.</span></li>
         <li><b>🔨 Build</b><span>Between waves, tap Build to put houses, farms and workshops anywhere inside your walls.</span></li>
         <li><b>👥 People</b><span>Houses bring villagers. They work the mine, chop wood in the forest and cut stone, then haul it home. Soldiers are villagers who enlist.</span></li>
         <li><b>⚔️ Waves</b><span>When you are ready, tap Start Wave. If the castle falls, you can retry the wave.</span></li>
+        <li><b>⛺ The road</b><span>The enemy road leads south to their stronghold. Clear enough waves and build outposts along it to claim new land, then lay siege: break the gate and bring down the keep to win the level.</span></li>
       </ul>
       <button id="btn-howto-back" class="btn primary" type="button">Got it</button>
     </div>
@@ -152,9 +154,9 @@
   <section id="screen-win" class="screen">
     <div class="card">
       <div class="crest">🏆</div>
-      <h2>The kingdom stands!</h2>
-      <p class="sub" id="win-text">You held every wave.</p>
-      <button id="btn-endless" class="btn primary" type="button">Keep building</button>
+      <h2 id="win-title">Level complete!</h2>
+      <p class="sub" id="win-text">The enemy stronghold has fallen.</p>
+      <button id="btn-endless" class="btn primary" type="button">March on →</button>
     </div>
   </section>
 

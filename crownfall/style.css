@@ -282,6 +282,12 @@ body:not([data-state="play"]) #btn-recenter { visibility: hidden; }
 .rbtn.off { background: #cfc5b4; box-shadow: 0 3px 0 #a99f8f; }
 .rbtn.blue { background: linear-gradient(#6aa5ff, var(--blue)); box-shadow: 0 3px 0 #1d4a9c; }
 .rbtn.max { background: transparent; color: var(--muted); box-shadow: none; }
+.tabs { display: flex; gap: 6px; margin: 0 0 8px; }
+.tab {
+  flex: 1; font-family: var(--font); font-weight: 900; font-size: 14px; padding: 9px 6px;
+  border-radius: 12px; border: 2px solid var(--panel-line); background: #fff; color: var(--muted);
+}
+.tab.on { background: linear-gradient(#ffd25a, #f7a21a); border-color: #b8700a; color: #fff; -webkit-text-stroke: 0.5px #8a4d00; }
 .info-lines { font-size: 12.5px; font-weight: 700; color: #5d554b; margin: -2px 0 8px; display: flex; gap: 6px; flex-wrap: wrap; }
 .info-lines span { background: #efe5d2; padding: 3px 8px; border-radius: 8px; }
 
