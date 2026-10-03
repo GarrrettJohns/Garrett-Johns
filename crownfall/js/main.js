@@ -7,7 +7,7 @@ import { UI } from './ui.js';
 import { audio } from './audio.js';
 import { save } from './save.js';
 import { BUILDINGS, HERO_UPGRADES, levelInfo } from './config.js';
-import { CASTLE_R, FOREST_Z, inHighland } from './map.js';
+import { CASTLE_R, FOREST_Z, FORT, inHighland } from './map.js';
 
 const $ = (id) => document.getElementById(id);
 const stage = $('stage');
@@ -136,6 +136,12 @@ function newGame() {
   persist();
   play();
   ui.banner('Crownfall', 'Build your kingdom, then march on the enemy stronghold', 2.8);
+  // Show where the mountains are: a fly-over to the Mountain Fort and back.
+  setTimeout(() => {
+    if (state !== 'play' || world.wave > 0) return;
+    renderer.flyTo(FORT.x + 8, FORT.z, 4);
+    ui.toast('⛰ Stone and gold lie in the eastern mountains. Take the Mountain Fort to open them.');
+  }, 3000);
 }
 
 $('btn-continue').addEventListener('click', () => {
@@ -523,7 +529,16 @@ show('screen-title');
 requestAnimationFrame(frame);
 
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+  navigator.serviceWorker.register('sw.js').then((r) => r.update()).catch(() => {});
+  // A page that was running an older version reloads once when the new one takes over.
+  if (navigator.serviceWorker.controller) {
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloaded || state === 'play') return;
+      reloaded = true;
+      location.reload();
+    });
+  }
 }
 
 // For automated testing.

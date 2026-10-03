@@ -189,6 +189,11 @@ export class UI {
   updateThreats(world, ctx) {
     const box = this.el.threats;
     const list = ctx.view ? world.laneThreats() : [];
+    // Point at the Mountain Fort until it falls, so the east is easy to find.
+    if (ctx.view && world.phase !== 'wave') {
+      const fort = world.enemies.find((e) => e.fort && e.kind === 'fgate' && e.hp > 0);
+      if (fort) list.push({ lane: 'fort', x: fort.x, z: fort.z, label: '⛰ Mountain Fort', landmark: true });
+    }
     this.threatEls = this.threatEls || {};
     const seen = new Set();
     const { w, h, project } = ctx.view || {};
@@ -202,7 +207,7 @@ export class UI {
       let el = this.threatEls[th.lane];
       if (!el) {
         el = document.createElement('div');
-        el.className = 'threat';
+        el.className = th.landmark ? 'threat landmark' : 'threat';
         el.innerHTML = '<div class="arrow"></div><div class="label"></div>';
         box.appendChild(el);
         this.threatEls[th.lane] = el;
@@ -215,7 +220,7 @@ export class UI {
       x = cx + dx * k; y = cy + dy * k;
       el.style.transform = `translate(${x}px, ${y}px)`;
       el.firstChild.style.rotate = `${Math.atan2(dy, dx)}rad`;
-      el.lastChild.textContent = `${th.name} ×${th.count}`;
+      el.lastChild.textContent = th.label || `${th.name} ×${th.count}`;
       el.hidden = false;
     }
     for (const [id, el] of Object.entries(this.threatEls)) if (!seen.has(id)) el.hidden = true;

@@ -604,6 +604,7 @@ export class Renderer {
 
   // Wipe per-game objects when a new game or a reload starts.
   reset() {
+    this.tour = null;
     for (const e of this.buildings.values()) this.scene.remove(e.group);
     this.buildings.clear();
     this.wallSig = '';
@@ -1141,7 +1142,16 @@ export class Renderer {
     const fx = h.alive ? h.x : 0, fz = h.alive ? h.z : CASTLE_R + 2;
     const portrait = this.camera.aspect < 1;
     const k = Math.min(1, dt * 6);
-    if (!this.free) {
+    if (this.tour) {
+      // A slow fly-over to a landmark and back.
+      const t = (this.tour.t += dt);
+      const there = t < this.tour.hold;
+      const tx = there ? this.tour.x : fx, tz = there ? this.tour.z : fz - (portrait ? 2.5 : 1);
+      const kt = Math.min(1, dt * 1.6);
+      this.camTarget.x += (tx - this.camTarget.x) * kt;
+      this.camTarget.z += (tz - this.camTarget.z) * kt;
+      if (!there && Math.hypot(tx - this.camTarget.x, tz - this.camTarget.z) < 1) this.tour = null;
+    } else if (!this.free) {
       // Look a little ahead of the king so you can see where you are going.
       this.camTarget.x += (fx + h.vx * 0.12 - this.camTarget.x) * k;
       this.camTarget.z += (fz + h.vz * 0.1 - (portrait ? 2.5 : 1) - this.camTarget.z) * k;
@@ -1149,7 +1159,9 @@ export class Renderer {
     // Fit about 23 m across in portrait, 30 m tall in landscape.
     const tanH = Math.tan((this.camera.fov * Math.PI) / 360);
     const fit = portrait ? 11.5 / (tanH * this.camera.aspect) : 15 / tanH;
-    const dist = fit * this.zoom * (view.sheetOpen && portrait ? 1.06 : 1);
+    this.tourZoom = this.tourZoom || 1;
+    this.tourZoom += ((this.tour && this.tour.t < this.tour.hold ? 1.7 : 1) - this.tourZoom) * Math.min(1, dt * 1.2);
+    const dist = fit * this.zoom * this.tourZoom * (view.sheetOpen && portrait ? 1.06 : 1);
     this.dist = dist;
     const pitch = 0.98;
     const sx = this.shake > 0 ? (Math.random() - 0.5) * this.shake : 0;
@@ -1207,7 +1219,10 @@ export class Renderer {
     this.free = true;
   }
 
-  recenter() { this.free = false; }
+  recenter() { this.free = false; this.tour = null; }
+
+  // Glide the camera to a spot, hold there, then glide back to the king.
+  flyTo(x, z, hold = 3.5) { this.free = false; this.tour = { x, z, t: 0, hold }; }
 
   // Which built building is under a screen point? Walk down the view ray from
   // roof height so tall buildings are hit where they are drawn.

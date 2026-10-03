@@ -1,5 +1,5 @@
 // Offline shell for Crownfall. Bump CACHE when any asset changes.
-const CACHE = 'crownfall-v9';
+const CACHE = 'crownfall-v11';
 
 const ASSETS = [
   './',
@@ -28,7 +28,8 @@ const ASSETS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE)
-      .then((c) => c.addAll(ASSETS))
+      // Skip the browser's HTTP cache so a new version never installs old files.
+      .then((c) => c.addAll(ASSETS.map((a) => new Request(a, { cache: 'reload' }))))
       .then(() => self.skipWaiting())
   );
 });
@@ -48,33 +49,17 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  // Navigations: network first so an update lands, cache as the offline answer.
-  if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put('./index.html', copy));
-          return res;
-        })
-        .catch(() => caches.match('./index.html').then((r) => r || caches.match('./')))
-    );
-    return;
-  }
-
-  // Everything else: serve from cache, refresh it in the background.
+  // Network first for everything, so an update is picked up on the next load;
+  // the cache is only the offline answer.
   event.respondWith(
-    caches.match(request).then((cached) => {
-      const network = fetch(request)
-        .then((res) => {
-          if (res && res.status === 200 && res.type === 'basic') {
-            const copy = res.clone();
-            caches.open(CACHE).then((c) => c.put(request, copy));
-          }
-          return res;
-        })
-        .catch(() => cached);
-      return cached || network;
-    })
+    fetch(request, { cache: 'no-cache' })
+      .then((res) => {
+        if (res && res.status === 200 && res.type === 'basic') {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(request.mode === 'navigate' ? './index.html' : request, copy));
+        }
+        return res;
+      })
+      .catch(() => caches.match(request).then((r) => r || (request.mode === 'navigate' ? caches.match('./index.html') : Response.error())))
   );
 });
