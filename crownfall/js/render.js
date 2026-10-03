@@ -15,6 +15,7 @@ import {
 import { BUILDINGS, HERO } from './config.js';
 
 const TAU = Math.PI * 2;
+const TOWER_TOP = [3.15, 3.15, 3.15, 3.55, 3.95];   // platform height per tower level
 
 // Each level's land. Trees: [forest/grove kind, scattered kind].
 const BIOMES = {
@@ -392,6 +393,10 @@ export class Renderer {
     this.arrowPool = new Pool(scene, arrowGeo(), vcMat, 500);
     this.particlePool = new Pool(scene, new THREE.BoxGeometry(1, 1, 1), new THREE.MeshLambertMaterial({ color: 0xffffff }), 900);
     this.chevronPool = new Pool(scene, chevronGeo(), new THREE.MeshBasicMaterial({ color: 0x35c8ff, transparent: true, opacity: 0.9, depthWrite: false }), 16, { order: 2 });
+    // Red arrows marching down each road enemies are coming in on.
+    this.threatMat = new THREE.MeshBasicMaterial({ color: 0xff3b2f, transparent: true, opacity: 0.9, depthWrite: false });
+    this.threatPool = new Pool(scene, chevronGeo(), this.threatMat, 80, { order: 2 });
+    this.waveT = 99;
 
     const barMat = new THREE.MeshBasicMaterial({ color: 0xffffff, depthTest: false, depthWrite: false, transparent: true });
     const barGeo = new THREE.PlaneGeometry(1, 1);
@@ -526,8 +531,8 @@ export class Renderer {
       group.rotation.y = Math.atan2(p.dx, p.dz);
     }
     if (b.type === 'tower') {
-      const gun = new THREE.Mesh(this.geo(`gun:${b.level >= 2 ? 2 : 0}`, () => towerGunGeo(b.level)), vcMat);
-      gun.position.y = [3.15, 3.55, 3.95][b.level];
+      const gun = new THREE.Mesh(this.geo(`gun:${b.level >= 4 ? 4 : 0}`, () => towerGunGeo(b.level)), vcMat);
+      gun.position.y = TOWER_TOP[b.level];
       gun.castShadow = true;
       body.add(gun);
       e.gun = gun;
@@ -606,7 +611,7 @@ export class Renderer {
       this.scene.remove(this.wallGroup);
       this.wallGroup = new THREE.Group();
       this.scene.add(this.wallGroup);
-      const stone = world.walls.gate >= 1;
+      const stone = world.walls.gate >= 3;
       const R = world.wallRadius;
       const SEG = 2.4;
       const geo = this.geo(`wall:${stone}`, () => (stone ? stoneWallGeo(SEG) : palisadeGeo(SEG)));
@@ -713,7 +718,7 @@ export class Renderer {
     }
     for (const b of Object.values(world.b)) {
       if (b.type !== 'tower' || b.state !== 'built' || !b.garrison) continue;
-      const y = [3.15, 3.55, 3.95][b.level];
+      const y = TOWER_TOP[b.level];
       for (let k = 0; k < b.garrison; k++) {
         const ox = [-0.75, 0.75, 0][k], oz = [-0.6, -0.6, 0.75][k];
         this.rigs.archer.add(b.x + ox, y, b.z + oz, b.aim ?? 0, 1.05, { swing: Math.max(0, Math.sin(t * 3 + k)) * 0.2 });
@@ -848,6 +853,26 @@ export class Renderer {
 
     // ---- health bars
     this.drawBars(world);
+
+    // ---- incoming-enemy arrows on the roads, for the first seconds of a wave
+    this.waveT += dt;
+    const tp = this.threatPool;
+    tp.begin();
+    if (world.phase === 'wave' && this.waveT < 12) {
+      this.threatMat.opacity = Math.min(1, (12 - this.waveT) / 2) * (0.65 + Math.sin(t * 8) * 0.25);
+      for (const th of world.laneThreats()) {
+        const lane = LANES.find((l) => l.id === th.lane);
+        const end = th.gate ? th.gate.s - 1 : lane.length - 6;
+        const off = (t * 4) % 2.5;
+        for (let s = end - 28 + off; s < end; s += 2.5) {
+          const p = lanePoint(lane, s);
+          _q.setFromAxisAngle(UP, Math.atan2(-p.dx, -p.dz));
+          _m.compose(_v.set(p.x, 0.14, p.z), _q, _s.set(1.5, 1, 1.5));
+          tp.push(_m);
+        }
+      }
+    }
+    tp.end();
 
     // ---- objective trail
     const cpv = this.chevronPool;
@@ -1086,6 +1111,7 @@ export class Renderer {
         }
         break;
       case 'waveClear': this.ring(0, CASTLE_R + 2.5, 8, 0xffd84a, 0.9); break;
+      case 'waveStart': this.waveT = 0; break;
       case 'blocked': if (Math.random() < 0.3) this.spark(ev.x, 3, ev.z - 4, 0xbfc4cc, 2, 0.2, 2, 0.3); break;
       default: break;
     }

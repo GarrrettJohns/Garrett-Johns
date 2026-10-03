@@ -19,7 +19,7 @@ export class UI {
       waveBtn: $('btn-wave'), buildBtn: $('btn-build'), controls: $('controls'),
       sheet: $('sheet'), sheetIcon: $('sheet-icon'), sheetName: $('sheet-name'), sheetSub: $('sheet-sub'), sheetList: $('sheet-list'),
       buildSheet: $('build-sheet'), buildList: $('build-list'),
-      placeBar: $('place-bar'), placeText: $('place-text'), placeOk: $('btn-place-ok'),
+      placeBar: $('place-bar'), placeText: $('place-text'), placeOk: $('btn-place-ok'), threats: $('threats'),
     };
     this.prev = {};
     this.menuFor = null;
@@ -131,6 +131,7 @@ export class UI {
       if (this.bannerT <= 0) e.banner.classList.remove('show');
     }
 
+    this.updateThreats(world, ctx);
     this.updateMenu(world, dt, ctx);
     if (!e.buildSheet.hidden) this.renderBuild(world);
   }
@@ -142,6 +143,43 @@ export class UI {
   }
 
   // ----------------------------------------------------------- menu sheet
+  // Red arrows round the screen edge pointing at each road enemies are on.
+  // An arrow hides once that group is on screen.
+  updateThreats(world, ctx) {
+    const box = this.el.threats;
+    const list = ctx.view ? world.laneThreats() : [];
+    this.threatEls = this.threatEls || {};
+    const seen = new Set();
+    const { w, h, project } = ctx.view || {};
+    for (const th of list) {
+      const p = project(th.x, 1.5, th.z);
+      let x = p.x, y = p.y;
+      const top = 150, bottom = h - 120, left = 30, right = w - 30;
+      const onScreen = !p.behind && x > left && x < right && y > top && y < bottom;
+      if (onScreen) continue;
+      seen.add(th.lane);
+      let el = this.threatEls[th.lane];
+      if (!el) {
+        el = document.createElement('div');
+        el.className = 'threat';
+        el.innerHTML = '<div class="arrow"></div><div class="label"></div>';
+        box.appendChild(el);
+        this.threatEls[th.lane] = el;
+      }
+      // Clamp the direction from the screen centre onto the inset rectangle.
+      const cx = w / 2, cy = (top + bottom) / 2;
+      let dx = x - cx, dy = y - cy;
+      if (p.behind) { dx = -dx; dy = -dy; }
+      const k = Math.min(Math.abs((right - cx) / (dx || 1e-6)), Math.abs((bottom - cy) / (dy || 1e-6)));
+      x = cx + dx * k; y = cy + dy * k;
+      el.style.transform = `translate(${x}px, ${y}px)`;
+      el.firstChild.style.rotate = `${Math.atan2(dy, dx)}rad`;
+      el.lastChild.textContent = `${th.name} ×${th.count}`;
+      el.hidden = false;
+    }
+    for (const [id, el] of Object.entries(this.threatEls)) if (!seen.has(id)) el.hidden = true;
+  }
+
   // Menus open only when a building is tapped.
   openMenu(id) {
     this.closeBuild();

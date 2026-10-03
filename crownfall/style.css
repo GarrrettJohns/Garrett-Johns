@@ -168,6 +168,31 @@ body:not([data-state="play"]) #place-bar { visibility: hidden; }
 }
 @keyframes rise { 0% { opacity: 0; margin-top: 0; } 15% { opacity: 1; } 100% { opacity: 0; margin-top: -44px; } }
 
+/* ------------------------------------------- incoming-enemy edge arrows */
+#threats { position: absolute; inset: 0; pointer-events: none; }
+.threat {
+  position: absolute; width: 0; height: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.threat .arrow {
+  position: absolute; width: 46px; height: 46px; margin: -23px 0 0 -23px; left: 0; top: 0;
+  border-radius: 50%; background: rgba(200, 30, 24, 0.92); border: 3px solid #fff;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+  animation: threat 0.9s ease-in-out infinite;
+}
+.threat .arrow::after {
+  content: ""; position: absolute; left: 50%; top: 50%;
+  border-left: 13px solid #fff; border-top: 9px solid transparent; border-bottom: 9px solid transparent;
+  margin: -9px 0 0 -4px;
+}
+.threat .label {
+  position: absolute; white-space: nowrap; transform: translate(-50%, 0); top: 28px; left: 0;
+  font-weight: 900; font-size: 12px; color: #fff; background: rgba(150, 20, 16, 0.9);
+  padding: 2px 7px; border-radius: 99px;
+}
+@keyframes threat { 50% { transform: scale(1.15); } }
+body:not([data-state="play"]) #threats { visibility: hidden; }
+
 /* ------------------------------------------------------------- joystick */
 #joy {
   position: absolute; width: 120px; height: 120px; margin: -60px 0 0 -60px;

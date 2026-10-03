@@ -450,6 +450,35 @@ export function bridgeGeo() {
 
 export function towerGeo(level) {
   const b = new Builder();
+  if (level === 2) {
+    // Timber fort: a log-walled platform on a log base.
+    for (let i = 0; i < 6; i++) {
+      const y = i * 0.5;
+      b.box(2.9, 0.48, 0.42, i % 2 ? C.wood : C.woodDark, { y, z: 1.25 });
+      b.box(2.9, 0.48, 0.42, i % 2 ? C.wood : C.woodDark, { y, z: -1.25 });
+      b.box(0.42, 0.48, 2.9, i % 2 ? C.woodDark : C.wood, { x: 1.25, y });
+      b.box(0.42, 0.48, 2.9, i % 2 ? C.woodDark : C.wood, { x: -1.25, y });
+    }
+    b.box(3.2, 0.3, 3.2, C.plank, { y: 3.0 });
+    for (let i = 0; i < 7; i++) for (const s of [-1, 1]) {
+      b.cyl(0.13, 0.14, 0.9, 5, C.wood, { x: -1.5 + i * 0.5, y: 3.3, z: s * 1.5 });
+      b.cyl(0.13, 0.14, 0.9, 5, C.wood, { x: s * 1.5, y: 3.3, z: -1.5 + i * 0.5 });
+    }
+    b.box(0.6, 1.2, 0.1, C.woodDark, { y: 0, z: 1.47 });
+    return b.build();
+  }
+  if (level === 1) {
+    // Sturdy tower: braced stilts, shields on the rail, a little roof.
+    for (const x of [-1, 1]) for (const z of [-1, 1]) b.box(0.36, 3.0, 0.36, C.woodDark, { x: x * 1.0, z: z * 1.0, rx: -z * 0.06, rz: x * 0.06 });
+    for (const z of [-1, 1]) { b.box(2.5, 0.14, 0.14, C.wood, { y: 1.4, z, rz: 0.6 }); b.box(2.5, 0.14, 0.14, C.wood, { y: 1.4, z, rz: -0.6 }); }
+    b.box(2.9, 0.3, 2.9, C.plank, { y: 3.0 });
+    for (const s of [-1, 1]) { b.box(2.9, 0.6, 0.12, C.woodDark, { y: 3.3, z: s * 1.4 }); b.box(0.12, 0.6, 2.9, C.woodDark, { x: s * 1.4, y: 3.3 }); }
+    for (const x of [-0.9, 0.9]) b.cyl(0.32, 0.32, 0.08, 8, C.blue, { x, y: 3.6, z: 1.48, rx: Math.PI / 2 });
+    for (const x of [-1.35, 1.35]) for (const z of [-1.35, 1.35]) b.box(0.14, 1.9, 0.14, C.woodDark, { x, y: 3.3, z });
+    b.roof(3.3, 1.0, 3.3, C.roofRed, { y: 5.2 });
+    return b.build();
+  }
+  if (level >= 3) level -= 2;   // 3 → stone tower, 4 → ballista below
   if (level === 0) {
     // Wooden stilt platform, like the ads.
     for (const x of [-1, 1]) for (const z of [-1, 1]) b.box(0.3, 3.0, 0.3, C.wood, { x: x * 1.0, z: z * 1.0, rx: -z * 0.06, rz: x * 0.06 });
@@ -483,7 +512,7 @@ export function towerGeo(level) {
 // The crossbow or ballista on a tower, aimed by the renderer.
 export function towerGunGeo(level) {
   const b = new Builder();
-  const s = level >= 2 ? 1.6 : 1;
+  const s = level >= 4 ? 1.6 : 1;
   b.box(0.2 * s, 0.5, 0.2 * s, C.woodDark);
   b.box(0.22 * s, 0.22 * s, 1.5 * s, C.wood, { y: 0.5, z: 0.1 });
   b.add(new THREE.TorusGeometry(0.75 * s, 0.06 * s, 4, 10, Math.PI), C.woodLight, { y: 0.62, z: 0.55 * s, rx: -Math.PI / 2 });

@@ -70,6 +70,11 @@ const OBJECTIVES = [
     at: (w) => ({ x: 0, z: CASTLE_R + 1 }),
   },
   {
+    text: 'Tap a tower and strengthen it with gold',
+    done: (w) => w.list('tower').some((t) => t.level >= 1),
+    at: (w) => w.firstOf('tower'),
+  },
+  {
     text: 'Tap 🔨 Build and place a House inside the walls',
     done: (w) => w.count('house') >= 2,
     at: (w) => w.siteOf('house'),
@@ -105,7 +110,17 @@ const OBJECTIVES = [
     at: (w) => ({ x: 0, z: CASTLE_R + 1 }),
   },
   {
-    text: 'Build a Quarry to cut stone',
+    text: 'Shore up your defences: upgrade a tower with wood',
+    done: (w) => w.list('tower').some((t) => t.level >= 2),
+    at: (w) => w.list('tower').find((t) => t.state === 'built' && t.level < 2) || null,
+  },
+  {
+    text: 'Tap the Castle → Castle tab and fit Timber gates',
+    done: (w) => w.walls.gate >= 2,
+    at: (w) => ({ x: 0, z: CASTLE_R + 1 }),
+  },
+  {
+    text: 'Defences holding? Now build a Quarry for stone',
     done: (w) => w.count('quarry') >= 1,
     at: (w) => w.b['quarry-1'],
   },
@@ -1099,6 +1114,11 @@ export class World {
       h.respawnT = HERO.respawn;
       if (h.coins > 0) { this.burstCoins(h.x, h.z, h.coins); h.coins = 0; }
       this.emit('heroDown', { x: h.x, z: h.z });
+      // Losing the king loses the wave: it has to be fought again from the start.
+      if (this.phase === 'wave') {
+        this.phase = 'lost';
+        this.emit('waveLost', { wave: this.wave + 1, siege: this.siege });
+      }
     }
   }
 
@@ -1217,6 +1237,32 @@ export class World {
     for (const a of this.allies) { const d = hyp(a.x - e.x, a.z - e.z); if (d < bd) { bd = d; best = a; } }
     if (best) this.enemyAttack(e, best);
     else e.atkCd = 0.3;
+  }
+
+  // Where each attacking road's front-runner is (or where it will appear),
+  // for the arrows that point the king towards incoming enemies.
+  laneThreats() {
+    if (this.phase !== 'wave') return [];
+    const by = {};
+    const slot = (id) => (by[id] = by[id] || { count: 0, lead: null, rem: Infinity });
+    for (const q of this.spawnQueue) slot(q.lane).count++;
+    for (const e of this.enemies) {
+      if (e.static || e.hp <= 0) continue;
+      const v = slot(e.lane.id);
+      v.count++;
+      const rem = e.lane.length - e.s;
+      if (rem < v.rem) { v.rem = rem; v.lead = e; }
+    }
+    return Object.entries(by).map(([id, v]) => {
+      const lane = LANE[id];
+      let x, z;
+      if (v.lead) { x = v.lead.x; z = v.lead.z; }
+      else {
+        const s0 = id === 'S' ? laneAtZ(lane, Math.min(STRONGHOLD.gateZ, this.frontier + 10)) : 0;
+        lanePoint(lane, s0, tmpP); x = tmpP.x; z = tmpP.z;
+      }
+      return { lane: id, name: lane.name, count: v.count, x, z, gate: this.gates[id] };
+    });
   }
 
   // Enemies still to beat this wave (the stronghold itself isn't counted).

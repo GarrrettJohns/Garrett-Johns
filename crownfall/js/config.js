@@ -175,9 +175,12 @@ export const BUILDINGS = {
     name: 'Tower', icon: '🗼', size: 3.2,
     desc: 'Shoots on its own. Archers posted inside add more arrows.',
     levels: [
+      // Defences climb gold → wood → stone, so stone isn't needed early.
       { name: 'Archer Tower', dmg: 10, interval: 0.9, range: 11, slots: 1, cost: { gold: 30 } },
-      { name: 'Stone Tower', dmg: 15, interval: 0.85, range: 13, slots: 2, cost: { gold: 70, stone: 30 }, castle: 2 },
-      { name: 'Ballista', dmg: 34, interval: 1.3, range: 15, slots: 3, pierce: 3, cost: { gold: 140, wood: 40, stone: 50 }, castle: 3 },
+      { name: 'Sturdy Tower', dmg: 13, interval: 0.85, range: 12, slots: 1, cost: { gold: 50 } },
+      { name: 'Timber Fort', dmg: 16, interval: 0.8, range: 12.5, slots: 2, cost: { wood: 40 }, castle: 2 },
+      { name: 'Stone Tower', dmg: 21, interval: 0.75, range: 13.5, slots: 2, cost: { stone: 40 }, castle: 2 },
+      { name: 'Ballista', dmg: 36, interval: 1.2, range: 15, slots: 3, pierce: 3, cost: { gold: 140, wood: 40, stone: 60 }, castle: 3 },
     ],
   },
 };
@@ -191,8 +194,10 @@ export const WALLS = {
   ],
   gates: [
     { name: 'Palisade gates', hp: 450 },
-    { name: 'Stone gates', hp: 800, cost: { gold: 120, stone: 60 }, castle: 2 },
-    { name: 'Iron gates', hp: 1600, cost: { gold: 260, stone: 140 }, castle: 3 },
+    { name: 'Reinforced gates', hp: 600, cost: { gold: 80 } },
+    { name: 'Timber gates', hp: 850, cost: { wood: 50 }, castle: 2 },
+    { name: 'Stone gates', hp: 1200, cost: { stone: 60 }, castle: 2 },
+    { name: 'Iron gates', hp: 2000, cost: { gold: 240, stone: 140 }, castle: 3 },
   ],
 };
 

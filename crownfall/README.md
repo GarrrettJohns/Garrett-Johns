@@ -34,8 +34,14 @@ It then launches full screen and works offline.
   - **Knights** follow the king.
   - **Archers** go and man the towers.
   - **Raiders** charge the nearest enemy.
+- **Waves:** when a wave starts, red arrows march down the roads it's coming
+  in on, and markers round the screen edge point to each group off screen.
 - **Healing:** during a wave the king heals only inside the green square at the
-  castle. Between waves he heals anywhere.
+  castle. Between waves he heals anywhere. If the king falls during a wave, the
+  wave is lost and starts over from just before it.
+- **Defences:** towers and gates upgrade with gold first, then wood (castle
+  level 2), then stone, then a heavy final tier. The objectives have you shore
+  up your defences with wood before going after stone.
 - **The road to the stronghold:** the south road leads to the enemy's
   stronghold. After enough waves, build outposts along it: Riverford (wave 4),
   Stonehill (wave 9) and the Siege Camp (wave 14). Each one claims more land

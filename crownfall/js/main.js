@@ -22,6 +22,7 @@ let saveT = 0;
 let dirty = false;
 let pickStreak = 0;
 let pickT = 0;
+let lostAt = 0;
 
 // The closest grid spot to (x, z) where a building of this type fits.
 function nearestSpot(type, x, z) {
@@ -214,7 +215,7 @@ function persist() {
 }
 
 // ---------------------------------------------------------------- events
-function handle(ev) {
+function handle(ev, events = []) {
   renderer.onEvent(ev, world);
   const at = (x, y, z) => renderer.project(x, y, z);
   switch (ev.type) {
@@ -293,8 +294,15 @@ function handle(ev) {
     case 'heroHurt': audio.hurt(); break;
     case 'heroDown':
       audio.crash();
-      ui.banner('The king has fallen!', 'He will ride again in a moment', 2.4);
+      if (!events.some((e) => e.type === 'waveLost')) ui.banner('The king has fallen!', 'He will ride again in a moment', 2.4);
       placing = null;
+      break;
+    case 'waveLost':
+      audio.defeat();
+      ui.banner('The king has fallen!', ev.siege ? 'The siege is lost. Regroup and try again.' : `Wave ${ev.wave} is lost. Regroup and fight it again.`, 3.2);
+      input.release();
+      // When he rides again, it's back to just before the wave.
+      lostAt = performance.now() + 3400;
       break;
     case 'heroUp': ui.toast('The king rides again!'); break;
     case 'gateHit': audio.gate(); break;
@@ -331,6 +339,17 @@ function frame(now) {
   last = now;
   pickT -= dt;
 
+  if (lostAt && now >= lostAt) {
+    lostAt = 0;
+    {
+      world = safeLoad(save.kingdom);
+      renderer.reset();
+      placing = null;
+      ui.closeMenu();
+      ui.banner(`Wave ${world.wave + 1}`, 'Shore up your defences, then start the wave again', 2.6);
+      audio.horn();
+    }
+  }
   if (state === 'play') {
     if (placing && world.phase !== 'build') placing = null;
     input.dragMode = !!placing;
@@ -348,9 +367,9 @@ function frame(now) {
   if (document.body.dataset.state !== state) document.body.dataset.state = state;
   const events = world.events;
   world.events = [];
-  for (const ev of events) handle(ev);
+  for (const ev of events) handle(ev, events);
 
-  ui.update(world, dt, { placing });
+  ui.update(world, dt, { placing, view: { w: renderer.w, h: renderer.h, project: (x, y, z) => renderer.project(x, y, z) } });
   renderer.zoom = input.zoom;
   const pan = input.takePan();
   if (state === 'play') renderer.panBy(pan.x, pan.y);
