@@ -8,9 +8,11 @@ import {
   castleGeo, houseGeo, farmGeo, barracksGeo, stableGeo, rangeGeo, goldmineGeo, lumberGeo, quarryGeo,
   bridgeGeo, towerGeo, towerGunGeo, coinGeo, arrowGeo, chevronGeo, rockfallGeo, passGeo, treeGeo, outpostGeo, logGeo,
   strongholdWallsGeo, strongholdGateGeo, strongholdTowerGeo, strongholdKeepGeo, warehouseGeo, stumpGeo,
+  fortWallsGeo, fortGateGeo, fortTowerGeo,
 } from './models.js';
 import {
   LANES, lanePoint, BRIDGE, RIVER_Z, RIVER_HALF, FOREST_Z, PATH_HALF, CASTLE_R, scenery, HIGHLAND, HIGHLAND_TRAILS, BOUNDS, STRONGHOLD,
+  FORT, RIVER_X1,
 } from './map.js';
 import { BUILDINGS, HERO } from './config.js';
 
@@ -131,7 +133,7 @@ class Pool {
 
 const BUILD_GEO = {
   castle: castleGeo, house: houseGeo, farm: farmGeo, barracks: barracksGeo, stable: stableGeo, range: rangeGeo,
-  goldmine: goldmineGeo, lumber: lumberGeo, quarry: quarryGeo, bridge: bridgeGeo, tower: towerGeo, pass: () => passGeo(),
+  goldmine: goldmineGeo, lumber: lumberGeo, quarry: quarryGeo, bridge: bridgeGeo, tower: towerGeo, pass: () => new THREE.BufferGeometry(),
   outpost: () => outpostGeo(), warehouse: warehouseGeo,
 };
 
@@ -223,7 +225,7 @@ export class Renderer {
       const n = Math.sin(x * 0.13 + Math.cos(z * 0.09) * 2) * 0.5 + Math.sin(z * 0.17 - x * 0.05) * 0.5;
       tmp.copy(base).lerp(n > 0 ? light : dark, Math.abs(n) * 0.55);
       if (z < FOREST_Z + 2) tmp.lerp(forest, Math.min(1, (FOREST_Z + 2 - z) / 5) * 0.85);
-      const rd = Math.abs(z - RIVER_Z);
+      const rd = x < RIVER_X1 + 1 ? Math.abs(z - RIVER_Z) : 99;
       if (rd < RIVER_HALF + 1.6) tmp.lerp(rd < RIVER_HALF + 0.3 ? bank : sand, rd < RIVER_HALF + 0.3 ? 1 : 0.6);
       // The highland: rocky ground up to its crags.
       const hd = Math.min(x - HIGHLAND.x0, HIGHLAND.z1 - z, z - (HIGHLAND.z0 - 1.5));
@@ -267,16 +269,18 @@ export class Renderer {
     scene.add(yard);
 
     // River.
-    const water = new THREE.Mesh(new THREE.PlaneGeometry(W, RIVER_HALF * 2), new THREE.MeshLambertMaterial({ color: B.water, transparent: true, opacity: 0.92 }));
+    // The river rises at the foot of the mountains and runs off to the west.
+    const RW = RIVER_X1 + W / 2, RX = (RIVER_X1 - W / 2) / 2;
+    const water = new THREE.Mesh(new THREE.PlaneGeometry(RW, RIVER_HALF * 2), new THREE.MeshLambertMaterial({ color: B.water, transparent: true, opacity: 0.92 }));
     water.rotation.x = -Math.PI / 2;
-    water.position.set(0, 0.06, RIVER_Z);
+    water.position.set(RX, 0.06, RIVER_Z);
     water.receiveShadow = true;
     scene.add(water);
     const foamMat = new THREE.MeshBasicMaterial({ color: 0xe6f6ff, transparent: true, opacity: 0.55 });
     for (const sgn of [-1, 1]) {
-      const foam = new THREE.Mesh(new THREE.PlaneGeometry(W, 0.35), foamMat);
+      const foam = new THREE.Mesh(new THREE.PlaneGeometry(RW, 0.35), foamMat);
       foam.rotation.x = -Math.PI / 2;
-      foam.position.set(0, 0.07, RIVER_Z + sgn * (RIVER_HALF - 0.2));
+      foam.position.set(RX, 0.07, RIVER_Z + sgn * (RIVER_HALF - 0.2));
       scene.add(foam);
     }
 
@@ -316,15 +320,32 @@ export class Renderer {
     rock.castShadow = true;
     scene.add(rock);
 
-    const cliff = new THREE.InstancedMesh(cliffGeo(B.cliff, B.cliffTop), vcMat, sc.cliffs.length);
-    sc.cliffs.forEach((t, i) => {
-      _q.setFromAxisAngle(UP, t.r);
-      _m.compose(_v.set(t.x, 0, t.z), _q, _s.set(t.w, t.h, t.d));
-      cliff.setMatrixAt(i, _m);
-    });
-    cliff.castShadow = true;
-    cliff.receiveShadow = true;
-    scene.add(cliff);
+    // Cliffs and crags, and snow-capped peaks in the mountains.
+    for (const [list, top] of [[sc.cliffs.filter((c) => !c.peak), B.cliffTop], [sc.cliffs.filter((c) => c.peak), 0xeef3f8]]) {
+      const cliff = new THREE.InstancedMesh(cliffGeo(B.cliff, top), vcMat, Math.max(1, list.length));
+      list.forEach((t, i) => {
+        _q.setFromAxisAngle(UP, t.r);
+        _m.compose(_v.set(t.x, 0, t.z), _q, _s.set(t.w, t.h, t.d));
+        cliff.setMatrixAt(i, _m);
+      });
+      cliff.count = list.length;
+      cliff.castShadow = true;
+      cliff.receiveShadow = true;
+      scene.add(cliff);
+    }
+
+    // The Mountain Fort at the mountains' west face.
+    const fort = new THREE.Group();
+    fort.position.set(FORT.x, 0, FORT.z);
+    const fmk = (geo) => { const m = new THREE.Mesh(geo, vcMat); m.castShadow = true; m.receiveShadow = true; fort.add(m); return m; };
+    fmk(fortWallsGeo());
+    this.fort = {
+      gate: { up: fmk(fortGateGeo(false)), down: fmk(fortGateGeo(true)), kind: 'fgate', dz: 0 },
+      north: { up: fmk(fortTowerGeo(-6.5, false)), down: fmk(fortTowerGeo(-6.5, true)), kind: 'ftower', dz: -6.5 },
+      south: { up: fmk(fortTowerGeo(6.5, false)), down: fmk(fortTowerGeo(6.5, true)), kind: 'ftower', dz: 6.5 },
+    };
+    for (const p of Object.values(this.fort)) p.down.visible = false;
+    scene.add(fort);
 
     // The enemy stronghold at the end of the road.
     this.buildStronghold(scene);
@@ -481,6 +502,19 @@ export class Renderer {
         this.spark(f.x + Math.sin(f.dir) * 3 * f.s, 0.6, f.z + Math.cos(f.dir) * 3 * f.s, 0x3d9b46, 14, 0.3, 4, 0.7);
         this.spark(f.x + Math.sin(f.dir) * 2 * f.s, 0.4, f.z + Math.cos(f.dir) * 2 * f.s, 0xc08a55, 8, 0.22, 3, 0.6);
         this.falling.splice(i, 1);
+      }
+    }
+  }
+
+  // Show the fort's broken pieces as they fall; once taken it stays a ruin.
+  syncFort(world) {
+    if (!this.fort) return;
+    const taken = world.built('pass');
+    for (const p of Object.values(this.fort)) {
+      const up = !taken && world.enemies.some((e) => e.fort && e.kind === p.kind && Math.abs(e.z - (FORT.z + p.dz)) < 1.5);
+      if (p.up.visible !== up) {
+        p.up.visible = up; p.down.visible = !up;
+        if (!up && this.ready) { this.spark(FORT.x, 2.5, FORT.z + p.dz, 0x5a5560, 26, 0.5, 6, 1, 8); this.shake = Math.max(this.shake, 0.8); }
       }
     }
   }
@@ -823,6 +857,7 @@ export class Renderer {
     this.syncBuildings(world);
     this.syncWalls(world);
     this.syncStronghold(world);
+    this.syncFort(world);
     this.syncFog(world, dt);
     this.ready = true;
 
@@ -1086,7 +1121,11 @@ export class Renderer {
     };
     const red = new THREE.Color(0xff4a3d), green = new THREE.Color(0x5ee06a), yellow = new THREE.Color(0xffcf3a);
     for (const e of world.enemies) {
-      if (e.static) { if (!e.invuln) bar(e.x, e.kind === 'skeep' ? 17 : e.kind === 'stower' ? 13 : 10, e.z - 2, e.hp / e.max, e.kind === 'skeep' ? 6 : 4, red); continue; }
+      if (e.static) {
+        if (e.fort) { if (e.hp < e.max) bar(e.x - 1.5, e.kind === 'ftower' ? 10.5 : 7.5, e.z, e.hp / e.max, 3.2, red); continue; }
+        if (!e.invuln) bar(e.x, e.kind === 'skeep' ? 17 : e.kind === 'stower' ? 13 : 10, e.z - 2, e.hp / e.max, e.kind === 'skeep' ? 6 : 4, red);
+        continue;
+      }
       if (e.hp >= e.max || e.name) continue;
       bar(e.x, 2.35 * e.scale * UNIT_S + 0.2, e.z, e.hp / e.max, e.kind === 'brute' ? 1.3 : 0.95, red);
     }
@@ -1163,7 +1202,7 @@ export class Renderer {
     const perPx = (2 * (this.dist || 40) * tanH) / Math.max(1, this.h);
     this.camTarget.x -= px * perPx;
     this.camTarget.z -= (py * perPx) / Math.sin(0.98);
-    this.camTarget.x = Math.max(-BOUNDS - 6, Math.min(BOUNDS + 6, this.camTarget.x));
+    this.camTarget.x = Math.max(-BOUNDS - 6, Math.min(HIGHLAND.x1 + 6, this.camTarget.x));
     this.camTarget.z = Math.max(-BOUNDS - 6, Math.min(STRONGHOLD.z + 14, this.camTarget.z));
     this.free = true;
   }

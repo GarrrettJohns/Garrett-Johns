@@ -10,7 +10,7 @@ import {
 import {
   LANES, LANE, lanePoint, laneCrossing, laneAtZ, FIXED_PADS, START, BRIDGE, RIVER_Z,
   RIVER_HALF, BOUNDS, CASTLE_R, distToLanes, PATH_HALF, GRID, STRONGHOLD, FRONTIERS, OUTPOSTS,
-  HIGHLAND, inHighland, GORGE_OUT, GORGE_IN, CAMPS, FOREST_Z, scenery,
+  HIGHLAND, inHighland, GORGE_OUT, GORGE_IN, CAMPS, FOREST_Z, scenery, FORT, RIVER_X1, eastLimit,
 } from './map.js';
 
 // Trees the king can chop (the forest and southern grove) and boulders he can
@@ -128,9 +128,9 @@ const OBJECTIVES = [
     at: (w) => w.firstOf('lumber'),
   },
   {
-    text: 'Clear the Mountain Pass (it needs wood)',
+    text: 'Storm the Mountain Fort to the east: break its gate and towers',
     done: (w) => w.built('pass'),
-    at: (w) => w.b.pass,
+    at: () => ({ x: FORT.x - 4, z: FORT.z }),
   },
   {
     text: 'Fight past the enemy camps and build the Gold Mine',
@@ -278,6 +278,37 @@ export class World {
       this.dropCoin(START.coins.x + Math.cos(a) * rand(0.4, 2.2), START.coins.z + Math.sin(a) * rand(0.4, 2.2), 1, 0);
     }
     this.rebuildGates();
+    this.raiseFort();
+  }
+
+  // The Mountain Fort: a gate and two towers on the mountains' west face,
+  // with a garrison inside. Take it and the mountains open up.
+  raiseFort(garrison = true) {
+    if (this.built('pass')) return;
+    const mul = levelMul(this.level);
+    const add = (kind, x, z) => {
+      const def = ENEMIES[kind];
+      this.enemies.push({
+        id: this.id(), kind, static: true, fort: true, lane: LANE.E, s: 0, off: 0, x, z, yaw: -Math.PI / 2,
+        hp: def.hp * mul, max: def.hp * mul, dmg: def.dmg * mul, atkCd: rand(0, 1), speed: 0, target: null, retarget: 0,
+        burn: 0, burnDps: 0, flash: 0, anim: 0, moving: false, attackT: 0, def, scale: 1, coins: def.coins, name: null,
+      });
+    };
+    add('fgate', FORT.x, FORT.z);
+    add('ftower', FORT.x + 0.5, FORT.z - 6.5);
+    add('ftower', FORT.x + 0.5, FORT.z + 6.5);
+    if (garrison) {
+      ['grunt', 'grunt', 'grunt', 'archer', 'archer'].forEach((kind, i) => {
+        const def = ENEMIES[kind];
+        const gx = FORT.x + 4 + (i % 2) * 1.6, gz = FORT.z - 3 + i * 1.5;
+        this.enemies.push({
+          id: this.id(), kind, lane: LANE.E, s: 0, off: 0, x: gx, z: gz, yaw: -Math.PI / 2, guard: { x: gx, z: gz, camp: 'fort' },
+          hp: def.hp * mul, max: def.hp * mul, dmg: def.dmg * mul, atkCd: rand(0, 1), speed: def.speed * 1.2,
+          target: null, retarget: Math.random() * 0.3, burn: 0, burnDps: 0, flash: 0, anim: Math.random() * 10, moving: false,
+          attackT: 0, def, scale: 1, coins: def.coins + 2, name: null,
+        });
+      });
+    }
   }
 
   addBuilding(def) {
@@ -341,7 +372,7 @@ export class World {
     if (b.needs && !this.built(b.needs)) return false;
     if (t.needs && !this.built(t.needs)) return false;
     if (b.id === 'lumber-3') return this.b.castle.level >= 1;
-    if (b.id === 'quarry-2') return this.count('quarry') >= 1;
+    if (b.type === 'pass') return false;   // the fort, not a pad
     return true;
   }
 
@@ -575,7 +606,7 @@ export class World {
     if (b.type === 'bridge') this.emit('toast', { text: 'The forest is open! Build a Lumber Camp.' });
     if (b.type === 'pass') {
       this.spawnCamps();
-      this.emit('toast', { text: 'The pass is open! Enemy camps hold the trail. Fight through to the mines.' });
+      this.emit('toast', { text: 'Enemy camps still hold the mountain trails. Clear them to work the mines safely.' });
     }
     if (b.type === 'outpost') {
       this.emit('outpost', { name: OUTPOST[b.id].name, last: this.siegeReady });
@@ -795,11 +826,11 @@ export class World {
       const a = inHighland(ax, az) ? [GORGE_IN, GORGE_OUT] : [GORGE_OUT, GORGE_IN];
       return [{ ...a[0] }, { ...a[1] }, { x: bx, z: bz }];
     }
-    const north = (z) => z < RIVER_Z;
-    if (north(az) !== north(bz)) {
+    const north = (x, z) => z < RIVER_Z && x < RIVER_X1;
+    if (north(ax, az) !== north(bx, bz)) {
       const s = { x: BRIDGE.x, z: RIVER_Z + RIVER_HALF + 1.5 };
       const n = { x: BRIDGE.x, z: RIVER_Z - RIVER_HALF - 1.5 };
-      return north(az) ? [n, s, { x: bx, z: bz }] : [s, n, { x: bx, z: bz }];
+      return north(ax, az) ? [n, s, { x: bx, z: bz }] : [s, n, { x: bx, z: bz }];
     }
     return [{ x: bx, z: bz }];
   }
@@ -1364,6 +1395,10 @@ export class World {
       });
     }
     if (e.kind === 'skeep') this.winLevel();
+    if (e.fort && !this.enemies.some((x) => x.fort && x !== e && x.hp > 0)) {
+      this.finishBuilding(this.b.pass);
+      this.emit('fortTaken', { x: e.x, z: e.z });
+    }
   }
 
   winLevel() {
@@ -1495,7 +1530,7 @@ export class World {
         }
       }
       // Fording the river is slow going.
-      if (Math.abs(e.z - RIVER_Z) < RIVER_HALF && !this.built('bridge')) want *= 0.55;
+      if (Math.abs(e.z - RIVER_Z) < RIVER_HALF && e.x < RIVER_X1 && !this.built('bridge')) want *= 0.55;
       e.x += mx * want * dt;
       e.z += mz * want * dt;
       e.moving = want > 0.05;
@@ -1639,11 +1674,11 @@ export class World {
 
     // River: only crossable on the bridge. (`noclip` is for the balance bot.)
     const onBridge = this.built('bridge') && Math.abs(nx - BRIDGE.x) < 2.1;
-    if (!onBridge && !this.noclip && Math.abs(nz - RIVER_Z) < RIVER_HALF + 0.4) {
+    if (!onBridge && !this.noclip && nx < RIVER_X1 && Math.abs(nz - RIVER_Z) < RIVER_HALF + 0.4) {
       nz = h.z < RIVER_Z ? Math.min(nz, RIVER_Z - RIVER_HALF - 0.4) : Math.max(nz, RIVER_Z + RIVER_HALF + 0.4);
       if (this.built('bridge') && Math.abs(nx - BRIDGE.x) < 3.2) nx += (BRIDGE.x - nx) * Math.min(1, dt * 6);
     }
-    nx = Math.max(-BOUNDS, Math.min(BOUNDS, nx));
+    nx = Math.max(-BOUNDS, Math.min(eastLimit(nz), nx));
     // South, the king can ride as far as the road he has claimed. At the
     // stronghold its gate holds him out until it is broken.
     let zMax = this.frontier - 1.5;
@@ -1945,7 +1980,7 @@ export class World {
     this.updateProjectiles(dt);
     this.updateCoins(dt);
 
-    if (this.phase === 'wave' && !this.siege && !this.spawnQueue.length && !this.enemies.some((e) => !e.guard)) this.endWave();
+    if (this.phase === 'wave' && !this.siege && !this.spawnQueue.length && !this.enemies.some((e) => !e.guard && !e.static)) this.endWave();
 
     // Objectives.
     let o = OBJECTIVES[this.objective];
@@ -2042,6 +2077,7 @@ export class World {
     this.gates = null;
     this.rebuildGates();
     if (this.built('pass')) this.spawnCamps(s.camps || null);
+    else this.raiseFort();
   }
 }
 

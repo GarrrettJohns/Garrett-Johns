@@ -24,10 +24,12 @@ It then launches full screen and works offline.
 - **Gold:** at first gold comes only from waves: kills drop coins and every
   cleared wave pays a bonus. Wave 5's boss, the Elder Treant, drops a pile of
   logs.
-- **The highland:** a big rocky region east of the castle, walled in by crags.
-  The only way in is a gorge sealed by a rockfall; clearing the Mountain Pass
-  (it needs wood) opens it. Three enemy camps hold the trail inside, guarding
-  the gold mine and two quarries, which trails lead to.
+- **The eastern mountains:** north is the top of the screen. The whole east
+  side of the map, from the north edge to below the castle, is a big range of
+  snowy peaks and boulders. The river ends at its foot. A Mountain Fort (a
+  gate, two towers and a garrison) blocks the only way in: break it to claim
+  the mountains. Four enemy camps hold the trails inside, guarding the gold
+  mine and three quarries. Workers can only go there once the fort falls.
 - **The king gathers:** standing still by forest trees he chops them down with
   an axe, and by highland boulders he breaks them up with a pickaxe. The pieces
   go on his horse (20, more with saddlebags) and he banks them at the castle, a

@@ -29,26 +29,31 @@ export const OUTPOSTS = [
   { id: 'outpost-3', name: 'Siege Camp', wave: 14, cost: { gold: 340, wood: 120, stone: 120 } },
 ];
 
-// The rocky highland east of the castle, walled in by crags between the east
-// road and the river. The only way in is a narrow gorge on its west side,
-// sealed by a rockfall until the king clears the Mountain Pass. Enemy camps
-// hold the trail inside.
-export const HIGHLAND = { x0: 30, x1: 57, z0: -26.6, z1: -11, gorgeZ: -18.5, gorgeHalf: 2.4 };
-export const MOUNTAIN = { x: (HIGHLAND.x0 + HIGHLAND.x1) / 2, z: (HIGHLAND.z0 + HIGHLAND.z1) / 2, r: 12 };
-export const inHighland = (x, z) => x > HIGHLAND.x0 && z < HIGHLAND.z1 && z > HIGHLAND.z0 - 3;
-export const GORGE_OUT = { x: HIGHLAND.x0 - 4.5, z: HIGHLAND.gorgeZ };   // just outside the gorge
-export const GORGE_IN = { x: HIGHLAND.x0 + 3.5, z: HIGHLAND.gorgeZ };    // just inside it
-// Trails inside the highland, from the gorge to each mine and quarry.
+// The mountains: a big rocky range filling the east of the map, from the
+// north edge down past the castle. Its only way in is on its west face,
+// held by the enemy's Mountain Fort; take the fort and the mountains (their
+// gold, stone and boulders) are yours. Enemy camps hold the trails inside.
+export const HIGHLAND = { x0: 46, x1: 104, z0: -60, z1: 30, gorgeZ: -8, gorgeHalf: 2.6 };
+export const FORT = { x: 46, z: -8 };
+export const RIVER_X1 = 44;     // the river runs from the west edge to the foot of the mountains
+export const inHighland = (x, z) => x > HIGHLAND.x0 && z < HIGHLAND.z1 && z > HIGHLAND.z0 - 10;
+export const GORGE_OUT = { x: FORT.x - 5, z: FORT.z };   // just outside the fort gate
+export const GORGE_IN = { x: FORT.x + 6, z: FORT.z };    // just inside it
+// How far east the king can ride at a given z.
+export const eastLimit = (z) => (z < 58 ? HIGHLAND.x1 - 2 : BOUNDS);
+// Trails inside the mountains, from the fort gate out to each mine and quarry.
 export const HIGHLAND_TRAILS = [
-  [[24, -18.5], [33.5, -18.5], [38, -17], [44, -16.5], [48.5, -16]],
-  [[38, -17], [38.5, -20.5]],
-  [[44, -16.5], [47, -20.5]],
+  [[40, -8], [56, -8], [66, -14], [76, -18], [88, -24], [96, -33]],
+  [[56, -8], [62, 2], [72, 10], [80, 15]],
+  [[66, -14], [63, -28], [61, -39]],
+  [[76, -18], [83, -9]],
 ];
-// Enemy camps guarding the trail. Each is a list of enemy kinds.
+// Enemy camps guarding the trails. Each is a list of enemy kinds.
 export const CAMPS = [
-  { id: 'camp-1', x: 36, z: -15, kinds: ['grunt', 'grunt', 'grunt', 'archer'] },
-  { id: 'camp-2', x: 43, z: -20.5, kinds: ['grunt', 'grunt', 'brute', 'archer'] },
-  { id: 'camp-3', x: 53, z: -21, kinds: ['grunt', 'grunt', 'archer', 'archer', 'brute'] },
+  { id: 'camp-1', x: 66, z: -6, kinds: ['grunt', 'grunt', 'grunt', 'archer'] },
+  { id: 'camp-2', x: 69, z: 7, kinds: ['grunt', 'grunt', 'brute', 'archer'] },
+  { id: 'camp-3', x: 70, z: -26, kinds: ['grunt', 'grunt', 'archer', 'archer', 'brute'] },
+  { id: 'camp-4', x: 90, z: -18, kinds: ['grunt', 'brute', 'brute', 'archer', 'archer'] },
 ];
 
 // Enemy lanes, from the map edge in to the castle. `opens` is the first wave
@@ -58,7 +63,7 @@ const LANE_DEFS = [
     id: 'S', name: 'South', opens: 1,
     pts: [[0, 179], [-10, 166], [-8, 148], [9, 133], [11, 117], [-3, 102], [-9, 86], [1, 73], [8, 63], [14, 48], [4, 38], [-8, 30], [-6, 20], [0, 12], [0, 5]],
   },
-  { id: 'E', name: 'East', opens: 4, pts: [[64, -4], [48, 2], [38, -6], [28, 2], [18, 0], [5, 0]] },
+  { id: 'E', name: 'East', opens: 4, pts: [[108, 50], [88, 52], [68, 46], [52, 37], [38, 22], [26, 8], [16, 1], [5, 0]] },
   { id: 'W', name: 'West', opens: 8, pts: [[-64, 10], [-48, 4], [-36, 12], [-24, 6], [-14, 2], [-5, 0]] },
   { id: 'N', name: 'Forest', opens: 11, pts: [[-4, -64], [-10, -48], [0, -38], [-5, -26], [-2, -14], [0, -5]] },
 ];
@@ -205,13 +210,15 @@ function towerPads() {
 // Every fixed pad. `size` is the footprint in metres.
 export const FIXED_PADS = [
   { id: 'bridge', type: 'bridge', x: BRIDGE.x, z: BRIDGE.z },
-  { id: 'pass', type: 'pass', x: 27.5, z: -18.5 },
-  { id: 'goldmine', type: 'goldmine', x: 52, z: -15 },
+  // Stands for the Mountain Fort: built once the fort is taken (never bought).
+  { id: 'pass', type: 'pass', x: FORT.x, z: FORT.z },
+  { id: 'goldmine', type: 'goldmine', x: 87, z: -5 },
   { id: 'lumber-1', type: 'lumber', x: -14, z: -38 },
   { id: 'lumber-2', type: 'lumber', x: 13, z: -38 },
   { id: 'lumber-3', type: 'lumber', x: 27, z: -43 },
-  { id: 'quarry-1', type: 'quarry', x: 38.5, z: -23 },
-  { id: 'quarry-2', type: 'quarry', x: 47, z: -23.2 },
+  { id: 'quarry-1', type: 'quarry', x: 61, z: -43 },
+  { id: 'quarry-2', type: 'quarry', x: 84, z: 18 },
+  { id: 'quarry-5', type: 'quarry', x: 99, z: -37, needs: 'pass' },
   // The road south.
   { id: 'outpost-1', type: 'outpost', x: 1, z: 58 },
   { id: 'outpost-2', type: 'outpost', x: -12, z: 106 },
@@ -247,7 +254,7 @@ export function scenery() {
 
   // The forest: dense pines north of the river.
   for (let i = 0; i < 2600 && trees.length < 520; i++) {
-    const x = -62 + rnd() * 124;
+    const x = -62 + rnd() * (RIVER_X1 + 62);
     const z = FOREST_Z - 1 - rnd() * 32;
     if (distToLanes(x, z, [LANE.N]) < PATH_HALF + 1.4) continue;
     if (!clearOf(x, z, 4.6)) continue;
@@ -256,7 +263,7 @@ export function scenery() {
   }
   // A thinner fringe on the grassland side of the river bank.
   for (let i = 0; i < 400; i++) {
-    const x = -60 + rnd() * 120;
+    const x = -60 + rnd() * (RIVER_X1 + 58);
     const z = RIVER_Z + RIVER_HALF + 1 + rnd() * 3;
     if (distToLanes(x, z) < PATH_HALF + 2) continue;
     if (!outside(x, z, 3)) continue;
@@ -265,17 +272,18 @@ export function scenery() {
     trees.push({ x, z, s: 0.7 + rnd() * 0.4, r: rnd() * 6.28 });
   }
   // Scattered pines across the grassland and down the road south.
-  for (let i = 0; i < 3000 && trees.length < 900; i++) {
-    const x = -54 + rnd() * 108;
+  for (let i = 0; i < 4000 && trees.length < 960; i++) {
     const z = RIVER_Z + RIVER_HALF + 2 + rnd() * (215 - RIVER_Z);
+    const x = -54 + rnd() * (eastLimit(z) + 54);
     if (!outside(x, z, 4)) continue;
-    if (inHighland(x + 3, z - 3)) continue;
+    if (inHighland(x + 4, z - 4)) continue;
+    if (Math.hypot(x - FORT.x, z - FORT.z) < 12) continue;
     if (nearStronghold(x, z, 4)) continue;
     if (distToLanes(x, z) < PATH_HALF + 2.5) continue;
     if (!clearOf(x, z, 5)) continue;
     if (!spaced(x, z, 3.6)) continue;
     // Clumps: thicker towards the cliffs at the edges.
-    if (rnd() > 0.18 + Math.abs(x) / 70) continue;
+    if (rnd() > 0.18 + Math.abs(Math.min(x, 60)) / 70) continue;
     trees.push({ x, z, s: 0.8 + rnd() * 0.5, r: rnd() * 6.28 });
   }
   // A grove around the southern lumber camp.
@@ -310,36 +318,47 @@ export function scenery() {
   }
 
   const cliffs = [];
-  // Crags walling in the highland: its south edge above the east road, and its
-  // west edge, broken only by the gorge — itself a short corridor of rock.
-  const crag = (x, z, big = 1) => clearOf(x, z, 3.4) && cliffs.push({ x, z, w: (2.6 + rnd() * 1.6) * big, h: 2.2 + rnd() * 2.2, d: (2.6 + rnd() * 1.6) * big, r: rnd() * 6.28 });
+  // The mountains: a crag wall along the west face (broken only by the fort
+  // gate) and the south face, peaks rising inside, and boulders everywhere.
   const H = HIGHLAND;
-  for (let x = H.x0; x <= H.x1 + 2; x += 2.6) crag(x, H.z1 + 0.6 + rnd() * 0.8);
-  for (let z = H.z0 + 1; z <= H.z1; z += 2.6) {
-    if (Math.abs(z - H.gorgeZ) < H.gorgeHalf + 1.3) continue;
-    crag(H.x0 - 0.4 - rnd() * 0.8, z);
+  const trailDist = (x, z) => Math.min(...HIGHLAND_TRAILS.flatMap((t) => t.slice(1).map((p, k) => segDist(x, z, t[k][0], t[k][1], p[0], p[1]))));
+  const crag = (x, z, big = 1, h = 2.4 + rnd() * 2.6) => {
+    if (!clearOf(x, z, 3.6) || distToLanes(x, z) < PATH_HALF + 3) return;
+    cliffs.push({ x, z, w: (2.8 + rnd() * 1.8) * big, h, d: (2.8 + rnd() * 1.8) * big, r: rnd() * 6.28 });
+  };
+  for (let z = H.z0; z <= H.z1; z += 2.6) {
+    if (Math.abs(z - H.gorgeZ) < 9) continue;   // the fort's walls fill the gap
+    crag(H.x0 - 0.3 - rnd() * 0.8, z, 1, 3 + rnd() * 3);
   }
-  for (let x = H.x0 - 3.5; x <= H.x0 + 2.5; x += 2.2) {
-    crag(x, H.gorgeZ - H.gorgeHalf - 1.8, 0.8);
-    crag(x, H.gorgeZ + H.gorgeHalf + 1.8, 0.8);
+  for (let x = H.x0; x <= H.x1 + 4; x += 2.6) crag(x, H.z1 + 0.6 + rnd() * 0.8, 1, 3 + rnd() * 3);
+  // Peaks inside, taller towards the east.
+  for (let i = 0; i < 900 && cliffs.filter((c) => c.peak).length < 46; i++) {
+    const x = H.x0 + 8 + rnd() * (H.x1 - H.x0 - 6), z = H.z0 + 2 + rnd() * (H.z1 - H.z0 - 4);
+    if (trailDist(x, z) < 6 || !clearOf(x, z, 9) || CAMPS.some((c) => Math.hypot(c.x - x, c.z - z) < 7)) continue;
+    if (cliffs.some((c) => c.peak && Math.hypot(c.x - x, c.z - z) < 7)) continue;
+    const k = (x - H.x0) / (H.x1 - H.x0);
+    cliffs.push({ x, z, w: 4 + rnd() * 4, h: 5 + k * 9 + rnd() * 4, d: 4 + rnd() * 4, r: rnd() * 6.28, peak: true });
   }
-  // Boulders across the highland: the king can mine these for stone.
-  for (let i = 0; i < 2000 && rocks.filter((r) => r.highland).length < 48; i++) {
-    const x = H.x0 + 2 + rnd() * (H.x1 - H.x0 - 4), z = H.z0 + 1.5 + rnd() * (H.z1 - H.z0 - 3);
-    if (!clearOf(x, z, 3.8)) continue;
-    if (HIGHLAND_TRAILS.some((t) => t.some((p, k) => k && segDist(x, z, t[k - 1][0], t[k - 1][1], p[0], p[1]) < 1.9))) continue;
-    if (rocks.some((r) => Math.hypot(r.x - x, r.z - z) < 2.0)) continue;
+  // Boulders: the king and masons break these up for stone.
+  for (let i = 0; i < 4000 && rocks.filter((r) => r.highland).length < 150; i++) {
+    const x = H.x0 + 3 + rnd() * (H.x1 - H.x0 - 5), z = H.z0 + 2 + rnd() * (H.z1 - H.z0 - 4);
+    if (!clearOf(x, z, 3.8) || trailDist(x, z) < 1.9) continue;
+    if (cliffs.some((c) => c.peak && Math.abs(c.x - x) < c.w / 2 + 1.2 && Math.abs(c.z - z) < c.d / 2 + 1.2)) continue;
+    if (rocks.some((r) => Math.abs(r.x - x) < 2 && Math.abs(r.z - z) < 2)) continue;
     rocks.push({ x, z, s: 0.45 + rnd() * 0.6, r: rnd() * 6.28, highland: true });
   }
 
-  // Mountains walling in the map: the north edge, both sides all the way down
-  // the road, and behind the stronghold. Lane mouths stay open.
+  // Mountains walling in the whole map. The south-east corner is open
+  // ground where the east road comes in; lane mouths stay open.
   const wall = (x, z) => {
-    if (distToLanes(x, z) < 6) return;
+    if (distToLanes(x, z) < 7) return;
     cliffs.push({ x, z, w: 7 + rnd() * 6, h: 4 + rnd() * 7, d: 7 + rnd() * 6, r: rnd() * 6.28 });
   };
-  for (let x = -68; x <= 68; x += 4.6) wall(x, -60 - rnd() * 8);
-  for (let z = -68; z <= 222; z += 4.6) { wall(60 + rnd() * 8, z); wall(-60 - rnd() * 8, z); }
+  for (let x = -68; x <= 114; x += 4.6) wall(x, -60 - rnd() * 8);
+  for (let z = -68; z <= 222; z += 4.6) wall(-60 - rnd() * 8, z);
+  for (let z = -68; z <= 66; z += 4.6) wall(108 + rnd() * 8, z);
+  for (let x = 58; x <= 114; x += 4.6) wall(x, 64 + rnd() * 6);
+  for (let z = 64; z <= 222; z += 4.6) wall(60 + rnd() * 8, z);
   for (let x = -68; x <= 68; x += 4.6) wall(x, 214 + rnd() * 8);
 
   return { trees, rocks, cliffs };

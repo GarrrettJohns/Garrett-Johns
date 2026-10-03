@@ -409,6 +409,11 @@ function handle(ev, events = []) {
       }, 2200);
       break;
     }
+    case 'fortTaken':
+      audio.victory();
+      ui.banner('The Mountain Fort has fallen!', 'The mountains are yours: build quarries and a gold mine', 3.2);
+      dirty = true;
+      break;
     case 'gateFallen': audio.crash(); ui.banner('The gate is down!', 'Storm the keep — its warlord rides out', 2.6); break;
     case 'blocked': ui.toast('Break the stronghold gate first!', true); break;
     case 'outpost':

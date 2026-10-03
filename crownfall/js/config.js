@@ -241,6 +241,9 @@ export const ENEMIES = {
   archer: { name: 'Bowman', hp: 24, dmg: 6, interval: 1.5, range: 9, speed: 2.1, aggro: 9, coins: 4, radius: 0.5, ranged: true },
   raider: { name: 'Outrider', hp: 42, dmg: 7, interval: 0.8, range: 1.4, speed: 4.6, aggro: 0, coins: 4, radius: 0.55 },
   treant: { name: 'Elder Treant', hp: 1300, dmg: 30, interval: 1.8, range: 2.6, speed: 1.15, aggro: 6, coins: 50, wood: 45, radius: 1.5, armor: 1, scale: 2.6, slam: 3.4 },
+  // The Mountain Fort guarding the way into the mountains.
+  fgate: { name: 'Mountain Fort Gate', hp: 900, dmg: 0, interval: 9, range: 0, speed: 0, aggro: 0, coins: 40, radius: 2.6, armor: 2, structure: true },
+  ftower: { name: 'Fort Tower', hp: 480, dmg: 8, interval: 1.3, range: 12, speed: 0, aggro: 12, coins: 25, radius: 1.8, armor: 1, structure: true, ranged: true },
   // The enemy stronghold's defences: they never move.
   sgate: { name: 'Stronghold Gate', hp: 2600, dmg: 0, interval: 9, range: 0, speed: 0, aggro: 0, coins: 80, radius: 3.4, armor: 3, structure: true },
   stower: { name: 'Stronghold Tower', hp: 1300, dmg: 13, interval: 1.2, range: 14, speed: 0, aggro: 14, coins: 50, radius: 2.2, armor: 2, structure: true, ranged: true },

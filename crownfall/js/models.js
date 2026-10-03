@@ -898,6 +898,45 @@ export function strongholdKeepGeo(broken) {
   return b.build();
 }
 
+// The Mountain Fort, built around its gate at the origin; its wall runs along z.
+const FS = 0x5a5560, FS2 = 0x45414c;
+export function fortWallsGeo() {
+  const b = new Builder();
+  for (const [z0, z1] of [[-11, -3.2], [3.2, 11]]) b.box(2.2, 4.6, z1 - z0, FS, { z: (z0 + z1) / 2 });
+  for (let z = -10.5; z <= 10.5; z += 1.5) if (Math.abs(z) > 3.3) b.box(2.3, 0.8, 0.7, FS2, { y: 4.6, z });
+  for (const s of [-1, 1]) {
+    b.box(0.12, 6, 0.12, 0x2a2a2e, { x: -1.4, z: s * 9 });
+    b.box(0.06, 1.8, 1.2, 0xc0302a, { x: -1.4, y: 4, z: s * 9 + 0.6 });
+  }
+  return b.build();
+}
+export function fortGateGeo(broken) {
+  const b = new Builder();
+  for (const s of [-1, 1]) b.box(2.6, broken ? 2.5 : 6, 2, FS2, { z: s * 3.4 });
+  if (broken) {
+    for (let i = 0; i < 7; i++) b.add(new THREE.DodecahedronGeometry(0.5 + (i % 3) * 0.3, 0), i % 2 ? FS : FS2, { x: -1.5 + (i % 3) * 0.8, y: 0.35, z: -2 + i * 0.6 });
+  } else {
+    b.box(2.6, 1.2, 8.8, FS2, { y: 4.8 });
+    for (let i = 0; i < 5; i++) b.box(0.25, 4.6, 0.18, 0x2a2a2e, { x: -1.1, z: -2 + i });
+    for (let i = 0; i < 3; i++) b.box(0.25, 0.18, 4.8, 0x2a2a2e, { x: -1.1, y: 1 + i * 1.4 });
+    for (const s of [-1, 1]) b.cone(1.6, 1.8, 4, 0x9c2a26, { y: 6, z: s * 3.4, ry: Math.PI / 4 });
+  }
+  return b.build();
+}
+export function fortTowerGeo(z, broken) {
+  const b = new Builder();
+  if (broken) {
+    b.cyl(1.7, 2.0, 2.2, 8, FS2, { x: 0.5, z });
+    for (let i = 0; i < 5; i++) b.add(new THREE.DodecahedronGeometry(0.6, 0), FS, { x: -1 + (i % 3), y: 0.4, z: z - 2 + i });
+    return b.build();
+  }
+  b.cyl(1.6, 1.9, 7, 8, FS, { x: 0.5, z });
+  b.cyl(2.1, 2.1, 0.5, 8, FS2, { x: 0.5, y: 7, z });
+  b.cone(2.0, 2.6, 8, 0x9c2a26, { x: 0.5, y: 7.5, z });
+  b.box(0.1, 0.8, 0.4, 0xffb030, { x: -1.15, y: 4.5, z });
+  return b.build();
+}
+
 // A warehouse: a big timber storehouse with crates, barrels and a log stack.
 export function warehouseGeo(level) {
   const b = new Builder();
