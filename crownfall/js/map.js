@@ -57,6 +57,11 @@ export const HIGHLAND_TRAILS = [
   [[66, -14], [63, -28], [61, -39]],
   [[76, -18], [83, -9]],
 ].map((t) => t.map(P));
+// The Iron Hills: an iron-rich field east of the road past the Riverford
+// Outpost. The outpost claims it; an Iron Mine works it.
+export const IRON = { x: spread(40), z: spread(64), r: 12 };
+// Land around a claimed outpost where houses, farms and workshops can go.
+export const OUTPOST_ZONE = 14;
 // Enemy camps guarding the trails. Each is a list of enemy kinds.
 export const CAMPS = [
   { id: 'camp-1', x: 66, z: -6, kinds: ['grunt', 'grunt', 'grunt', 'archer'] },
@@ -216,6 +221,34 @@ function towerPads() {
   return out;
 }
 
+// Catapults: one covering each of the first roads in, and around each
+// outpost a catapult and two more towers to hold the new land.
+function defencePads() {
+  const out = [];
+  const side = (lane, back, off, id, type, needs) => {
+    const p = lanePoint(lane, lane.length - back);
+    out.push({ id, type, lane: lane.id, needs, x: Math.round((p.x - p.dz * off) * 2) / 2, z: Math.round((p.z + p.dx * off) * 2) / 2 });
+  };
+  side(LANE.S, 52, -6, 'catapult-S', 'catapult');
+  side(LANE.E, 52, -6, 'catapult-E', 'catapult');
+  const S = LANE.S;
+  ['outpost-1', 'outpost-2', 'outpost-3'].forEach((oid, k) => {
+    const o = OUTPOST_SPOTS[k];
+    // Nearest point on the south road to the outpost.
+    let best = 0, bd = Infinity;
+    for (let i = 0; i < S.pts.length; i++) { const d = Math.hypot(S.pts[i][0] - o.x, S.pts[i][1] - o.z); if (d < bd) { bd = d; best = S.cum[i]; } }
+    const at = S.length - best;
+    // Which side of the road the outpost stands on: defences go opposite.
+    const p = lanePoint(S, best);
+    const sgn = Math.sign((o.x - p.x) * -p.dz + (o.z - p.z) * p.dx) || 1;
+    side(S, at + 12, -sgn * 4.4, `tower-O${k + 1}a`, 'tower', oid);
+    side(S, at - 12, -sgn * 4.4, `tower-O${k + 1}b`, 'tower', oid);
+    side(S, at, -sgn * 6.5, `catapult-O${k + 1}`, 'catapult', oid);
+  });
+  return out;
+}
+const OUTPOST_SPOTS = [[1, 58], [-12, 106], [9, 151]].map(([x, z]) => ({ x: spread(x), z: spread(z) }));
+
 // Every fixed pad. `size` is the footprint in metres.
 export const FIXED_PADS = [
   { id: 'bridge', type: 'bridge', x: BRIDGE.x, z: BRIDGE.z },
@@ -236,7 +269,9 @@ export const FIXED_PADS = [
   PP({ id: 'lumber-4', type: 'lumber', x: 27, z: 92, needs: 'outpost-1' }),
   PP({ id: 'quarry-3', type: 'quarry', x: -26, z: 126, needs: 'outpost-2' }),
   PP({ id: 'goldmine-3', type: 'goldmine', x: 28, z: 128, needs: 'outpost-2' }),
+  { id: 'ironmine-1', type: 'ironmine', x: IRON.x - 13, z: IRON.z + 2 },
   ...towerPads(),
+  ...defencePads(),
 ];
 
 // Where the starting buildings stand.
@@ -315,6 +350,14 @@ export function scenery() {
       if (distToLanes(x, z) < PATH_HALF + 1) continue;
       rocks.push({ x, z, s: 0.6 + rnd() * 0.9, r: rnd() * 6.28, highland: inHighland(x, z) || undefined });
     }
+  }
+  // The Iron Hills: rust-streaked rocks that hold iron ore.
+  for (let i = 0; i < 1200 && rocks.filter((r) => r.iron).length < 46; i++) {
+    const a = rnd() * Math.PI * 2, d = Math.sqrt(rnd()) * IRON.r;
+    const x = IRON.x + Math.cos(a) * d, z = IRON.z + Math.sin(a) * d;
+    if (distToLanes(x, z) < PATH_HALF + 2 || !clearOf(x, z, 4.2)) continue;
+    if (rocks.some((r) => Math.abs(r.x - x) < 2.1 && Math.abs(r.z - z) < 2.1)) continue;
+    rocks.push({ x, z, s: 0.5 + rnd() * 0.55, r: rnd() * 6.28, iron: true });
   }
   // A few loose boulders.
   for (let i = 0; i < 80 && rocks.length < 110; i++) {

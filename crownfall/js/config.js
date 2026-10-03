@@ -147,7 +147,7 @@ export const BUILDINGS = {
   },
   outpost: {
     name: 'Outpost', icon: '⛺', size: 6,
-    desc: 'A forward camp on the road to the enemy stronghold. Its watchtower fires on passing enemies, and workers can drop off loads here.',
+    desc: 'A forward camp on the road to the enemy stronghold. It claims the land around it for houses and farms, its watchtower fires on passing enemies, and workers can drop off loads here.',
     levels: [{ dmg: 14, interval: 0.9, range: 13 }],   // costs and wave requirements live in map.js OUTPOSTS
   },
   goldmine: {
@@ -180,6 +180,30 @@ export const BUILDINGS = {
       { workers: 3, work: 6, carry: 3, cost: { gold: 50, wood: 30 } },
       { workers: 5, work: 5, carry: 4, cost: { gold: 90, wood: 40 } },
       { workers: 7, work: 4, carry: 6, cost: { gold: 160, wood: 60 } },
+    ],
+  },
+  ironmine: {
+    name: 'Iron Mine', icon: '⚒️', size: 5, castle: 2, needs: 'outpost-1',
+    desc: 'Miners break up the iron-rich rocks of the Iron Hills and stack the ore here, ready for warehouse haulers.',
+    levels: [
+      { workers: 3, work: 6, carry: 2, cost: { gold: 90, wood: 40, stone: 30 } },
+      { workers: 5, work: 5, carry: 3, cost: { gold: 140, stone: 60 } },
+      { workers: 7, work: 4, carry: 4, cost: { gold: 220, stone: 90, iron: 30 } },
+    ],
+  },
+  blacksmith: {
+    name: 'Blacksmith', icon: '🔨', size: 6, place: true, castle: 2,
+    desc: 'Forges iron into better tools and arrowheads for the whole kingdom.',
+    levels: [{ cost: { gold: 80, wood: 40, stone: 30 } }],
+  },
+  // Stone-throwers: slow, long range, and they smash whole groups.
+  catapult: {
+    name: 'Catapult', icon: '☄️', size: 3.6, castle: 2, needs: 'pass',
+    desc: 'Lobs boulders at the thickest knot of enemies it can reach. Too clumsy to hit anyone right next to it.',
+    levels: [
+      { name: 'Catapult', dmg: 30, splash: 3.0, interval: 3.4, range: 20, minRange: 5, cost: { gold: 60, stone: 40 } },
+      { name: 'Heavy Catapult', dmg: 46, splash: 3.6, interval: 3.0, range: 22, minRange: 5, cost: { gold: 90, stone: 80 }, castle: 3 },
+      { name: 'Trebuchet', dmg: 72, splash: 4.2, interval: 2.7, range: 27, minRange: 6, cost: { gold: 150, stone: 120, iron: 30 }, castle: 3 },
     ],
   },
   tower: {
@@ -311,3 +335,25 @@ export function waveSpec(n, lanesOpen, level = 1) {
     bonus: 20 + n * 8 + ([0, 50, 36][n] || 0),
   };
 }
+
+// The blacksmith turns iron into better gear for everyone.
+export const SMITH = {
+  king: {
+    icon: '⛏️', name: "King's iron tools", unit: '× swing speed',
+    desc: 'An iron axe and pickaxe: the king fells trees and breaks rocks faster.',
+    values: [1, 1.35, 1.75, 2.2],
+    costs: [{ gold: 60, iron: 20 }, { gold: 120, iron: 45 }, { gold: 200, iron: 90 }],
+  },
+  workers: {
+    icon: '🪓', name: "Workers' iron tools", unit: '× work speed',
+    desc: 'Woodcutters, masons and miners work faster with iron tools.',
+    values: [1, 1.3, 1.6, 2.0],
+    costs: [{ gold: 80, iron: 25 }, { gold: 150, iron: 50 }, { gold: 240, iron: 100 }],
+  },
+  arrows: {
+    icon: '🏹', name: 'Iron arrowheads', unit: '× damage',
+    desc: 'Harder-hitting arrows for the king, archers and towers.',
+    values: [1, 1.15, 1.3, 1.5],
+    costs: [{ gold: 90, iron: 30 }, { gold: 160, iron: 60 }, { gold: 260, iron: 120 }],
+  },
+};

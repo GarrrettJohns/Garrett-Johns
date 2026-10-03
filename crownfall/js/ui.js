@@ -4,15 +4,15 @@
 import { BUILDINGS } from './config.js';
 
 const $ = (id) => document.getElementById(id);
-const PLACEABLE = ['house', 'warehouse', 'farm', 'barracks'];
-const LIMIT = { barracks: 2 };
+const PLACEABLE = ['house', 'warehouse', 'farm', 'barracks', 'blacksmith'];
+const LIMIT = { barracks: 2, blacksmith: 1 };
 const TAB_ICON = { King: '👑', Army: '⚔️', Castle: '🏰' };
 
 export class UI {
   constructor(h) {
     this.h = h;
     this.el = {
-      coins: $('hud-coins'), cap: $('hud-cap'), wood: $('hud-wood'), stone: $('hud-stone'), pop: $('hud-pop'), beds: $('hud-beds'),
+      coins: $('hud-coins'), cap: $('hud-cap'), wood: $('hud-wood'), stone: $('hud-stone'), iron: $('hud-iron'), ironPill: $('hud-iron-pill'), pop: $('hud-pop'), beds: $('hud-beds'),
       wave: $('hud-wave'), castle: $('hud-castle'), objective: $('objective'), objectiveText: $('objective-text'),
       boss: $('boss-bar'), bossName: $('boss-name'), bossFill: $('boss-fill'), left: $('enemies-left'),
       banner: $('banner'), toasts: $('toasts'), floats: $('floats'),
@@ -90,6 +90,9 @@ export class UI {
     this.set('bank', bank, () => { e.bank.hidden = !bank; e.bankN.textContent = bank; bump(e.bank); });
     this.set('wood', world.res.wood, () => { e.wood.textContent = world.res.wood; bump(e.wood.parentElement); });
     this.set('stone', world.res.stone, () => { e.stone.textContent = world.res.stone; bump(e.stone.parentElement); });
+    // Iron shows up once the Iron Hills are in reach.
+    const showIron = world.res.iron > 0 || world.padVisible(world.b['ironmine-1']);
+    this.set('iron', `${world.res.iron}|${showIron}`, () => { e.ironPill.hidden = !showIron; e.iron.textContent = world.res.iron; if (world.res.iron) bump(e.ironPill); });
     this.set('pop', world.pop, () => { e.pop.textContent = world.pop; });
     const free = Math.max(0, world.freeVillagers);
     this.set('beds', `${world.beds}|${free}`, () => { e.beds.textContent = `/${world.beds}${free ? ` · ${free} free` : ''}`; });
@@ -166,7 +169,7 @@ export class UI {
       e.load.hidden = ld.n === 0;
       e.loadN.textContent = ld.n;
       e.loadCap.textContent = `/${world.loadCap}`;
-      e.loadI.textContent = ld.res === 'stone' ? '🪨' : '🪵';
+      e.loadI.textContent = ld.res === 'stone' ? '🪨' : ld.res === 'iron' ? '⚙️' : '🪵';
     });
     this.updateThreats(world, ctx);
     this.updateRates(world, dt);
@@ -205,7 +208,7 @@ export class UI {
       const lack = (k, have) => ((c[k] || 0) > have ? 'lack' : '');
       el.innerHTML = `<b>${tip.icon} ${esc(tip.title)}</b>${esc(tip.desc)}`
         + (tip.locked ? `<div class="lock">🔒 ${esc(tip.locked)}</div>`
-          : `<div class="cost">${c.gold ? `<span class="${lack('gold', world.gold)}"><i class="coin"></i>${c.gold}</span>` : ''}${c.wood ? `<span class="${lack('wood', world.res.wood)}">🪵 ${c.wood}</span>` : ''}${c.stone ? `<span class="${lack('stone', world.res.stone)}">🪨 ${c.stone}</span>` : ''}</div>`);
+          : `<div class="cost">${c.gold ? `<span class="${lack('gold', world.gold)}"><i class="coin"></i>${c.gold}</span>` : ''}${c.wood ? `<span class="${lack('wood', world.res.wood)}">🪵 ${c.wood}</span>` : ''}${c.stone ? `<span class="${lack('stone', world.res.stone)}">🪨 ${c.stone}</span>` : ''}${c.iron ? `<span class="${lack('iron', world.res.iron)}">⚙️ ${c.iron}</span>` : ''}</div>`);
     }
     el.style.transform = `translate(${p.x}px, ${p.y - el.offsetHeight - 12}px)`;
     el.hidden = false;
@@ -261,7 +264,7 @@ export class UI {
     if (this.ratesT > 0) return;
     this.ratesT = 1;
     const r = world.rates(this.ratesFor);
-    const NAME = { gold: ['🪙', 'Gold'], wood: ['🪵', 'Wood'], stone: ['🪨', 'Stone'] }[r.res];
+    const NAME = { gold: ['🪙', 'Gold'], wood: ['🪵', 'Wood'], stone: ['🪨', 'Stone'], iron: ['⚙️', 'Iron'] }[r.res];
     this.el.ratesTitle.textContent = `${NAME[0]} ${NAME[1]}`;
     const row = (x) => `<div class="row"><span class="ic">${x.icon}</span><span class="nm">${esc(x.name)}${x.workers ? ` <span class="wk">${x.workers}</span>` : ''}</span><span class="v">${x.perMin}/min</span></div>`;
     const stored = r.res === 'gold' ? `${world.hero.coins} on your horse · ${world.res.gold || 0} banked` : `${world.res[r.res]} in your stores`;
@@ -336,6 +339,7 @@ export class UI {
     const lackG = gold > world.gold;
     const lackW = (it.cost.wood || 0) > world.res.wood;
     const lackS = (it.cost.stone || 0) > world.res.stone;
+    const lackI = (it.cost.iron || 0) > world.res.iron;
     const pips = it.max > 1 ? `<span class="pips">${Array.from({ length: it.max }, (_, i) => `<i class="${i < it.level ? 'on' : ''}"></i>`).join('')}</span>` : '';
     let btn;
     if (it.maxed) btn = '<button class="rbtn max" type="button" disabled>MAX</button>';
@@ -343,13 +347,14 @@ export class UI {
     else if (it.locked) btn = `<button class="rbtn off" type="button" disabled>🔒 ${esc(it.locked)}</button>`;
     else {
       const verb = it.key.startsWith('train') ? 'Train' : it.key.startsWith('weapon') ? 'Unlock' : 'Upgrade';
-      const need = lackG ? 'gold' : lackW ? 'wood' : lackS ? 'stone' : '';
+      const need = lackG ? 'gold' : lackW ? 'wood' : lackS ? 'stone' : lackI ? 'iron' : '';
       btn = `<button class="rbtn ${need ? 'off' : ''}" type="button" data-key="${it.key}">${need ? 'Need ' + need : verb}</button>`;
     }
     const cost = it.maxed || it.owned ? '' : `<div class="cost">
       ${gold ? `<span class="${lackG ? 'lack' : ''}"><i class="coin"></i>${gold}</span>` : ''}
       ${it.cost.wood ? `<span class="${lackW ? 'lack' : ''}">🪵 ${it.cost.wood}</span>` : ''}
       ${it.cost.stone ? `<span class="${lackS ? 'lack' : ''}">🪨 ${it.cost.stone}</span>` : ''}
+      ${it.cost.iron ? `<span class="${lackI ? 'lack' : ''}">⚙️ ${it.cost.iron}</span>` : ''}
     </div>`;
     return `<div class="row">
       <div class="ri">${it.icon}</div>
@@ -381,9 +386,10 @@ export class UI {
       const t = BUILDINGS[type];
       const cost = t.levels[0].cost;
       let lock = world.lockReason({ castle: t.castle });
+      if (!lock && type === 'blacksmith' && !world.built('ironmine-1')) lock = 'Needs the Iron Mine';
       const have = world.list(type).length;
       if (!lock && LIMIT[type] && have >= LIMIT[type]) lock = LIMIT[type] === 1 ? 'Already built' : `Limit ${LIMIT[type]}`;
-      const costTxt = [`${cost.gold} gold`, cost.wood ? `${cost.wood} wood` : '', cost.stone ? `${cost.stone} stone` : ''].filter(Boolean).join(' · ');
+      const costTxt = [`${cost.gold} gold`, cost.wood ? `${cost.wood} wood` : '', cost.stone ? `${cost.stone} stone` : '', cost.iron ? `${cost.iron} iron` : ''].filter(Boolean).join(' · ');
       return { type, t, lock, costTxt };
     });
     const sig = JSON.stringify(cards.map((c) => [c.type, c.lock]));

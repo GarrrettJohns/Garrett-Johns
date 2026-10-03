@@ -37,6 +37,7 @@
           <div class="pill bank tap" id="hud-bank" data-res="gold" hidden><i>🏦</i><b id="hud-bank-n">0</b></div>
           <div class="pill tap" data-res="wood"><i>🪵</i><b id="hud-wood">0</b></div>
           <div class="pill tap" data-res="stone"><i>🪨</i><b id="hud-stone">0</b></div>
+          <div class="pill tap" id="hud-iron-pill" data-res="iron" hidden><i>⚙️</i><b id="hud-iron">0</b></div>
           <div class="pill"><i>👥</i><b id="hud-pop">0</b><small id="hud-beds">/4</small></div>
           <div class="pill load" id="hud-load" hidden><i>🎒</i><b id="hud-load-n">0</b><small id="hud-load-cap">/20</small><i id="hud-load-i">🪵</i></div>
         </div>
@@ -142,6 +143,9 @@
         <li><b>🔨 Build</b><span>Between waves, tap Build to put houses, farms and workshops anywhere inside your walls.</span></li>
         <li><b>👷 Workers</b><span>Tap a mine, lumber camp, quarry, farm or warehouse and use + to assign free villagers. More workers means faster resources, so build houses to grow your village.</span></li>
         <li><b>📦 Warehouse</b><span>Woodcutters and masons stack what they cut at their camp. Warehouse haulers wheel it home, 5 at a time, and only then can you spend it. Ride past a warehouse to bank the coins on your horse: banked gold is safe and still spends.</span></li>
+        <li><b>⛺ Outposts</b><span>Each outpost claims the land around it (marked with flags): build houses, farms and workshops there. Two more towers and a catapult can go up beside it.</span></li>
+        <li><b>☄️ Catapults</b><span>Built with stone, they lob boulders into the thickest pack of enemies. Upgrade one into a Trebuchet with iron.</span></li>
+        <li><b>⚙️ Iron</b><span>Past the Riverford Outpost lie the Iron Hills. Build the Iron Mine, then a Blacksmith to forge iron tools and arrowheads.</span></li>
         <li><b>📊 Rates</b><span>Tap gold, wood or stone at the top to see how much you get per minute and from where.</span></li>
         <li><b>🚩 Follow me</b><span>Tap 🚩 and your soldiers ride with you; tap again to send them back to their posts. At a tower, call posted archers down one at a time.</span></li>
         <li><b>👥 People</b><span>Houses bring villagers. They work the mine, chop wood in the forest and cut stone, then haul it home. Soldiers are villagers who enlist.</span></li>
@@ -185,7 +189,7 @@
       <div class="dev-group"><b>Give</b>
         <div class="dev-row">
           <button class="chip" data-dev="gold">+500 gold</button>
-          <button class="chip" data-dev="mats">+300 wood &amp; stone</button>
+          <button class="chip" data-dev="mats">+300 wood, stone &amp; iron</button>
           <button class="chip" data-dev="king">Max out the king</button>
           <button class="chip" data-dev="army">+6 soldiers</button>
           <button class="chip" data-dev="outposts">Claim all outposts</button>

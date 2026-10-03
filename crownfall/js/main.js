@@ -28,12 +28,14 @@ const hintGather = {};
 
 // The closest grid spot to (x, z) where a building of this type fits.
 function nearestSpot(type, x, z) {
-  const R = world.wallRadius;
   let best = null, bd = Infinity;
-  for (let gx = -R; gx <= R; gx += 2) for (let gz = -R; gz <= R; gz += 2) {
-    const p = snapToGrid(type, gx, gz);
-    const d = Math.hypot(p.x - x, p.z - z);
-    if (d < bd && world.canPlace(type, p.x, p.z).ok) { bd = d; best = p; }
+  // The castle grounds and every claimed outpost's land.
+  for (const zn of world.buildZones()) {
+    for (let gx = zn.x - zn.h; gx <= zn.x + zn.h; gx += 2) for (let gz = zn.z - zn.h; gz <= zn.z + zn.h; gz += 2) {
+      const p = snapToGrid(type, gx, gz);
+      const d = Math.hypot(p.x - x, p.z - z);
+      if (d < bd && world.canPlace(type, p.x, p.z).ok) { bd = d; best = p; }
+    }
   }
   return best || snapToGrid(type, x, z);
 }
@@ -112,6 +114,25 @@ const TIPS = {
     <ul>${un.map((u) => `<li>${u}</li>`).join('')}</ul>
     <p>Enemy waves keep growing. Without this, your towers and gates stop at their gold tiers and you can't cut stone, so the next waves will break through.</p>`;
   }],
+  catapult: ['☄️ Catapults', `
+    <p>Your stone builds a new kind of defence. A catapult hurls a boulder into the <b>thickest pack of enemies</b> it can reach, hurting everyone in the blast.</p>
+    <ul>
+      <li>Long range, but slow, and it can't hit anything right beside it: pair it with towers.</li>
+      <li>Upgrade it to a Heavy Catapult, then a <b>Trebuchet</b> once you have iron.</li>
+    </ul>`],
+  outpostland: ['⛺ New land', `
+    <p>Every outpost you claim brings <b>the land around it</b> under your rule. The flags mark its edges.</p>
+    <ul>
+      <li>Tap 🔨 Build and drag houses, farms, warehouses or workshops onto it, just like inside the castle walls.</li>
+      <li>Two more <b>tower</b> spots and a <b>catapult</b> spot appear beside the road there, to hold it.</li>
+    </ul>`],
+  iron: ['⚙️ Iron', `
+    <p>Past the Riverford Outpost lie the <b>Iron Hills</b>: dark, rust-streaked rocks full of ore.</p>
+    <ul>
+      <li>Build the <b>Iron Mine</b> and add miners. Warehouse haulers bring the ore home, or the king can break the rocks himself with his pickaxe.</li>
+      <li>Then build a <b>Blacksmith</b> (🔨) to forge iron tools for the king and your workers, and iron arrowheads for every bow.</li>
+      <li>Iron also turns a catapult into a Trebuchet.</li>
+    </ul>`],
   follow: ['🚩 Follow me', `
     <p>Tap it and every soldier in the field rides with you: knights fight at your side, archers shoot whatever comes near, raiders charge.</p>
     <p>Tap it again to send them back to their posts. At a tower, use <b>Call an archer</b> to bring posted archers along one at a time.</p>`],
@@ -277,7 +298,7 @@ const DEV = {
     return 'All outposts claimed';
   },
   gold() { world.hero.coins += 500; return '+500 gold'; },
-  mats() { world.res.wood += 300; world.res.stone += 300; return '+300 wood and stone'; },
+  mats() { world.res.wood += 300; world.res.stone += 300; world.res.iron += 150; return '+300 wood & stone, +150 iron'; },
   king() {
     const h = world.hero;
     for (const [k, u] of Object.entries(HERO_UPGRADES)) h.up[k] = u.values.length - 1;
@@ -427,7 +448,7 @@ function handle(ev, events = []) {
     case 'toast': ui.toast(ev.text); break;
     case 'deliver':
       audio.deliver();
-      ui.float(at(ev.x, 2.4, ev.z), `+${ev.amt} ${ev.res === 'wood' ? '🪵' : '🪨'}`, '#fff');
+      ui.float(at(ev.x, 2.4, ev.z), `+${ev.amt} ${{ wood: '🪵', stone: '🪨', iron: '⚙️', gold: '🪙' }[ev.res] || ''}`, '#fff');
       break;
     case 'nodeHit':
       if (Math.hypot(ev.x - world.hero.x, ev.z - world.hero.z) < 14) audio.chop(ev.wood ? 'wood' : 'stone');
@@ -437,10 +458,10 @@ function handle(ev, events = []) {
       if (Math.hypot(ev.x - world.hero.x, ev.z - world.hero.z) < 16) audio.fell(ev.type === 'treeFell');
       break;
     case 'gather':
-      ui.float(at(ev.x, 4.5, ev.z), `+${ev.k} ${ev.res === 'wood' ? '🪵' : '🪨'} (${ev.n}/${ev.cap})`, '#fff');
+      ui.float(at(ev.x, 4.5, ev.z), `+${ev.k} ${{ wood: '🪵', stone: '🪨', iron: '⚙️' }[ev.res]} (${ev.n}/${ev.cap})`, '#fff');
       if (!hintGather[ev.res]) {
         hintGather[ev.res] = true;
-        ui.toast(`The king ${ev.res === 'wood' ? 'chops wood' : 'mines stone'}! Carry it to the castle or a warehouse to bank it.`);
+        ui.toast(`The king ${{ wood: 'chops wood', stone: 'mines stone', iron: 'mines iron ore' }[ev.res]}! Carry it to the castle or a warehouse to bank it.`);
       }
       break;
     case 'villager':

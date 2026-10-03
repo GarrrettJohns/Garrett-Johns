@@ -438,6 +438,80 @@ export function quarryGeo(level) {
   return b.build();
 }
 
+// Iron Mine: a dark, rust-streaked dig with an ore cart and a smelting pot.
+export function ironmineGeo(level) {
+  const b = new Builder();
+  const ORE = 0x5a4a44, RUST = 0x9a5a3a;
+  b.box(4.8, 0.12, 4.8, 0x8a7a6a);
+  b.add(new THREE.DodecahedronGeometry(1.6, 0), ORE, { x: -0.9, y: 0.85, z: -1.1, sy: 0.85 });
+  b.add(new THREE.DodecahedronGeometry(0.9, 0), RUST, { x: 1.2, y: 0.55, z: -1.5 });
+  b.box(0.5, 0.06, 0.3, 0xd07a3a, { x: -0.6, y: 1.5, z: -0.4 });
+  // Mine entrance timbers.
+  b.box(0.2, 1.6, 0.2, C.woodDark, { x: -1.6, y: 0.8, z: 0.2 });
+  b.box(0.2, 1.6, 0.2, C.woodDark, { x: -0.2, y: 0.8, z: 0.2 });
+  b.box(1.8, 0.22, 0.26, C.wood, { x: -0.9, y: 1.65, z: 0.2 });
+  b.box(1.2, 1.2, 0.1, 0x1a1614, { x: -0.9, y: 0.7, z: 0.12 });
+  // Ore cart.
+  b.box(1.0, 0.5, 0.7, C.woodDark, { x: 1.2, y: 0.55, z: 1.2 });
+  b.box(0.9, 0.2, 0.6, ORE, { x: 1.2, y: 0.85, z: 1.2 });
+  for (const x of [0.85, 1.55]) for (const z of [0.9, 1.5]) b.cyl(0.14, 0.14, 0.08, 8, C.ironDark, { x, y: 0.2, z, rz: Math.PI / 2 });
+  // Smelting pot with a glow.
+  b.cyl(0.45, 0.55, 0.9, 8, C.ironDark, { x: -1.4, y: 0.55, z: 1.6 });
+  b.cyl(0.32, 0.32, 0.06, 8, 0xff8a2a, { x: -1.4, y: 1.0, z: 1.6 });
+  if (level >= 1) b.box(0.6, 0.4, 0.6, ORE, { x: 0.3, y: 0.32, z: 1.9 });
+  if (level >= 2) b.box(0.18, 2.2, 0.18, C.ironDark, { x: -1.4, y: 1.6, z: 1.6 });
+  return b.build();
+}
+
+// Blacksmith: a stone forge with a glowing hearth, chimney and anvil.
+export function blacksmithGeo() {
+  const b = new Builder();
+  b.box(5.8, 0.12, 5.8, 0x9a8f80);
+  b.box(4.2, 2.2, 3.2, C.stone, { y: 0.12, z: -0.8 });
+  b.roof(4.6, 1.3, 3.6, 0x5a5a62, { y: 2.32, z: -0.8 });
+  b.box(0.9, 3.6, 0.9, C.stoneDark, { x: 1.4, y: 0.12, z: -1.6 });
+  b.box(1.1, 0.2, 1.1, C.ironDark, { x: 1.4, y: 3.72, z: -1.6 });
+  // Open front with the hearth glowing inside.
+  b.box(1.8, 1.2, 0.1, 0x231a16, { y: 0.4, z: 0.82 });
+  b.box(1.2, 0.35, 0.12, 0xff7a20, { y: 0.45, z: 0.86 });
+  // Anvil and a quench barrel out front.
+  b.box(0.7, 0.45, 0.4, C.ironDark, { x: -0.8, y: 0.12, z: 1.8 });
+  b.box(1.0, 0.22, 0.45, C.iron, { x: -0.8, y: 0.57, z: 1.8 });
+  b.cyl(0.4, 0.4, 0.7, 8, C.wood, { x: 1.2, y: 0.12, z: 1.9 });
+  b.cyl(0.34, 0.34, 0.04, 8, C.water, { x: 1.2, y: 0.83, z: 1.9 });
+  return b.build();
+}
+
+// Catapult: a stone platform; the frame turns to aim and the arm throws.
+export function catapultBaseGeo(level) {
+  const b = new Builder();
+  b.cyl(1.7, 1.9, 0.5, 8, level >= 2 ? C.stoneDark : C.stone);
+  b.cyl(1.75, 1.75, 0.12, 8, C.woodDark, { y: 0.5 });
+  return b.build();
+}
+export function catapultFrameGeo(level) {
+  const b = new Builder();
+  const W = level >= 2 ? C.woodDark : C.wood;
+  b.box(1.6, 0.25, 2.6, W, { y: 0.3 });
+  for (const x of [-0.6, 0.6]) {
+    b.box(0.22, 1.6, 0.22, W, { x, y: 0.4, z: 0.1, rx: -0.2 });
+    b.box(0.22, 1.6, 0.22, W, { x, y: 0.4, z: -0.4, rx: 0.2 });
+  }
+  b.box(1.5, 0.16, 0.16, C.ironDark, { y: 1.8 });
+  for (const x of [-0.85, 0.85]) for (const z of [-0.9, 0.9]) b.cyl(0.35, 0.35, 0.14, 10, C.woodDark, { x, y: 0.35, z, rz: Math.PI / 2 });
+  if (level >= 2) b.box(1.2, 0.9, 0.9, C.stoneDark, { y: 0.9, z: 0.9 });   // trebuchet counterweight
+  return b.build();
+}
+// The throwing arm, built around its axle; rotation.x swings it.
+export function catapultArmGeo(level) {
+  const b = new Builder();
+  const L = level >= 2 ? 3.4 : level >= 1 ? 2.9 : 2.5;
+  b.box(0.2, 0.2, L, C.wood, { z: -L / 2 + 0.4 });
+  b.box(0.7, 0.18, 0.7, C.woodDark, { y: 0.1, z: -L + 0.5 });
+  b.add(new THREE.DodecahedronGeometry(0.32, 0), C.rock, { y: 0.4, z: -L + 0.5 });
+  return b.build();
+}
+
 export function bridgeGeo() {
   const b = new Builder();
   const len = 8.4, w = 3.4;
@@ -675,6 +749,7 @@ export const RIGS = {
     });
     parts.push(part((b) => b.cyl(0.18, 0.18, 1.3, 6, C.wood, { y: 1.55, z: -0.1, rz: Math.PI / 2 }), { show: 'wood' }));
     parts.push(part((b) => b.box(0.5, 0.4, 0.4, C.stone, { y: 1.45, z: -0.05 }), { show: 'stone' }));
+    parts.push(part((b) => { b.box(0.46, 0.36, 0.36, 0x5a4a44, { y: 1.45, z: -0.05 }); b.box(0.2, 0.06, 0.2, 0xd07a3a, { y: 1.65, z: -0.05 }); }, { show: 'iron' }));
     // Warehouse haulers push a wheelbarrow, loaded or empty.
     parts.push(part((b) => {
       b.box(0.62, 0.3, 0.8, C.wood, { y: 0.5, z: 0.95 });
@@ -684,7 +759,16 @@ export const RIGS = {
         b.box(0.06, 0.06, 0.95, C.woodDark, { x, y: 0.62, z: 0.35, rx: -0.25 });
         b.box(0.06, 0.38, 0.06, C.woodDark, { x, y: 0.28, z: 0.7 });
       }
-    }, { show: ['barrow', 'barrow-wood', 'barrow-stone'] }));
+    }, { show: ['barrow', 'barrow-wood', 'barrow-stone', 'barrow-iron', 'barrow-gold'] }));
+    parts.push(part((b) => {
+      b.box(0.3, 0.24, 0.3, 0x5a4a44, { x: -0.12, y: 0.8, z: 0.85 });
+      b.box(0.28, 0.24, 0.28, 0x7a4a34, { x: 0.13, y: 0.8, z: 1.08 });
+    }, { show: 'barrow-iron' }));
+    parts.push(part((b) => {
+      b.ball(0.24, 0xc9a25a, { x: -0.1, y: 0.86, z: 0.9 });
+      b.ball(0.22, 0xc9a25a, { x: 0.14, y: 0.84, z: 1.05 });
+      b.cyl(0.12, 0.12, 0.04, 8, C.gold, { y: 1.05, z: 0.95 });
+    }, { show: 'barrow-gold' }));
     parts.push(part((b) => {
       for (let i = 0; i < 3; i++) b.cyl(0.11, 0.11, 0.72, 6, i % 2 ? C.wood : C.woodLight, { x: -0.18 + i * 0.18, y: 0.78, z: 0.95, rx: Math.PI / 2 });
       b.cyl(0.11, 0.11, 0.72, 6, C.wood, { y: 0.96, z: 0.95, rx: Math.PI / 2 });

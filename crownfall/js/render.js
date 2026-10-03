@@ -8,7 +8,7 @@ import {
   castleGeo, houseGeo, farmGeo, barracksGeo, stableGeo, rangeGeo, goldmineGeo, lumberGeo, quarryGeo,
   bridgeGeo, towerGeo, towerGunGeo, coinGeo, arrowGeo, chevronGeo, rockfallGeo, passGeo, treeGeo, outpostGeo, logGeo,
   strongholdWallsGeo, strongholdGateGeo, strongholdTowerGeo, strongholdKeepGeo, warehouseGeo, stumpGeo,
-  fortWallsGeo, fortGateGeo, fortTowerGeo,
+  fortWallsGeo, fortGateGeo, fortTowerGeo, ironmineGeo, blacksmithGeo, catapultBaseGeo, catapultFrameGeo, catapultArmGeo,
 } from './models.js';
 import {
   LANES, lanePoint, BRIDGE, RIVER_Z, RIVER_HALF, FOREST_Z, PATH_HALF, CASTLE_R, scenery, HIGHLAND, HIGHLAND_TRAILS, BOUNDS, STRONGHOLD,
@@ -39,6 +39,7 @@ const _m = new THREE.Matrix4();
 const _m2 = new THREE.Matrix4();
 const _q = new THREE.Quaternion();
 const _e = new THREE.Euler();
+const IRON_C = new THREE.Color(0.6, 0.42, 0.36);
 const _v = new THREE.Vector3();
 const _s = new THREE.Vector3();
 const _c = new THREE.Color();
@@ -141,7 +142,7 @@ class Pool {
 const BUILD_GEO = {
   castle: castleGeo, house: houseGeo, farm: farmGeo, barracks: barracksGeo, stable: stableGeo, range: rangeGeo,
   goldmine: goldmineGeo, lumber: lumberGeo, quarry: quarryGeo, bridge: bridgeGeo, tower: towerGeo, pass: () => new THREE.BufferGeometry(),
-  outpost: () => outpostGeo(), warehouse: warehouseGeo,
+  outpost: () => outpostGeo(), warehouse: warehouseGeo, ironmine: ironmineGeo, blacksmith: blacksmithGeo, catapult: catapultBaseGeo,
 };
 
 export class Renderer {
@@ -322,10 +323,13 @@ export class Renderer {
     this.nodeFx = new Map();
     this.rockList = sc.rocks;
     this.natureSig = null;
+    // Iron rocks are darker and rust-streaked.
+    this.rockBase = sc.rocks.map((t) => (t.iron ? [0.62, 0.46, 0.4] : [1, 1, 1]));
     sc.rocks.forEach((t, i) => {
       _q.setFromAxisAngle(UP, t.r);
       _m.compose(_v.set(t.x, 0, t.z), _q, _s.set(t.s, t.s, t.s));
       rock.setMatrixAt(i, _m);
+      if (t.iron) rock.setColorAt(i, _c.setRGB(...this.rockBase[i]));
     });
     rock.castShadow = true;
     scene.add(rock);
@@ -455,7 +459,8 @@ export class Renderer {
         _q.setFromAxisAngle(UP, r.r + Math.sin(age * 50) * 0.05 * k);
         _m.compose(_v.set(r.x, 0, r.z), _q, _s.set(r.s * sc, r.s * sc, r.s * sc));
         this.rockMesh.setMatrixAt(fx.si, _m);
-        this.rockMesh.setColorAt(fx.si, _c.setRGB(1 + 0.8 * k, 1 + 0.7 * k, 1 + 0.45 * k));
+        const base = this.rockBase[fx.si] || [1, 1, 1];
+        this.rockMesh.setColorAt(fx.si, _c.setRGB(base[0] * (1 + 0.8 * k), base[1] * (1 + 0.7 * k), base[2] * (1 + 0.45 * k)));
         touched.add(this.rockMesh);
       }
       if (done) this.nodeFx.delete(key);
@@ -517,11 +522,11 @@ export class Renderer {
         const a = i * 2.1 + n.si;
         _q.setFromEuler(_e.set(i, a, 0));
         _m.compose(_v.set(n.x + Math.cos(a) * 0.7, 0.2, n.z + Math.sin(a) * 0.7), _q, _s.set(1.2, 1.2, 1.2));
-        this.stonePool.push(_m);
+        this.stonePool.push(_m, n.iron ? IRON_C : undefined);
       }
     }
     // Hut stockpiles waiting for a hauler.
-    for (const b of [...world.list('lumber'), ...world.list('quarry')]) {
+    for (const b of [...world.list('lumber'), ...world.list('quarry'), ...world.list('ironmine')]) {
       if (b.state !== 'built' || !b.stock) continue;
       const n = Math.min(12, Math.ceil(b.stock / 5));
       for (let i = 0; i < n; i++) {
@@ -533,7 +538,7 @@ export class Renderer {
         } else {
           _q.setFromEuler(_e.set(i, i * 1.7, 0));
           _m.compose(_v.set(b.x - 1.2 + col * 0.55, 0.25 + row * 0.4, b.z + 2.9), _q, _s.set(1.3, 1.3, 1.3));
-          this.stonePool.push(_m);
+          this.stonePool.push(_m, b.type === 'ironmine' ? IRON_C : undefined);
         }
       }
     }
@@ -593,6 +598,7 @@ export class Renderer {
     this.chevronPool = new Pool(scene, chevronGeo(), new THREE.MeshBasicMaterial({ color: 0x35c8ff, transparent: true, opacity: 0.9, depthWrite: false }), 16, { order: 2 });
     // Red arrows marching down each road enemies are coming in on.
     this.threatMat = new THREE.MeshBasicMaterial({ color: 0xff3b2f, transparent: true, opacity: 0.9, depthWrite: false });
+    this.boulderPool = new Pool(scene, rockGeo(), vcMat, 24, { shadow: true });
     this.threatPool = new Pool(scene, chevronGeo(), this.threatMat, 80, { order: 2 });
     this.waveT = 99;
 
@@ -689,7 +695,13 @@ export class Renderer {
         const s = Math.max(0.01, easeOutBack(e.pop));
         e.body.scale.set(s, s, s);
       }
-      if (e.gun) e.gun.rotation.y += angleDiff(e.gun.rotation.y, b.aim ?? e.gun.rotation.y) * Math.min(1, this.dt * 10);
+      if (e.gun) e.gun.rotation.y += angleDiff(e.gun.rotation.y, b.aim ?? e.gun.rotation.y) * Math.min(1, this.dt * (e.arm ? 4 : 10));
+      if (e.arm) {
+        // Rest with the bucket low behind; on a throw it whips up and over.
+        const k = (b.throwT || 0) / 0.5;
+        const swing = k > 0.7 ? 1 : k / 0.7;
+        e.arm.rotation.x = -0.45 + 2.5 * swing * swing;
+      }
     }
     for (const [id, e] of this.buildings) {
       if (!seen.has(id)) { this.scene.remove(e.group); this.buildings.delete(id); }
@@ -735,6 +747,18 @@ export class Renderer {
       const p = lanePoint(LANES.find((l) => l.id === 'N'), BRIDGE.s);
       group.rotation.y = Math.atan2(p.dx, p.dz);
     }
+    if (b.type === 'catapult') {
+      const turret = new THREE.Group();
+      turret.position.y = 0.55;
+      const frame = new THREE.Mesh(this.geo(`catframe:${b.level}`, () => catapultFrameGeo(b.level)), vcMat);
+      const arm = new THREE.Mesh(this.geo(`catarm:${b.level}`, () => catapultArmGeo(b.level)), vcMat);
+      arm.position.y = 1.8;
+      frame.castShadow = arm.castShadow = true;
+      turret.add(frame, arm);
+      body.add(turret);
+      e.gun = turret;
+      e.arm = arm;
+    }
     if (b.type === 'tower') {
       const gun = new THREE.Mesh(this.geo(`gun:${b.level >= 4 ? 4 : 0}`, () => towerGunGeo(b.level)), vcMat);
       gun.position.y = TOWER_TOP[b.level];
@@ -749,7 +773,7 @@ export class Renderer {
     const it = world.item(`build:${b.id}`);
     const gold = it.cost.gold || 0;
     const lackG = gold > world.gold;
-    const lackW = (it.cost.wood || 0) > world.res.wood, lackS = (it.cost.stone || 0) > world.res.stone;
+    const lackW = (it.cost.wood || 0) > world.res.wood, lackS = (it.cost.stone || 0) > world.res.stone || (it.cost.iron || 0) > world.res.iron;
     const ready = !it.locked && !lackG && !lackW && !lackS;
     const sig = `${it.locked}|${lackG}|${lackW}|${lackS}`;
     if (sig === e.sig) return;
@@ -802,6 +826,7 @@ export class Renderer {
       const mats = [];
       if (it.cost.wood) mats.push(`${it.cost.wood} wood`);
       if (it.cost.stone) mats.push(`${it.cost.stone} stone`);
+      if (it.cost.iron) mats.push(`${it.cost.iron} iron`);
       if (mats.length) text(mats.join(' + '), 206, mats.length > 1 ? 26 : 32, lackW || lackS ? '#ff9a8a' : '#ffffff');
     }
     e.tex.needsUpdate = true;
@@ -990,7 +1015,7 @@ export class Renderer {
         } else {
           _q.setFromEuler(_e.set(i, i * 2, 0));
           _m.compose(_v.set(x, y, z), _q, _s.set(1, 1, 1));
-          this.stonePool.push(_m);
+          this.stonePool.push(_m, hero.load.res === 'iron' ? IRON_C : undefined);
         }
       }
     }
@@ -1045,7 +1070,15 @@ export class Renderer {
     // ---- arrows
     const ap = this.arrowPool;
     ap.begin();
+    const bp = this.boulderPool;
+    bp.begin();
     for (const p of world.projectiles) {
+      if (p.kind === 'boulder') {
+        _q.setFromEuler(_e.set(this.time * 5, this.time * 3, 0));
+        _m.compose(_v.set(p.x, p.y, p.z), _q, _s.set(0.75, 0.75, 0.75));
+        bp.push(_m);
+        continue;
+      }
       const dy = p._py === undefined ? 0 : p.y - p._py;
       p._py = p.y;
       const pitch = -Math.atan2(dy, p.speed * dt);
@@ -1060,6 +1093,7 @@ export class Renderer {
       if (p.kind === 'fire' && Math.random() < 0.5) this.spark(p.x, p.y, p.z, 0xff9a2a, 1, 0.2);
     }
     ap.end();
+    bp.end();
 
     // ---- particles
     const pp = this.particlePool;
@@ -1144,7 +1178,12 @@ export class Renderer {
     const pl = view.placing;
     this.ghost.visible = !!pl;
     this.grid.visible = !!pl;
-    if (pl && this.gridR !== world.wallRadius) this.buildGrid(world.wallRadius);
+    if (pl) {
+      const zones = world.buildZones();
+      const sig = zones.map((zn) => `${zn.x},${zn.z},${zn.h}`).join('|');
+      if (this.gridSig !== sig) { this.gridSig = sig; this.buildGrid(zones); }
+    }
+    this.syncZones(world);
     if (pl) {
       const def = BUILDINGS[pl.type];
       this.ghostMesh.geometry = this.geo(`${pl.type}:0`, () => BUILD_GEO[pl.type](0));
@@ -1235,17 +1274,58 @@ export class Renderer {
     this.sun.target.position.set(tx, 0, tz);
   }
 
-  buildGrid(R) {
-    this.gridR = R;
+  // Placement grid over every area you can build in: the castle grounds and
+  // each claimed outpost's land, on the same 2 m grid.
+  buildGrid(zones) {
     this.grid.clear();
     const pts = [];
-    for (let v = -R; v <= R + 0.01; v += 2) { pts.push(v, 0, -R, v, 0, R, -R, 0, v, R, 0, v); }
+    for (const zn of zones) {
+      const x0 = Math.ceil((zn.x - zn.h) / 2) * 2, x1 = Math.floor((zn.x + zn.h) / 2) * 2;
+      const z0 = Math.ceil((zn.z - zn.h) / 2) * 2, z1 = Math.floor((zn.z + zn.h) / 2) * 2;
+      for (let v = x0; v <= x1 + 0.01; v += 2) pts.push(v, 0, z0, v, 0, z1);
+      for (let v = z0; v <= z1 + 0.01; v += 2) pts.push(x0, 0, v, x1, 0, v);
+    }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
     const lines = new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35, depthWrite: false }));
     lines.position.y = 0.1;
     lines.renderOrder = 2;
     this.grid.add(lines);
+  }
+
+  // Each claimed outpost's land: a pale border with a flag at each corner.
+  syncZones(world) {
+    const zones = world.buildZones().filter((zn) => !zn.castle);
+    const sig = zones.map((zn) => zn.id).join('|');
+    if (sig === this.zoneSig) return;
+    this.zoneSig = sig;
+    if (this.zoneGroup) this.scene.remove(this.zoneGroup);
+    this.zoneGroup = new THREE.Group();
+    this.scene.add(this.zoneGroup);
+    const mat = new THREE.LineBasicMaterial({ color: 0xfff1b8, transparent: true, opacity: 0.7, depthWrite: false });
+    const post = this.geo('zonepost', () => {
+      const b = new Builder();
+      b.box(0.14, 1.8, 0.14, C.woodDark);
+      b.box(0.06, 0.5, 0.7, C.blue, { y: 1.45, z: 0.38 });
+      return b.build();
+    });
+    for (const zn of zones) {
+      const h = zn.h;
+      const c = [[-h, -h], [h, -h], [h, h], [-h, h]];
+      const pts = [];
+      for (let i = 0; i < 4; i++) { const a = c[i], b = c[(i + 1) % 4]; pts.push(zn.x + a[0], 0.12, zn.z + a[1], zn.x + b[0], 0.12, zn.z + b[1]); }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+      const line = new THREE.LineSegments(g, mat);
+      line.renderOrder = 2;
+      this.zoneGroup.add(line);
+      for (const [x, z] of [[-h, -h], [h, -h], [h, h], [-h, h]]) {
+        const m = new THREE.Mesh(post, vcMat);
+        m.position.set(zn.x + x, 0, zn.z + z);
+        m.castShadow = true;
+        this.zoneGroup.add(m);
+      }
+    }
   }
 
   // Where a screen point lands on the ground.
@@ -1343,7 +1423,14 @@ export class Renderer {
         if (ev.type !== 'placed') { this.spark(ev.x, 2, ev.z, 0xffd84a, 14, 0.18, 6, 0.9); this.ring(ev.x, ev.z, r, 0xffffff, 0.6); }
         break;
       }
-      case 'splash': this.ring(ev.x, ev.z, ev.r, 0xff8a2a, 0.35); this.spark(ev.x, 0.8, ev.z, 0xff7a1a, 8, 0.2, 3, 0.5); break;
+      case 'splash':
+        if (ev.kind === 'boulder') {
+          this.ring(ev.x, ev.z, ev.r, 0xd8c8a8, 0.5);
+          this.spark(ev.x, 0.4, ev.z, 0xb8a888, 18, 0.3, 5, 0.7, 6);
+          this.shake = Math.max(this.shake, 0.35);
+          break;
+        }
+        this.ring(ev.x, ev.z, ev.r, 0xff8a2a, 0.35); this.spark(ev.x, 0.8, ev.z, 0xff7a1a, 8, 0.2, 3, 0.5); break;
       case 'slam': this.ring(ev.x, ev.z, ev.r, 0xffffff, 0.45); this.spark(ev.x, 0.3, ev.z, 0xc9b38a, 16, 0.4, 5, 0.7, 8); this.shake = Math.max(this.shake, 0.6); break;
       case 'heroDown': this.spark(ev.x, 1, ev.z, 0xffffff, 24, 0.4, 5, 0.9); this.shake = 1; break;
       case 'gateHit': if (Math.random() < 0.3) this.spark(ev.x, 1.5, ev.z, 0x9a6a41, 3, 0.2, 3, 0.5); break;

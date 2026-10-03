@@ -56,6 +56,18 @@ It then launches full screen and works offline.
   Haulers push wheelbarrows at double walking speed, 5 items a trip, up to 4
   per warehouse. Riding past a warehouse banks the coins on the king's horse
   (🏦 in the HUD): banked gold is safe if he falls and still pays for anything.
+- **Outposts claim land:** each outpost's land (a square marked by corner
+  flags) takes houses, farms, warehouses and workshops just like the castle
+  grounds, and two more tower spots and a catapult spot open beside the road.
+- **Catapults:** stone defences that lob boulders into the thickest pack of
+  enemies in reach (but can't hit anything right beside them). Two cover the
+  south and east roads, one at each outpost. They upgrade to a Heavy Catapult
+  and, with iron, a Trebuchet.
+- **Iron:** past the Riverford Outpost lie the Iron Hills. The Iron Mine's
+  miners (and the king's pickaxe) break the rust-streaked rocks for ore, which
+  haulers bring home. A Blacksmith (one per kingdom) forges it into iron tools
+  for the king (faster chopping and mining), iron tools for workers (faster
+  work) and iron arrowheads (more damage for the king, archers and towers).
 - **Where it comes from:** tap gold, wood or stone in the HUD for a breakdown:
   per-minute output by camp, quarry, mine (with its workers) and the king,
   what actually reaches your stores, what's waiting, and a tip if something

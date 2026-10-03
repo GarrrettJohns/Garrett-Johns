@@ -4,13 +4,13 @@
 // `events`, which main.js drains each frame for sound, effects and UI.
 
 import {
-  BUILDINGS, HERO, HERO_UPGRADES, WEAPONS, WALLS, UNITS, ENEMIES, VILLAGER,
+  BUILDINGS, HERO, HERO_UPGRADES, WEAPONS, WALLS, UNITS, ENEMIES, VILLAGER, SMITH,
   ARMOR_UPGRADE, waveSpec, levelInfo, levelMul,
 } from './config.js';
 import {
   LANES, LANE, lanePoint, laneCrossing, laneAtZ, FIXED_PADS, START, BRIDGE, RIVER_Z,
   RIVER_HALF, BOUNDS, CASTLE_R, distToLanes, PATH_HALF, GRID, STRONGHOLD, FRONTIERS, OUTPOSTS,
-  HIGHLAND, inHighland, GORGE_OUT, GORGE_IN, CAMPS, FOREST_Z, scenery, FORT, RIVER_X1, eastLimit,
+  HIGHLAND, inHighland, GORGE_OUT, GORGE_IN, CAMPS, FOREST_Z, scenery, FORT, RIVER_X1, eastLimit, OUTPOST_ZONE,
 } from './map.js';
 
 // Trees the king can chop (the forest and southern grove) and boulders he can
@@ -21,16 +21,17 @@ const NODE_SWINGS = [3, 5, 8];
 const NODE_YIELD = [1, 3, 6];
 const sizeClass = (s, lo, hi) => (s < lo ? 0 : s < hi ? 1 : 2);
 const CHOP_TREES = SCENE.trees.map((t, si) => ({ ...t, si })).filter((t) => t.forest);
-const MINE_ROCKS = SCENE.rocks.map((r, si) => ({ ...r, si })).filter((r) => r.highland);
+const MINE_ROCKS = SCENE.rocks.map((r, si) => ({ ...r, si })).filter((r) => r.highland || r.iron);
 const SWING_EVERY = 0.75;    // a worker's swing
 export const KING_SWING = 0.5;      // the king swings faster
 const HUT_REACH = 24;        // how far from their hut workers will go for trees and rocks
 const STOCK_CAP = 60;        // a hut's stockpile
-const GOLD_PER_ITEM = 5;     // a wheelbarrow "item" of gold is a sack of 5 coins
+const GOLD_PER_ITEM = 5;
+const HUT_RES = { lumber: 'wood', quarry: 'stone', ironmine: 'iron' };     // a wheelbarrow "item" of gold is a sack of 5 coins
 const GATHER_REACH = 3.2;
 const GATHER_EVERY = 0.8;
 
-const JOB_TYPES = ['goldmine', 'lumber', 'quarry', 'farm', 'warehouse'];
+const JOB_TYPES = ['goldmine', 'lumber', 'quarry', 'ironmine', 'farm', 'warehouse'];
 const OUTPOST = Object.fromEntries(OUTPOSTS.map((o, i) => [o.id, { ...o, index: i }]));
 // Distance from a point to the castle's square footprint (0 inside).
 const castleDist = (x, z) => hyp(Math.max(Math.abs(x) - CASTLE_R, 0), Math.max(Math.abs(z) - CASTLE_R, 0));
@@ -180,6 +181,12 @@ const OBJECTIVES = [
     at: (w) => w.b['quarry-1'],
   },
   {
+    text: 'Build a Catapult beside a road: it hurls boulders into packs of enemies',
+    tip: 'catapult',
+    done: (w) => w.count('catapult') >= 1,
+    at: (w) => w.list('catapult').find((c) => w.padVisible(c) && c.state !== 'built') || null,
+  },
+  {
     text: 'Tap the Castle to expand the walls',
     done: (w) => w.walls.level >= 1,
     at: (w) => ({ x: 0, z: CASTLE_R + 1 }),
@@ -188,6 +195,23 @@ const OBJECTIVES = [
     text: 'Claim the road south: build the Riverford Outpost',
     done: (w) => w.built('outpost-1'),
     at: (w) => w.b['outpost-1'],
+  },
+  {
+    text: 'The outpost claims new land: build a House and a Farm beside it',
+    tip: 'outpostland',
+    done: (w) => w.list('house').some((b) => b.state === 'built' && w.inOutpostLand(b)) && w.list('farm').some((b) => b.state === 'built' && w.inOutpostLand(b)),
+    at: (w) => w.b['outpost-1'],
+  },
+  {
+    text: 'Build the Iron Mine in the Iron Hills past Riverford',
+    tip: 'iron',
+    done: (w) => w.built('ironmine-1'),
+    at: (w) => w.b['ironmine-1'],
+  },
+  {
+    text: 'Build a Blacksmith (🔨) and forge iron tools',
+    done: (w) => Object.values(w.smith).some((v) => v > 0),
+    at: (w) => w.firstOf('blacksmith') || null,
   },
   {
     text: 'Push on: build the Stonehill Outpost',
@@ -248,7 +272,8 @@ export class World {
   reset() {
     this.phase = 'build';
     this.wave = 0;
-    this.res = { wood: 0, stone: 0, gold: 0 };   // gold here is banked at a warehouse
+    this.res = { wood: 0, stone: 0, iron: 0, gold: 0 };   // gold here is banked at a warehouse
+    this.smith = { king: 0, workers: 0, arrows: 0 };
     this.rally = false;
     this.income = [];     // recent production: { t, res, src, n, kind: 'made' | 'home' }
     this.adviceT = 20;
@@ -281,7 +306,7 @@ export class World {
     this.b[START.tower].state = 'built';
 
     // Living trees and boulders that workers and the king cut down.
-    const node = (t, cls) => ({ si: t.si, x: t.x, z: t.z, s: t.s, cls, hp: NODE_SWINGS[cls], state: 'up', pieces: 0, regrow: 0, grow: 1, by: null, fall: rand(0, TAU) });
+    const node = (t, cls) => ({ si: t.si, x: t.x, z: t.z, s: t.s, cls, iron: !!t.iron, hp: NODE_SWINGS[cls], state: 'up', pieces: 0, regrow: 0, grow: 1, by: null, fall: rand(0, TAU) });
     this.trees = CHOP_TREES.map((t) => node(t, sizeClass(t.s, 0.95, 1.2)));
     this.stones = MINE_ROCKS.map((r) => node(r, sizeClass(r.s, 0.62, 0.85)));
     this.natureVer = 0;
@@ -388,7 +413,7 @@ export class World {
     const homeRows = Object.entries(home).map(([src, v]) => ({ ...label(src), src, perMin: perMin(v) })).sort((a, b) => b.perMin - a.perMin);
     const waiting = res === 'gold'
       ? this.list('goldmine').reduce((a, m) => a + (m.state === 'built' ? m.pile : 0), 0)
-      : this.list(res === 'wood' ? 'lumber' : 'quarry').reduce((a, h) => a + (h.stock || 0), 0);
+      : this.list({ wood: 'lumber', stone: 'quarry', iron: 'ironmine' }[res]).reduce((a, h) => a + (h.stock || 0), 0);
     return {
       res, rows, homeRows, waiting, span: Math.round(span),
       total: perMin(Object.values(made).reduce((a, v) => a + v, 0)),
@@ -402,11 +427,12 @@ export class World {
     const srcs = [
       ...(res && res !== 'wood' ? [] : this.list('lumber')),
       ...(res && res !== 'stone' ? [] : this.list('quarry')),
+      ...(res && res !== 'iron' ? [] : this.list('ironmine')),
       ...(res && res !== 'gold' ? [] : this.list('goldmine')),
     ].filter((b) => b.state === 'built');
     const full = srcs.find((b) => (b.type === 'goldmine' ? b.pile / BUILDINGS.goldmine.levels[b.level].pile : (b.stock || 0) / STOCK_CAP) >= 0.6);
     if (!full) return null;
-    const what = full.type === 'goldmine' ? 'Gold is piling up at the Gold Mine' : `${full.type === 'lumber' ? 'Logs' : 'Stone'} are piling up at the ${BUILDINGS[full.type].name}`;
+    const what = full.type === 'goldmine' ? 'Gold is piling up at the Gold Mine' : `${{ lumber: 'Logs', quarry: 'Stone', ironmine: 'Iron ore' }[full.type]} ${full.type === 'quarry' ? 'is' : 'are'} piling up at the ${BUILDINGS[full.type].name}`;
     const whs = this.list('warehouse').filter((w) => w.state === 'built');
     if (!whs.length) return { key: 'nowh', text: `${what}: build a Warehouse so haulers bring it home`, at: full };
     const open = whs.find((w) => (w.assigned || 0) < this.workerSlots(w));
@@ -444,6 +470,16 @@ export class World {
     return out;
   }
 
+  // Where buildings can go: inside the castle walls, and on the land each
+  // claimed outpost holds.
+  inOutpostLand(b) { return this.buildZones().some((zn) => !zn.castle && Math.abs(b.x - zn.x) <= zn.h && Math.abs(b.z - zn.z) <= zn.h); }
+
+  buildZones() {
+    const zones = [{ x: 0, z: 0, h: this.wallRadius - 1.4, castle: true }];
+    for (const o of this.list('outpost')) if (o.state === 'built') zones.push({ x: o.x, z: o.z, h: OUTPOST_ZONE, id: o.id });
+    return zones;
+  }
+
   // Gold to spend: on the king's horse plus what's banked in warehouses.
   get gold() { return this.hero.coins + (this.res.gold || 0); }
 
@@ -468,6 +504,7 @@ export class World {
   get lanesOpen() { return LANES.filter((l) => l.opens <= Math.max(1, this.wave + (this.phase === 'wave' ? 0 : 1))); }
 
   heroStat(k) { return HERO_UPGRADES[k].values[this.hero.up[k]]; }
+  smithMul(k) { return SMITH[k].values[this.smith?.[k] || 0]; }
   // How many logs or stones the king can carry home himself.
   get loadCap() { return HERO_UPGRADES.carry.load[this.hero.up.carry]; }
   get carry() { return this.heroStat('carry'); }
@@ -514,6 +551,17 @@ export class World {
   item(key) {
     const [kind, a, c] = key.split(':');
     const w = this;
+    if (kind === 'smith') {
+      const u = SMITH[a];
+      const lv = this.smith[a] || 0;
+      const next = u.costs[lv];
+      return {
+        key, icon: u.icon, title: u.name, level: lv + 1, max: u.values.length,
+        cost: next ? costText(next) : {}, maxed: !next,
+        desc: `${u.desc} ${fmt(u.values[lv])}${next ? ` → ${fmt(u.values[lv + 1])}` : ''} ${u.unit}${next ? '' : ' · max'}`,
+        apply: () => { w.smith[a] = lv + 1; },
+      };
+    }
     if (kind === 'callout') {
       const t = this.b[a];
       if (!t) return null;
@@ -581,7 +629,7 @@ export class World {
     if (kind === 'workers') {
       const b = this.b[a];
       const per = {
-        goldmine: 'digs gold into the pile', lumber: 'fells trees and stacks the logs here', quarry: 'breaks boulders and stacks the stone here',
+        goldmine: 'digs gold into the pile', lumber: 'fells trees and stacks the logs here', quarry: 'breaks boulders and stacks the stone here', ironmine: 'breaks iron rocks and stacks the ore here',
         farm: 'helps families grow', warehouse: 'fetches wood and stone from the camps and quarries into your stores',
       }[b.type];
       return {
@@ -647,6 +695,8 @@ export class World {
       ];
     } else if (t === 'barracks') {
       tabs = [{ tab: 'Barracks', items: [`train:${b.id}:knight`, `train:${b.id}:archer`, `train:${b.id}:raider`, `up:${b.id}`, 'armor'] }];
+    } else if (t === 'blacksmith') {
+      tabs = [{ tab: 'Blacksmith', items: ['smith:king', 'smith:workers', 'smith:arrows'] }];
     } else if (t === 'stable') {
       tabs = [{ tab: 'Stable', items: ['hero:speed', 'hero:hp', 'hero:carry', 'hero:magnet'] }];
     } else if (t === 'range') {
@@ -669,11 +719,12 @@ export class World {
     if (b.type === 'outpost') lines.push(`${OUTPOST[b.id].name} · fires on passing enemies`);
     if (b.type === 'house') lines.push(`${lv.beds} beds`);
     if (b.type === 'goldmine') lines.push(`Pile ${b.pile}/${lv.pile}`);
-    if (b.type === 'lumber' || b.type === 'quarry') {
-      lines.push(`Stock ${b.stock || 0}/${STOCK_CAP} ${b.type === 'lumber' ? 'wood' : 'stone'}`);
+    if (HUT_RES[b.type]) {
+      lines.push(`Stock ${b.stock || 0}/${STOCK_CAP} ${HUT_RES[b.type]}`);
       if (!this.count('warehouse')) lines.push('No warehouse yet: build one to bring this home');
     }
-    if (b.type === 'warehouse') lines.push(`Waiting at camps: ${this.list('lumber').reduce((a, x) => a + (x.stock || 0), 0)} wood, ${this.list('quarry').reduce((a, x) => a + (x.stock || 0), 0)} stone`);
+    if (b.type === 'warehouse') lines.push(`Waiting at camps: ${this.list('lumber').reduce((a, x) => a + (x.stock || 0), 0)} wood, ${this.list('quarry').reduce((a, x) => a + (x.stock || 0), 0)} stone, ${this.list('ironmine').reduce((a, x) => a + (x.stock || 0), 0)} iron`);
+    if (b.type === 'catapult') { const lv = BUILDINGS.catapult.levels[b.level]; lines.push(`${lv.name} · hits ${lv.dmg} in a ${lv.splash} m blast, ${lv.minRange}–${lv.range} m`); }
     if (JOB_TYPES.includes(b.type) || b.type === 'house' || b.type === 'castle') lines.push(`${Math.max(0, this.freeVillagers)} free villagers`);
     if (b.type === 'tower') lines.push(`${lv.name} · ${b.garrison}/${lv.slots} archers posted`);
     if (b.type === 'barracks') lines.push(`Army ${this.soldiers}/${this.armyCap} · ${this.villagers.length} villagers free to enlist`);
@@ -694,6 +745,7 @@ export class World {
     const m = [];
     if ((cost.wood || 0) > this.res.wood) m.push(`${cost.wood - this.res.wood} wood`);
     if ((cost.stone || 0) > this.res.stone) m.push(`${cost.stone - this.res.stone} stone`);
+    if ((cost.iron || 0) > this.res.iron) m.push(`${cost.iron - this.res.iron} iron`);
     return m;
   }
 
@@ -723,6 +775,7 @@ export class World {
     this.res.gold -= gold - hand;
     this.res.wood -= it.cost.wood || 0;
     this.res.stone -= it.cost.stone || 0;
+    this.res.iron -= it.cost.iron || 0;
     it.apply();
     this.emit('bought', { key, title: it.title, gold });
     return gold || 1;
@@ -764,8 +817,9 @@ export class World {
     const lock = this.lockReason({ castle: t.castle });
     if (lock) return { ok: false, reason: lock };
     const h = t.size / 2;
-    const R = this.wallRadius - 1.4;
-    if (Math.abs(x) + h > R || Math.abs(z) + h > R) return { ok: false, reason: 'Must be inside the walls' };
+    if (!this.buildZones().some((zn) => Math.abs(x - zn.x) + h <= zn.h && Math.abs(z - zn.z) + h <= zn.h)) {
+      return { ok: false, reason: 'Build inside the walls or on an outpost\'s land' };
+    }
     // Keep a lane open around everything so the king can always ride between.
     const GAP = 2;
     if (Math.abs(x) < CASTLE_R + h + GAP && Math.abs(z) < CASTLE_R + h + GAP) return { ok: false, reason: 'Too close to the castle' };
@@ -1065,7 +1119,7 @@ export class World {
         }
         continue;
       }
-      if (b.type === 'lumber' || b.type === 'quarry') { this.updateCutter(v, b, dt); continue; }
+      if (b.type === 'lumber' || b.type === 'quarry' || b.type === 'ironmine') { this.updateCutter(v, b, dt); continue; }
       if (b.type === 'warehouse') { this.updateHauler(v, b, dt); continue; }
       const lv = BUILDINGS[b.type].levels[b.level];
       if (v.state === 'toWork') { v.state = 'work'; v.t = b.type === 'goldmine' ? lv.every : (lv.work || 4); v.yaw = Math.atan2(b.x - v.x, b.z - v.z); }
@@ -1113,8 +1167,9 @@ export class World {
   updateCutter(v, b, dt) {
     const lv = BUILDINGS[b.type].levels[b.level];
     const wood = b.type === 'lumber';
-    const list = wood ? this.trees : this.stones;
-    const res = wood ? 'wood' : 'stone';
+    const iron = b.type === 'ironmine';
+    const list = wood ? this.trees : this.stones.filter((n) => n.iron === iron);
+    const res = wood ? 'wood' : iron ? 'iron' : 'stone';
     const home = { x: b.x + rand(-1.2, 1.2), z: b.z + b.size / 2 + 0.8 };
     switch (v.state) {
       case 'chop': {
@@ -1126,7 +1181,7 @@ export class World {
         }
         v.yaw = Math.atan2(n.x - v.x, n.z - v.z);
         v.t -= dt;
-        if (v.t <= 0) { v.t = SWING_EVERY; this.hitNode(n, wood, v.x, v.z); }
+        if (v.t <= 0) { v.t = SWING_EVERY / this.smithMul('workers'); this.hitNode(n, wood, v.x, v.z); }
         if (n.state === 'down') { v.state = 'gather'; v.t = 0.5; }
         return;
       }
@@ -1189,7 +1244,7 @@ export class World {
         const take = gold ? Math.min(src.pile || 0, lv.carry * GOLD_PER_ITEM) : Math.min(src.stock || 0, lv.carry);
         v.plan = 0;
         if (gold) src.pile -= take; else src.stock = (src.stock || 0) - take;
-        v.carry = take ? { res: gold ? 'gold' : src.type === 'lumber' ? 'wood' : 'stone', amt: take, from: src.id } : null;
+        v.carry = take ? { res: gold ? 'gold' : HUT_RES[src.type], amt: take, from: src.id } : null;
         v.state = 'deliver';
         v.path = this.route(v.x, v.z, b.x + rand(-1.5, 1.5), b.z + b.size / 2 + 0.8);
         return;
@@ -1210,7 +1265,7 @@ export class World {
       default: {
         let best = null, bs = 0;
         // Whichever camp, quarry or mine has the most loads waiting.
-        for (const src of [...this.list('lumber'), ...this.list('quarry'), ...this.list('goldmine')]) {
+        for (const src of [...this.list('lumber'), ...this.list('quarry'), ...this.list('ironmine'), ...this.list('goldmine')]) {
           if (src.state !== 'built') continue;
           const per = src.type === 'goldmine' ? GOLD_PER_ITEM : 1;
           const avail = ((src.type === 'goldmine' ? src.pile : src.stock || 0) - (src.reserved || 0)) / per;
@@ -1414,7 +1469,7 @@ export class World {
             a.atkCd = u.interval;
             a.attackT = 0.25;
             const dmg = u.dmg * (this.armor ? 1 + this.armor * 0.15 : 1);
-            if (a.kind === 'archer') this.shoot(a.x, a.z, 1.3, target, { dmg, speed: 28, from: 'ally' });
+            if (a.kind === 'archer') this.shoot(a.x, a.z, 1.3, target, { dmg: dmg * this.smithMul('arrows'), speed: 28, from: 'ally' });
             else this.damageEnemy(target, dmg, 'melee');
           }
         }
@@ -1461,7 +1516,7 @@ export class World {
   shoot(x, z, y, target, o) {
     const p = {
       x, z, y, y0: y, target, tx: target.x, tz: target.z, speed: o.speed || 30, dmg: o.dmg,
-      from: o.from, pierce: o.pierce || 0, burn: o.burn || 0, splash: o.splash || 0, kind: o.kind || 'arrow',
+      from: o.from, pierce: o.pierce || 0, burn: o.burn || 0, splash: o.splash || 0, splashK: o.splashK || 0.4, lob: !!o.lob, kind: o.kind || 'arrow',
       dist0: Math.max(1, hyp(target.x - x, target.z - z)), travelled: 0, hit: null, dirX: 0, dirZ: 0, straight: 0, yaw: 0,
     };
     this.projectiles.push(p);
@@ -1503,7 +1558,7 @@ export class World {
           p.x += (dx / d) * step; p.z += (dz / d) * step;
           p.travelled += step;
           const k = Math.min(1, p.travelled / p.dist0);
-          p.y = p.y0 + (1.1 - p.y0) * k + Math.sin(k * Math.PI) * Math.min(3, p.dist0 * 0.12);
+          p.y = p.y0 + (1.1 - p.y0) * k + Math.sin(k * Math.PI) * (p.lob ? Math.min(10, p.dist0 * 0.45) : Math.min(3, p.dist0 * 0.12));
         }
       }
       if (dead) this.projectiles.splice(i, 1);
@@ -1524,11 +1579,11 @@ export class World {
       for (const e of this.enemies) {
         if (e === t || e.hp <= 0) continue;
         if (hyp(e.x - t.x, e.z - t.z) < p.splash) {
-          this.damageEnemy(e, p.dmg * 0.4, 'splash');
+          this.damageEnemy(e, p.dmg * p.splashK, 'splash');
           if (p.burn) { e.burn = 2; e.burnDps = Math.max(e.burnDps, p.dmg * p.burn * 0.5); }
         }
       }
-      this.emit('splash', { x: t.x, z: t.z, r: p.splash });
+      this.emit('splash', { x: t.x, z: t.z, r: p.splash, kind: p.kind });
     }
     if (p.pierce > 0) {
       p.hit = new Set([t]);
@@ -1917,7 +1972,7 @@ export class World {
       if (targets.length) {
         h.atkCd = wp.interval / this.heroStat('rate');
         h.shootT = 0.2;
-        const dmg = this.heroStat('damage') * wp.dmg;
+        const dmg = this.heroStat('damage') * wp.dmg * this.smithMul('arrows');
         for (const t of targets) {
           this.shoot(h.x, h.z, 2.3, t, {
             dmg, speed: wp.speed, from: 'hero', pierce: wp.pierce, burn: wp.burn, splash: wp.splash,
@@ -2021,9 +2076,9 @@ export class World {
       h.coins = 0;
     }
     // Scoop up a hut's stockpile.
-    for (const hut of [...this.list('lumber'), ...this.list('quarry')]) {
+    for (const hut of [...this.list('lumber'), ...this.list('quarry'), ...this.list('ironmine')]) {
       if (hut.state !== 'built' || !(hut.stock > 0) || rectDist(h.x, h.z, hut) > 2.4) continue;
-      const res = hut.type === 'lumber' ? 'wood' : 'stone';
+      const res = HUT_RES[hut.type];
       const k = Math.min(room(), hut.stock - (hut.reserved || 0));
       if (can(res) && k > 0) { hut.stock -= k; add(res, k); }
     }
@@ -2039,7 +2094,7 @@ export class World {
       }
     }
     if (!node) { h.gatherT = 0; return; }
-    const res = wood ? 'wood' : 'stone';
+    const res = wood ? 'wood' : node.iron ? 'iron' : 'stone';
     const warn = (key, text) => { if (h.warned !== key) { h.warned = key; this.emit('need', { text }); } };
     if (h.load.n > 0 && h.load.res !== res) return warn('mix', `Drop your ${h.load.res} at the castle first`);
     if (room() <= 0) return warn('full', 'Your load is full: carry it back to the castle');
@@ -2056,7 +2111,7 @@ export class World {
     h.toolAt = node;
     // Face the tree or boulder being worked.
     h.yaw = turn(h.yaw, Math.atan2(node.x - h.x, node.z - h.z), dt * 10);
-    if (h.gatherT >= KING_SWING) {
+    if (h.gatherT >= KING_SWING / this.smithMul('king')) {
       h.gatherT = 0;
       h.swings = (h.swings || 0) + 1;
       this.hitNode(node, wood, h.x, h.z);
@@ -2101,7 +2156,7 @@ export class World {
         if (e) {
           t.atkCd = lv.interval;
           t.aim = Math.atan2(e.x - t.x, e.z - t.z);
-          this.shoot(t.x, t.z, 4.2, e, { dmg: lv.dmg, speed: lv.pierce ? 40 : 30, from: 'tower', pierce: lv.pierce, kind: lv.pierce ? 'ballista' : 'bolt' });
+          this.shoot(t.x, t.z, 4.2, e, { dmg: lv.dmg * this.smithMul('arrows'), speed: lv.pierce ? 40 : 30, from: 'tower', pierce: lv.pierce, kind: lv.pierce ? 'ballista' : 'bolt' });
         } else t.atkCd = 0.15;
       }
       for (let k = 0; k < t.garrison; k++) {
@@ -2110,9 +2165,32 @@ export class World {
         const e = this.nearestEnemy(t.x, t.z, lv.range);
         if (e) {
           t.slotCd[k] = UNITS.archer.interval;
-          this.shoot(t.x + (k - 1) * 0.5, t.z, 4.6, e, { dmg: UNITS.archer.dmg * (1 + this.armor * 0.15), speed: 28, from: 'ally' });
+          this.shoot(t.x + (k - 1) * 0.5, t.z, 4.6, e, { dmg: UNITS.archer.dmg * (1 + this.armor * 0.15) * this.smithMul('arrows'), speed: 28, from: 'ally' });
         } else t.slotCd[k] = 0.2;
       }
+    }
+    // Catapults lob a boulder at the thickest knot of enemies in reach.
+    for (const c of this.list('catapult')) {
+      if (c.state !== 'built') continue;
+      const lv = BUILDINGS.catapult.levels[c.level];
+      c.atkCd -= dt;
+      c.throwT = Math.max(0, (c.throwT || 0) - dt);
+      if (c.atkCd > 0) continue;
+      let best = null, bs = 0;
+      for (const e of this.enemies) {
+        if (e.hp <= 0 || e.invuln || e.static || e.guard) continue;
+        const d = hyp(e.x - c.x, e.z - c.z);
+        if (d > lv.range || d < lv.minRange) continue;
+        let n = 1;
+        for (const o of this.enemies) if (o !== e && o.hp > 0 && hyp(o.x - e.x, o.z - e.z) < lv.splash) n++;
+        if (n > bs) { bs = n; best = e; }
+      }
+      if (best) {
+        c.atkCd = lv.interval;
+        c.throwT = 0.5;
+        c.aim = Math.atan2(best.x - c.x, best.z - c.z);
+        this.shoot(c.x, c.z, 3.2, best, { dmg: lv.dmg, speed: 15, from: 'tower', kind: 'boulder', splash: lv.splash, splashK: 0.8, lob: true });
+      } else c.atkCd = 0.3;
     }
     // Outpost watchtowers.
     const ol = BUILDINGS.outpost.levels[0];
@@ -2215,6 +2293,7 @@ export class World {
       funds: { ...this.funds },
       objective: this.objective,
       rally: this.rally,
+      smith: { ...this.smith },
       level: this.level,
       camps: this.built('pass') ? this.campsAlive() : null,
       stats: { ...this.stats },
@@ -2232,7 +2311,8 @@ export class World {
   load(s) {
     this.phase = 'build';
     this.wave = s.wave;
-    this.res = { gold: 0, ...s.res };
+    this.res = { gold: 0, iron: 0, ...s.res };
+    this.smith = { king: 0, workers: 0, arrows: 0, ...(s.smith || {}) };
     this.rally = !!s.rally;
     this.funds = {};
     this.objective = s.objective;
@@ -2290,7 +2370,7 @@ function order(kind) { return { grunt: 0, raider: 1, archer: 2, brute: 3 }[kind]
 
 function jobPriority(b) {
   if (!b) return 9;
-  return { goldmine: 0, lumber: 1, warehouse: 2, quarry: 3, farm: 4 }[b.type] ?? 5;
+  return { goldmine: 0, lumber: 1, warehouse: 2, quarry: 3, ironmine: 4, farm: 5 }[b.type] ?? 6;
 }
 
 function hero_in(h, x, z, r) { return h.alive && hyp(h.x - x, h.z - z) < r; }
@@ -2338,7 +2418,9 @@ function upgradeDesc(type, cur, next) {
     case 'barracks': return `Army size ${cur.army} → ${next.army}, unlocks Raiders`;
     case 'goldmine': return `Miner slots ${cur.workers} → ${next.workers}, faster digging, pile ${cur.pile} → ${next.pile}`;
     case 'lumber':
-    case 'quarry': return `Worker slots ${cur.workers} → ${next.workers}, ${cur.carry} → ${next.carry} per trip`;
+    case 'quarry':
+    case 'ironmine': return `Worker slots ${cur.workers} → ${next.workers}, ${cur.carry} → ${next.carry} per trip`;
+    case 'catapult': return `${next.name}: blast ${cur.dmg} → ${next.dmg}, range ${cur.range} → ${next.range} m`;
     case 'tower': return `Damage ${cur.dmg} → ${next.dmg}, range ${cur.range} → ${next.range}m, archer posts ${cur.slots} → ${next.slots}`;
     default: return '';
   }
