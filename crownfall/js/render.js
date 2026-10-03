@@ -6,12 +6,12 @@ import * as THREE from './vendor/three.js';
 import {
   C, Builder, vcMat, RIGS, pineGeo, rockGeo, cliffGeo, palisadeGeo, stoneWallGeo, gateGeo, gateDoorGeo,
   castleGeo, houseGeo, farmGeo, barracksGeo, stableGeo, rangeGeo, goldmineGeo, lumberGeo, quarryGeo,
-  bridgeGeo, towerGeo, towerGunGeo, coinGeo, arrowGeo, chevronGeo,
+  bridgeGeo, towerGeo, towerGunGeo, coinGeo, arrowGeo, chevronGeo, rockfallGeo, passGeo,
 } from './models.js';
 import {
-  LANES, lanePoint, BRIDGE, RIVER_Z, RIVER_HALF, FOREST_Z, PATH_HALF, CASTLE_R, scenery, distToLanes,
+  LANES, lanePoint, BRIDGE, RIVER_Z, RIVER_HALF, FOREST_Z, PATH_HALF, CASTLE_R, scenery, distToLanes, MOUNTAIN, BOUNDS,
 } from './map.js';
-import { BUILDINGS } from './config.js';
+import { BUILDINGS, HERO } from './config.js';
 
 const TAU = Math.PI * 2;
 const SKY = 0x9ad6f5;
@@ -113,7 +113,7 @@ class Pool {
 
 const BUILD_GEO = {
   castle: castleGeo, house: houseGeo, farm: farmGeo, barracks: barracksGeo, stable: stableGeo, range: rangeGeo,
-  goldmine: goldmineGeo, lumber: lumberGeo, quarry: quarryGeo, bridge: bridgeGeo, tower: towerGeo,
+  goldmine: goldmineGeo, lumber: lumberGeo, quarry: quarryGeo, bridge: bridgeGeo, tower: towerGeo, pass: () => passGeo(),
 };
 
 export class Renderer {
@@ -184,7 +184,7 @@ export class Renderer {
     const pos = g.attributes.position;
     const colors = new Float32Array(pos.count * 3);
     const grass = new THREE.Color(C.grass), grassDark = new THREE.Color(C.grassDark), forest = new THREE.Color(C.forest);
-    const sand = new THREE.Color(C.sandDark), light = new THREE.Color(0x7fcb5c), bank = new THREE.Color(0x4f8f45);
+    const sand = new THREE.Color(C.sandDark), light = new THREE.Color(0x7fcb5c), bank = new THREE.Color(0x4f8f45), highland = new THREE.Color(0xa49c86);
     const tmp = new THREE.Color();
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i), z = pos.getZ(i);
@@ -195,6 +195,8 @@ export class Renderer {
       if (rd < RIVER_HALF + 1.6) tmp.lerp(rd < RIVER_HALF + 0.3 ? bank : sand, rd < RIVER_HALF + 0.3 ? 1 : 0.6);
       const r = Math.hypot(x, z);
       if (r < CASTLE_R + 1.5) tmp.lerp(sand, 0.35);
+      const md = Math.hypot(x - MOUNTAIN.x, z - MOUNTAIN.z);
+      if (md < MOUNTAIN.r + 3) tmp.lerp(highland, Math.min(1, (MOUNTAIN.r + 3 - md) / 3) * 0.85);
       colors.set([tmp.r, tmp.g, tmp.b], i * 3);
     }
     g.setAttribute('color', new THREE.BufferAttribute(colors, 3));
@@ -290,6 +292,13 @@ export class Renderer {
     this.heroRing.renderOrder = 1;
     scene.add(this.heroRing);
 
+    // During a wave the castle courtyard is the only place the king heals.
+    this.healRing = new THREE.Mesh(new THREE.RingGeometry(CASTLE_R + HERO.healRadius - 0.35, CASTLE_R + HERO.healRadius, 64), new THREE.MeshBasicMaterial({ color: 0x5dff7a, transparent: true, opacity: 0.5, depthWrite: false }));
+    this.healRing.rotation.x = -Math.PI / 2;
+    this.healRing.position.y = 0.09;
+    this.healRing.renderOrder = 1;
+    scene.add(this.healRing);
+
     this.rangeRing = new THREE.Mesh(new THREE.RingGeometry(0.97, 1, 64), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.45, depthWrite: false }));
     this.rangeRing.rotation.x = -Math.PI / 2;
     this.rangeRing.visible = false;
@@ -370,6 +379,12 @@ export class Renderer {
       mesh.renderOrder = 1;
       group.add(mesh);
       e.canvas = canvas; e.tex = tex; e.body = mesh;
+      if (b.type === 'pass') {
+        const rocks = new THREE.Mesh(this.geo('rockfall', rockfallGeo), vcMat);
+        rocks.position.set(2.6, 0, -3.2);
+        rocks.castShadow = true;
+        group.add(rocks);
+      }
       if (b.type === 'bridge') group.rotation.y = 0;
       return e;
     }
@@ -395,10 +410,11 @@ export class Renderer {
 
   updatePad(e, world, b) {
     const it = world.item(`build:${b.id}`);
-    const paid = world.funds[`build:${b.id}`] || 0;
     const gold = it.cost.gold || 0;
+    const lackG = gold > world.hero.coins;
     const lackW = (it.cost.wood || 0) > world.res.wood, lackS = (it.cost.stone || 0) > world.res.stone;
-    const sig = `${paid}|${it.locked}|${lackW}|${lackS}`;
+    const ready = !it.locked && !lackG && !lackW && !lackS;
+    const sig = `${it.locked}|${lackG}|${lackW}|${lackS}`;
     if (sig === e.sig) return;
     e.sig = sig;
     const ctx = e.canvas.getContext('2d');
@@ -408,15 +424,11 @@ export class Renderer {
     roundRect(ctx, inset, inset, S - inset * 2, S - inset * 2, r);
     ctx.fillStyle = it.locked ? 'rgba(40,40,50,0.35)' : 'rgba(255,255,255,0.18)';
     ctx.fill();
-    // Progress fill.
-    const f = gold ? Math.min(1, paid / gold) : 0;
-    if (f > 0) {
-      ctx.save();
+    // Green when the king has everything it costs: stand on it to build.
+    if (ready) {
       roundRect(ctx, inset, inset, S - inset * 2, S - inset * 2, r);
-      ctx.clip();
-      ctx.fillStyle = 'rgba(70, 225, 95, 0.75)';
-      ctx.fillRect(inset, inset, (S - inset * 2) * f, S - inset * 2);
-      ctx.restore();
+      ctx.fillStyle = 'rgba(70, 225, 95, 0.6)';
+      ctx.fill();
     }
     ctx.setLineDash([26, 16]);
     ctx.lineWidth = 9;
@@ -442,14 +454,14 @@ export class Renderer {
       text(it.locked, 160, 36, '#ffffff');
     } else {
       // Coin + gold still owed.
-      const label = `${gold - paid}`;
+      const label = `${gold}`;
       ctx.font = '800 54px system-ui, -apple-system, sans-serif';
       const tw = ctx.measureText(label).width;
       const cx = S / 2 - tw / 2 - 8;
       ctx.beginPath(); ctx.arc(cx - 14, 156, 20, 0, TAU);
       ctx.fillStyle = '#ffcf3a'; ctx.fill();
       ctx.lineWidth = 5; ctx.strokeStyle = '#b97a0a'; ctx.stroke();
-      ctx.save(); ctx.translate(18, 0); text(label, 158, 54, '#ffffff'); ctx.restore();
+      ctx.save(); ctx.translate(18, 0); text(label, 158, 54, lackG ? '#ff9a8a' : '#ffffff'); ctx.restore();
       const mats = [];
       if (it.cost.wood) mats.push(`${it.cost.wood} wood`);
       if (it.cost.stone) mats.push(`${it.cost.stone} stone`);
@@ -583,7 +595,7 @@ export class Renderer {
     sp.begin();
     if (hero.alive && hero.coins > 0) {
       const shown = hero.coins <= 90 ? hero.coins : Math.min(260, 90 + Math.floor((hero.coins - 90) * 0.35));
-      const tx = -hero.vx * 0.14, tz = -hero.vz * 0.14;
+      const tx = -hero.vx * 0.07, tz = -hero.vz * 0.07;
       this.stackLean.x += (tx - this.stackLean.x) * Math.min(1, dt * 5);
       this.stackLean.z += (tz - this.stackLean.z) * Math.min(1, dt * 5);
       const fx = Math.sin(hero.yaw), fz = Math.cos(hero.yaw);
@@ -695,6 +707,9 @@ export class Renderer {
     // ---- rings & ghost
     this.heroRing.visible = hero.alive;
     this.heroRing.position.set(hero.x, 0.08, hero.z);
+    this.healRing.visible = world.phase === 'wave';
+    this.healRing.material.opacity = hero.healing ? 0.85 : 0.35 + Math.sin(t * 3) * 0.12;
+    if (hero.healing && Math.random() < 0.35) this.spark(hero.x, 2.5, hero.z, 0x6dff8a, 1, 0.22, 1.5, 0.7, -2);
     const sel = view.rangeOf;
     this.rangeRing.visible = !!sel;
     if (sel) { this.rangeRing.position.set(sel.x, 0.1, sel.z); this.rangeRing.scale.setScalar(sel.r); }
@@ -744,14 +759,17 @@ export class Renderer {
     const h = world.hero;
     const fx = h.alive ? h.x : 0, fz = h.alive ? h.z : CASTLE_R + 2;
     const portrait = this.camera.aspect < 1;
-    const k = Math.min(1, dt * 5);
-    // Look a little ahead of the king so you can see where you are going.
-    this.camTarget.x += (fx + h.vx * 0.25 - this.camTarget.x) * k;
-    this.camTarget.z += (fz + h.vz * 0.2 - (portrait ? 2.5 : 1) - this.camTarget.z) * k;
+    const k = Math.min(1, dt * 6);
+    if (!this.free) {
+      // Look a little ahead of the king so you can see where you are going.
+      this.camTarget.x += (fx + h.vx * 0.12 - this.camTarget.x) * k;
+      this.camTarget.z += (fz + h.vz * 0.1 - (portrait ? 2.5 : 1) - this.camTarget.z) * k;
+    }
     // Fit about 23 m across in portrait, 30 m tall in landscape.
     const tanH = Math.tan((this.camera.fov * Math.PI) / 360);
     const fit = portrait ? 11.5 / (tanH * this.camera.aspect) : 15 / tanH;
     const dist = fit * this.zoom * (view.sheetOpen && portrait ? 1.06 : 1);
+    this.dist = dist;
     const pitch = 0.98;
     const sx = this.shake > 0 ? (Math.random() - 0.5) * this.shake : 0;
     const sz = this.shake > 0 ? (Math.random() - 0.5) * this.shake : 0;
@@ -770,6 +788,37 @@ export class Renderer {
     const tx = Math.round(cx), tz = Math.round(cz);
     this.sun.position.set(tx - 16, 36, tz - 10);
     this.sun.target.position.set(tx, 0, tz);
+  }
+
+  // Drag the camera by screen pixels (two-finger pan). Detaches it from the king.
+  panBy(px, py) {
+    if (!px && !py) return;
+    const tanH = Math.tan((this.camera.fov * Math.PI) / 360);
+    const perPx = (2 * (this.dist || 40) * tanH) / Math.max(1, this.h);
+    this.camTarget.x -= px * perPx;
+    this.camTarget.z -= (py * perPx) / Math.sin(0.98);
+    this.camTarget.x = Math.max(-BOUNDS - 6, Math.min(BOUNDS + 6, this.camTarget.x));
+    this.camTarget.z = Math.max(-BOUNDS - 6, Math.min(BOUNDS + 6, this.camTarget.z));
+    this.free = true;
+  }
+
+  recenter() { this.free = false; }
+
+  // Which built building is under a screen point? Walk down the view ray from
+  // roof height so tall buildings are hit where they are drawn.
+  pick(px, py, world) {
+    const ndcX = (px / this.w) * 2 - 1, ndcY = -(py / this.h) * 2 + 1;
+    const o = this.camera.position;
+    _v.set(ndcX, ndcY, 0.5).unproject(this.camera).sub(o).normalize();
+    const H = { castle: 8, tower: 4.5, goldmine: 3, house: 3.2, barracks: 3.5 };
+    for (let y = 8; y >= 0; y -= 0.5) {
+      const t = (y - o.y) / _v.y;
+      if (t <= 0) continue;
+      const x = o.x + _v.x * t, z = o.z + _v.z * t;
+      const b = world.buildingAt(x, z, y === 0 ? 0.8 : 0.1);
+      if (b && (H[b.type] || 2.8) >= y) return b;
+    }
+    return null;
   }
 
   project(x, y, z) {
@@ -833,8 +882,8 @@ export class Renderer {
       case 'trained':
       case 'posted': this.spark(ev.x, 1.5, ev.z, 0x9ff0ff, 10, 0.15, 3, 0.7, 4); break;
       case 'spend': {
-        const n = Math.min(4, ev.n);
-        for (let i = 0; i < n; i++) this.flyers.push({ from: this.stackTop.clone(), to: new THREE.Vector3(ev.x, 0.3, ev.z), t: -i * 0.06, dur: 0.38 });
+        const n = Math.min(14, Math.ceil(ev.n / 5));
+        for (let i = 0; i < n; i++) this.flyers.push({ from: this.stackTop.clone(), to: new THREE.Vector3(ev.x, 0.3, ev.z), t: -i * 0.035, dur: 0.38 });
         break;
       }
       case 'pickup':

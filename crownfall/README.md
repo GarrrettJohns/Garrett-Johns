@@ -14,13 +14,17 @@ It then launches full screen and works offline.
 ## How it plays
 
 - **Ride:** drag anywhere to steer. The king shoots the nearest enemy on his own.
-- **Gold:** kills drop coins, and miners fill a pile at the gold mine. A
-  magnet pulls coins in, and the stack on the horse holds as much as your
-  saddlebags allow.
-- **Pads:** stand on a dashed pad to pay coins into it. When the gold is
-  in, and the kingdom has any wood and stone the pad needs, it's built.
-- **Menus:** ride up to a built building to open its upgrades. Upgrades can
-  be paid off a bit at a time.
+- **Look:** drag with two fingers to move the camera on its own, and pinch to
+  zoom. Tap 👑 to snap back to the king. On a desktop, right-drag pans.
+- **Gold:** at first, gold comes only from waves: kills drop coins and every
+  cleared wave pays a bonus. Clearing the Mountain Pass opens the highland,
+  with a gold mine and quarries. A magnet pulls coins in, and the stack on
+  the horse holds 250 to start.
+- **Pads:** a pad turns green when you can afford it. Stand on it to build.
+- **Menus:** tap a building to open its upgrades. Nothing is bought in
+  parts: you need all the gold, wood and stone first.
+- **Healing:** during a wave the king heals only inside the green ring at
+  the castle. Between waves he heals anywhere.
 - **Build:** between waves, tap 🔨 to place houses, farms, barracks, a stable
   and an archery range anywhere inside the walls.
 - **People:** houses bring villagers, and farms make families grow faster.

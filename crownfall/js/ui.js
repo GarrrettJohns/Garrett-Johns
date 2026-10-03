@@ -22,9 +22,6 @@ export class UI {
     };
     this.prev = {};
     this.menuFor = null;
-    this.dismissed = null;
-    this.nearT = 0;
-    this.nearId = null;
     this.sig = '';
     this.sigT = 0;
     this.bannerT = 0;
@@ -33,7 +30,7 @@ export class UI {
     this.el.waveBtn.addEventListener('click', () => h.onStartWave());
     this.el.buildBtn.addEventListener('click', () => { h.tap(); this.openBuild(); });
     $('build-close').addEventListener('click', () => { h.tap(); this.closeBuild(); });
-    $('sheet-close').addEventListener('click', () => { h.tap(); this.dismissed = this.menuFor; this.closeMenu(); });
+    $('sheet-close').addEventListener('click', () => { h.tap(); this.closeMenu(); });
     $('btn-place-ok').addEventListener('click', () => h.onPlaceOk());
     $('btn-place-cancel').addEventListener('click', () => h.onPlaceCancel());
     $('btn-pause').addEventListener('click', () => h.onPause());
@@ -138,21 +135,18 @@ export class UI {
   }
 
   // ----------------------------------------------------------- menu sheet
-  updateMenu(world, dt, ctx) {
-    const near = ctx.placing || world.phase === 'defeat' ? null : world.nearBuilding();
-    const id = near ? near.id : null;
-    if (id !== this.nearId) { this.nearId = id; this.nearT = 0; }
-    else this.nearT += dt;
-    if (this.dismissed && this.dismissed !== id) this.dismissed = null;
+  // Menus open only when a building is tapped.
+  openMenu(id) {
+    this.closeBuild();
+    this.menuFor = id;
+    this.sig = '';
+    this.sigT = 0;
+    this.el.sheet.hidden = false;
+  }
 
-    const slow = Math.hypot(world.hero.vx, world.hero.vz) < 3.5;
-    if (id && id !== this.menuFor && id !== this.dismissed && this.nearT > 0.3 && slow && this.el.buildSheet.hidden) {
-      this.menuFor = id;
-      this.sig = '';
-      this.el.sheet.hidden = false;
-    }
-    if (this.menuFor && (!world.b[this.menuFor] || (id !== this.menuFor && this.nearT > 0.15))) this.closeMenu();
+  updateMenu(world, dt, ctx) {
     if (!this.menuFor) return;
+    if (!world.b[this.menuFor] || ctx.placing || world.phase === 'defeat') { this.closeMenu(); return; }
 
     this.sigT -= dt;
     if (this.sigT > 0 && this.sig) return;
@@ -160,7 +154,7 @@ export class UI {
     const b = world.b[this.menuFor];
     const info = world.info(b);
     const items = world.menu(b);
-    const sig = JSON.stringify([info, items.map((i) => [i.key, world.funds[i.key] || 0, i.locked, i.maxed, i.owned, i.equipped, i.level, i.cost]), world.hero.coins > 0, world.res]);
+    const sig = JSON.stringify([info, items.map((i) => [i.key, i.locked, i.maxed, i.owned, i.equipped, i.level, i.cost]), world.hero.coins, world.res]);
     if (sig === this.sig) return;
     this.sig = sig;
 
@@ -172,8 +166,8 @@ export class UI {
   }
 
   row(world, it) {
-    const paid = world.funds[it.key] || 0;
     const gold = it.cost.gold || 0;
+    const lackG = gold > world.hero.coins;
     const lackW = (it.cost.wood || 0) > world.res.wood;
     const lackS = (it.cost.stone || 0) > world.res.stone;
     const pips = it.max > 1 ? `<span class="pips">${Array.from({ length: it.max }, (_, i) => `<i class="${i < it.level ? 'on' : ''}"></i>`).join('')}</span>` : '';
@@ -183,15 +177,14 @@ export class UI {
     else if (it.locked) btn = `<button class="rbtn off" type="button" disabled>🔒 ${esc(it.locked)}</button>`;
     else {
       const verb = it.key.startsWith('train') ? 'Train' : it.key.startsWith('weapon') ? 'Unlock' : 'Upgrade';
-      const short = paid >= gold && (lackW || lackS);
-      const broke = world.hero.coins === 0 && paid < gold;
-      btn = `<button class="rbtn ${short || broke ? 'off' : ''}" type="button" data-key="${it.key}">${short ? 'Need ' + (lackW ? 'wood' : 'stone') : paid > 0 && paid < gold ? 'Pay' : verb}</button>`;
+      const need = lackG ? 'gold' : lackW ? 'wood' : lackS ? 'stone' : '';
+      btn = `<button class="rbtn ${need ? 'off' : ''}" type="button" data-key="${it.key}">${need ? 'Need ' + need : verb}</button>`;
     }
     const cost = it.maxed || it.owned ? '' : `<div class="cost">
-      ${gold ? `<span><i class="coin"></i>${paid ? `${paid}/` : ''}${gold}</span>` : ''}
+      ${gold ? `<span class="${lackG ? 'lack' : ''}"><i class="coin"></i>${gold}</span>` : ''}
       ${it.cost.wood ? `<span class="${lackW ? 'lack' : ''}">🪵 ${it.cost.wood}</span>` : ''}
       ${it.cost.stone ? `<span class="${lackS ? 'lack' : ''}">🪨 ${it.cost.stone}</span>` : ''}
-    </div>${paid > 0 && gold ? `<div class="prog"><span style="width:${Math.min(100, (paid / gold) * 100)}%"></span></div>` : ''}`;
+    </div>`;
     return `<div class="row">
       <div class="ri">${it.icon}</div>
       <div class="rb">

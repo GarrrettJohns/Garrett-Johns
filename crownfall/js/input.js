@@ -1,7 +1,10 @@
-// Touch joystick (appears wherever your thumb lands), pinch or wheel to zoom,
-// and WASD / arrow keys on a keyboard.
+// Touch joystick (appears wherever your thumb lands), quick taps to pick
+// buildings, two fingers to pan and pinch the camera, a wheel to zoom, and
+// WASD / arrow keys on a keyboard.
 
 const RADIUS = 56;
+const TAP_MS = 280;
+const TAP_PX = 12;
 
 export class Input {
   constructor(stage, joyEl, knobEl) {
@@ -9,21 +12,25 @@ export class Input {
     this.joyEl = joyEl;
     this.knobEl = knobEl;
     this.vec = { x: 0, z: 0 };
-    this.stick = null;          // { id, ox, oy }
+    this.stick = null;          // { id, ox, oy, sx, sy, t, moved }
     this.pointers = new Map();
-    this.pinch = null;
+    this.two = null;            // two-finger gesture: { cx, cy, d, zoom }
+    this.pan = { x: 0, y: 0 };  // screen pixels dragged since last read
     this.zoom = 1;
     this.keys = new Set();
     this.enabled = true;
     this.onFirstTouch = null;
+    this.onTap = null;
+    this.mouseDrag = null;
 
     stage.addEventListener('pointerdown', (e) => this.down(e));
     window.addEventListener('pointermove', (e) => this.move(e), { passive: false });
     window.addEventListener('pointerup', (e) => this.up(e));
-    window.addEventListener('pointercancel', (e) => this.up(e));
+    window.addEventListener('pointercancel', (e) => this.up(e, true));
+    stage.addEventListener('contextmenu', (e) => e.preventDefault());
     stage.addEventListener('wheel', (e) => {
       e.preventDefault();
-      this.zoom = Math.max(0.65, Math.min(1.5, this.zoom * (1 + Math.sign(e.deltaY) * 0.08)));
+      this.zoom = Math.max(0.6, Math.min(1.6, this.zoom * (1 + Math.sign(e.deltaY) * 0.08)));
     }, { passive: false });
     window.addEventListener('keydown', (e) => {
       if (e.target.tagName === 'INPUT') return;
@@ -33,48 +40,79 @@ export class Input {
     window.addEventListener('blur', () => { this.keys.clear(); this.release(); });
   }
 
+  local(e) {
+    const r = this.stage.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+
   down(e) {
-    // Only touches on the 3D view steer; buttons and sheets sit above it.
+    // Only touches on the 3D view count; buttons and sheets sit above it.
     if (e.target !== this.stage && e.target.id !== 'game') return;
-    if (this.onFirstTouch) { this.onFirstTouch(); }
-    this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (this.pointers.size === 2) {
-      // Second finger: pinch to zoom instead of steering.
-      this.release();
-      const [a, b] = [...this.pointers.values()];
-      this.pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), zoom: this.zoom };
+    if (this.onFirstTouch) this.onFirstTouch();
+    const p = this.local(e);
+    // Desktop: right or middle mouse button drags the camera.
+    if (e.pointerType === 'mouse' && e.button !== 0) {
+      this.mouseDrag = { id: e.pointerId, x: p.x, y: p.y };
       return;
     }
-    if (!this.enabled || this.stick) return;
-    const r = this.stage.getBoundingClientRect();
-    this.stick = { id: e.pointerId, ox: e.clientX - r.left, oy: e.clientY - r.top };
-    this.joyEl.style.left = `${this.stick.ox}px`;
-    this.joyEl.style.top = `${this.stick.oy}px`;
+    this.pointers.set(e.pointerId, p);
+    if (this.pointers.size === 2) {
+      // Second finger: pan and pinch the camera instead of steering.
+      this.release();
+      this.two = this.twoState();
+      return;
+    }
+    if (this.pointers.size > 2 || this.stick) return;
+    this.stick = { id: e.pointerId, ox: p.x, oy: p.y, sx: p.x, sy: p.y, t: performance.now(), moved: false };
+    if (!this.enabled) return;
+    this.joyEl.style.left = `${p.x}px`;
+    this.joyEl.style.top = `${p.y}px`;
     this.knobEl.style.transform = 'translate(0,0)';
-    this.joyEl.hidden = false;
+  }
+
+  twoState() {
+    const [a, b] = [...this.pointers.values()];
+    return { cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2, d: Math.max(20, Math.hypot(a.x - b.x, a.y - b.y)), zoom: this.zoom };
   }
 
   move(e) {
-    if (this.pointers.has(e.pointerId)) this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (this.pinch && this.pointers.size === 2) {
-      const [a, b] = [...this.pointers.values()];
-      const d = Math.hypot(a.x - b.x, a.y - b.y);
-      this.zoom = Math.max(0.65, Math.min(1.5, this.pinch.zoom * (this.pinch.d / Math.max(20, d))));
+    if (this.mouseDrag && e.pointerId === this.mouseDrag.id) {
+      const p = this.local(e);
+      this.pan.x += p.x - this.mouseDrag.x;
+      this.pan.y += p.y - this.mouseDrag.y;
+      this.mouseDrag.x = p.x; this.mouseDrag.y = p.y;
       return;
     }
-    if (!this.stick || e.pointerId !== this.stick.id) return;
+    if (!this.pointers.has(e.pointerId)) return;
+    const p = this.local(e);
+    this.pointers.set(e.pointerId, p);
+    if (this.two && this.pointers.size === 2) {
+      e.preventDefault();
+      const now = this.twoState();
+      this.pan.x += now.cx - this.two.cx;
+      this.pan.y += now.cy - this.two.cy;
+      this.zoom = Math.max(0.6, Math.min(1.6, this.two.zoom * (this.two.d / now.d)));
+      this.two.cx = now.cx; this.two.cy = now.cy;
+      return;
+    }
+    const s = this.stick;
+    if (!s || e.pointerId !== s.id) return;
     e.preventDefault();
-    const r = this.stage.getBoundingClientRect();
-    let dx = e.clientX - r.left - this.stick.ox;
-    let dy = e.clientY - r.top - this.stick.oy;
+    if (!s.moved && Math.hypot(p.x - s.sx, p.y - s.sy) > TAP_PX) {
+      s.moved = true;
+      if (this.enabled) this.joyEl.hidden = false;
+    }
+    if (!s.moved || !this.enabled) return;
+    let dx = p.x - s.ox;
+    let dy = p.y - s.oy;
     const d = Math.hypot(dx, dy);
     // Drag past the rim and the base follows your thumb.
     if (d > RADIUS) {
       const k = (d - RADIUS) / d;
-      this.stick.ox += dx * k; this.stick.oy += dy * k;
+      s.ox += dx * k; s.oy += dy * k;
       dx -= dx * k; dy -= dy * k;
-      this.joyEl.style.left = `${this.stick.ox}px`;
-      this.joyEl.style.top = `${this.stick.oy}px`;
+      this.joyEl.style.left = `${s.ox}px`;
+      this.joyEl.style.top = `${s.oy}px`;
     }
     this.knobEl.style.transform = `translate(${dx}px, ${dy}px)`;
     const m = Math.min(1, Math.hypot(dx, dy) / RADIUS);
@@ -84,16 +122,30 @@ export class Input {
     this.vec.z = Math.sin(a) * mag;
   }
 
-  up(e) {
+  up(e, cancelled = false) {
+    if (this.mouseDrag && e.pointerId === this.mouseDrag.id) { this.mouseDrag = null; return; }
+    const s = this.stick;
+    const wasTwo = !!this.two;
     this.pointers.delete(e.pointerId);
-    if (this.pointers.size < 2) this.pinch = null;
-    if (this.stick && e.pointerId === this.stick.id) this.release();
+    if (this.pointers.size < 2) this.two = null;
+    if (s && e.pointerId === s.id) {
+      const quick = performance.now() - s.t < TAP_MS;
+      this.release();
+      if (!cancelled && !wasTwo && !s.moved && quick && this.onTap) this.onTap(s.sx, s.sy);
+    }
   }
 
   release() {
     this.stick = null;
     this.vec.x = this.vec.z = 0;
     this.joyEl.hidden = true;
+  }
+
+  // Screen pixels the camera was dragged since the last call.
+  takePan() {
+    const p = { x: this.pan.x, y: this.pan.y };
+    this.pan.x = this.pan.y = 0;
+    return p;
   }
 
   // Combined stick + keyboard direction in world space (x right, z down-screen).

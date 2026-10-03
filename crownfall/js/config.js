@@ -7,13 +7,15 @@ export const FINAL_WAVE = 15;
 
 export const HERO = {
   hp: 100,
-  speed: 7,
+  speed: 14,
   damage: 12,
   interval: 0.7,
   range: 9,
-  carry: 60,
+  carry: 250,
   magnet: 2.6,
-  regen: 4,           // hp/s once out of combat
+  regen: 4,           // hp/s between waves, once out of combat
+  castleHeal: 22,     // hp/s at the castle during a wave (the only place he heals then)
+  healRadius: 3.2,    // how close to the castle walls counts as "inside"
   regenDelay: 3,
   respawn: 5,
   radius: 0.8,
@@ -41,7 +43,7 @@ export const HERO_UPGRADES = {
   // Stable
   speed: {
     at: 'stable', icon: '🐎', name: 'Horse speed', unit: 'm/s',
-    values: [7, 8, 9, 10, 11, 12],
+    values: [14, 15.5, 17, 18.5, 20, 22],
     costs: [{ gold: 30 }, { gold: 60, wood: 15 }, { gold: 110, wood: 30 }, { gold: 180, stone: 40 }, { gold: 260, stone: 70 }],
   },
   hp: {
@@ -51,7 +53,7 @@ export const HERO_UPGRADES = {
   },
   carry: {
     at: 'stable', icon: '🎒', name: 'Saddlebags', unit: 'coins',
-    values: [60, 120, 200, 320, 500, 800],
+    values: [250, 400, 600, 900, 1300, 2000],
     costs: [{ gold: 40 }, { gold: 90, wood: 20 }, { gold: 160, wood: 40 }, { gold: 250, stone: 50 }, { gold: 400, stone: 90 }],
   },
   magnet: {
@@ -128,11 +130,16 @@ export const BUILDINGS = {
     desc: 'Upgrade the king’s bow and unlock new weapons.',
     levels: [{ cost: { gold: 60, wood: 30 } }],
   },
+  pass: {
+    name: 'Mountain Pass', icon: '⛰️', size: 5,
+    desc: 'Clear the rockfall to open the mountains: gold to mine and stone to cut.',
+    levels: [{ cost: { gold: 60 } }],
+  },
   goldmine: {
-    name: 'Gold Mine', icon: '⛏️', size: 5,
+    name: 'Gold Mine', icon: '⛏️', size: 5, needs: 'pass',
     desc: 'Miners dig coins into a pile. Ride by to scoop them up.',
     levels: [
-      { workers: 2, every: 2.4, pile: 80, cost: { gold: 10 } },
+      { workers: 2, every: 2.4, pile: 80, cost: { gold: 40 } },
       { workers: 3, every: 2.0, pile: 150, cost: { gold: 60, wood: 25 } },
       { workers: 4, every: 1.6, pile: 260, cost: { gold: 140, stone: 50 } },
     ],
@@ -152,7 +159,7 @@ export const BUILDINGS = {
     ],
   },
   quarry: {
-    name: 'Quarry', icon: '🪨', size: 5, castle: 2,
+    name: 'Quarry', icon: '🪨', size: 5, castle: 2, needs: 'pass',
     desc: 'Masons cut stone and cart it to the castle.',
     levels: [
       { workers: 2, work: 6, carry: 3, cost: { gold: 50, wood: 30 } },
@@ -211,10 +218,10 @@ export const ARMOR_UPGRADE = {
 export const VILLAGER = { speed: 3.2, growthEvery: 22, startPop: 3 };
 
 export const ENEMIES = {
-  grunt: { name: 'Grunt', hp: 30, dmg: 5, interval: 1, range: 1.3, speed: 2.3, aggro: 5, coins: 2, radius: 0.5 },
-  brute: { name: 'Brute', hp: 170, dmg: 18, interval: 1.4, range: 1.7, speed: 1.45, aggro: 4.5, coins: 6, radius: 0.85, armor: 3, scale: 1.55 },
-  archer: { name: 'Bowman', hp: 24, dmg: 6, interval: 1.5, range: 9, speed: 2.1, aggro: 9, coins: 3, radius: 0.5, ranged: true },
-  raider: { name: 'Outrider', hp: 42, dmg: 7, interval: 0.8, range: 1.4, speed: 4.6, aggro: 0, coins: 3, radius: 0.55 },
+  grunt: { name: 'Grunt', hp: 30, dmg: 5, interval: 1, range: 1.3, speed: 2.3, aggro: 5, coins: 3, radius: 0.5 },
+  brute: { name: 'Brute', hp: 170, dmg: 18, interval: 1.4, range: 1.7, speed: 1.45, aggro: 4.5, coins: 8, radius: 0.85, armor: 3, scale: 1.55 },
+  archer: { name: 'Bowman', hp: 24, dmg: 6, interval: 1.5, range: 9, speed: 2.1, aggro: 9, coins: 4, radius: 0.5, ranged: true },
+  raider: { name: 'Outrider', hp: 42, dmg: 7, interval: 0.8, range: 1.4, speed: 4.6, aggro: 0, coins: 4, radius: 0.55 },
   boss: { name: 'Warlord', hp: 1100, dmg: 34, interval: 1.7, range: 2.6, speed: 1.25, aggro: 6, coins: 60, radius: 1.5, armor: 2, scale: 2.8, slam: 3.2 },
 };
 
@@ -252,6 +259,6 @@ export function waveSpec(n, lanesOpen) {
     total,
     lanes: lanesOpen,
     spawnGap: Math.max(0.35, 1.1 - n * 0.05),
-    bonus: 15 + n * 6,
+    bonus: 20 + n * 8,
   };
 }

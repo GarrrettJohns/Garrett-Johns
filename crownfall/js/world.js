@@ -42,16 +42,11 @@ const costText = (c) => c || {};
 const OBJECTIVES = [
   {
     text: 'Ride over the coins to collect them',
-    done: (w) => w.hero.coins >= 10 || w.built('goldmine'),
+    done: (w) => w.hero.coins >= 25 || w.count('tower') >= 2,
     at: (w) => w.nearestCoin(),
   },
   {
-    text: 'Stand on the pad to build the Gold Mine',
-    done: (w) => w.built('goldmine'),
-    at: (w) => w.b.goldmine,
-  },
-  {
-    text: 'Build a second tower by the south road',
+    text: 'Stand on the pad to build a second tower',
     done: (w) => w.count('tower') >= 2,
     at: (w) => w.b['tower-S2'],
   },
@@ -61,7 +56,7 @@ const OBJECTIVES = [
     at: () => null,
   },
   {
-    text: 'Defend the castle! Fight alongside your towers',
+    text: 'Defend the castle! Hurt? Ride back to the castle to heal',
     done: (w) => w.wave >= 1,
     at: () => null,
   },
@@ -81,7 +76,17 @@ const OBJECTIVES = [
     at: (w) => w.b['lumber-1'],
   },
   {
-    text: 'Ride up to the Castle and upgrade it',
+    text: 'Clear the Mountain Pass to reach the gold',
+    done: (w) => w.built('pass'),
+    at: (w) => w.b.pass,
+  },
+  {
+    text: 'Build a Gold Mine in the mountains',
+    done: (w) => w.built('goldmine'),
+    at: (w) => w.b.goldmine,
+  },
+  {
+    text: 'Tap the Castle and upgrade it',
     done: (w) => w.b.castle.level >= 1,
     at: (w) => ({ x: 0, z: CASTLE_R + 1 }),
   },
@@ -91,12 +96,12 @@ const OBJECTIVES = [
     at: (w) => w.siteOf('barracks'),
   },
   {
-    text: 'Train an Archer at the Barracks',
+    text: 'Tap the Barracks and train an Archer',
     done: (w) => w.armyCount('archer') >= 1,
     at: (w) => w.firstOf('barracks'),
   },
   {
-    text: 'Build a Quarry to mine stone',
+    text: 'Build a Quarry to cut stone',
     done: (w) => w.count('quarry') >= 1,
     at: (w) => w.b['quarry-1'],
   },
@@ -106,7 +111,7 @@ const OBJECTIVES = [
     at: (w) => w.siteOf('stable') || w.siteOf('range'),
   },
   {
-    text: 'Expand the walls from the Castle',
+    text: 'Tap the Castle to expand the walls',
     done: (w) => w.walls.level >= 1,
     at: (w) => ({ x: 0, z: CASTLE_R + 1 }),
   },
@@ -379,29 +384,32 @@ export class World {
   }
 
   // Pay up to `amount` coins into an item. Returns coins paid.
-  fund(key, amount = Infinity, quiet = false) {
+  // Everything the king is short of, gold included.
+  shortfall(cost) {
+    const m = [];
+    if ((cost.gold || 0) > this.hero.coins) m.push(`${cost.gold - this.hero.coins} more gold`);
+    return m.concat(this.missing(cost));
+  }
+
+  canAfford(cost) { return this.shortfall(cost).length === 0; }
+
+  // Buy an item outright. Nothing is spent unless everything is in hand.
+  // Returns the gold paid (0 if it couldn't be bought).
+  fund(key, quiet = false) {
     const it = this.item(key);
     if (!it || it.maxed || it.locked || it.owned) return 0;
+    const short = this.shortfall(it.cost);
+    if (short.length) {
+      if (!quiet) this.emit('need', { text: `Need ${short.join(' and ')}` });
+      return 0;
+    }
     const gold = it.cost.gold || 0;
-    const paid = this.funds[key] || 0;
-    const pay = Math.max(0, Math.min(amount, gold - paid, this.hero.coins));
-    if (pay > 0) {
-      this.hero.coins -= pay;
-      this.funds[key] = paid + pay;
-    }
-    if ((this.funds[key] || 0) >= gold) {
-      const miss = this.missing(it.cost);
-      if (miss.length) {
-        if (!quiet) this.emit('need', { text: `Need ${miss.join(' and ')}` });
-        return pay;
-      }
-      this.res.wood -= it.cost.wood || 0;
-      this.res.stone -= it.cost.stone || 0;
-      delete this.funds[key];
-      it.apply();
-      this.emit('bought', { key, title: it.title });
-    }
-    return pay;
+    this.hero.coins -= gold;
+    this.res.wood -= it.cost.wood || 0;
+    this.res.stone -= it.cost.stone || 0;
+    it.apply();
+    this.emit('bought', { key, title: it.title, gold });
+    return gold || 1;
   }
 
   equip(w) {
@@ -1101,7 +1109,14 @@ export class World {
       }
       return;
     }
-    if (this.t - h.lastHurt > HERO.regenDelay) h.hp = Math.min(this.heroMaxHp, h.hp + HERO.regen * dt);
+    // In a wave the king only heals at the castle; between waves, anywhere.
+    h.healing = false;
+    if (this.phase === 'wave') {
+      if (this.atCastle() && h.hp < this.heroMaxHp) {
+        h.hp = Math.min(this.heroMaxHp, h.hp + HERO.castleHeal * dt);
+        h.healing = true;
+      }
+    } else if (this.t - h.lastHurt > HERO.regenDelay) h.hp = Math.min(this.heroMaxHp, h.hp + HERO.regen * dt);
 
     // Movement.
     const sp = this.heroStat('speed');
@@ -1143,7 +1158,7 @@ export class World {
     h.x = nx; h.z = nz;
     const v = hyp(h.vx, h.vz);
     h.moving = v > 0.6;
-    if (h.moving) { h.yaw = turn(h.yaw, Math.atan2(h.vx, h.vz), dt * 12); h.anim += dt * v * 1.6; }
+    if (h.moving) { h.yaw = turn(h.yaw, Math.atan2(h.vx, h.vz), dt * 12); h.anim += dt * (4 + v * 0.75); }
 
     // Shooting.
     h.atkCd -= dt;
@@ -1178,7 +1193,7 @@ export class World {
       if (d < mag) c.fly = true;
       else if (d > mag + 3) c.fly = false;   // outran it: let it drop
       if (c.fly) {
-        const s = Math.min(d, Math.max(10, 14 + (mag - d) * 6) * dt);
+        const s = Math.min(d, Math.max(20, 24 + (mag - d) * 6) * dt);
         c.x += ((h.x - c.x) / (d || 1)) * s;
         c.z += ((h.z - c.z) / (d || 1)) * s;
         if (d < 0.7) {
@@ -1202,7 +1217,7 @@ export class World {
       }
     }
 
-    // Standing on a site pays into it, faster the longer you stand.
+    // Standing on a pad buys it, if the king has everything it costs.
     let site = null;
     for (const b of Object.values(this.b)) {
       if (b.state !== 'site' || !this.padVisible(b)) continue;
@@ -1210,21 +1225,30 @@ export class World {
       if (rectDist(h.x, h.z, b) <= (b.type === 'bridge' ? 0.8 : 0.3)) { site = b; break; }
     }
     if (site && site.id === h.fundId) h.fundT += dt;
-    else { h.fundT = 0; h.fundAcc = 0; h.fundId = site ? site.id : null; h.needShown = false; }
-    if (site && h.fundT > 0.25) {
+    else { h.fundT = 0; h.fundId = site ? site.id : null; h.needShown = false; }
+    if (site && h.fundT > 0.3 && !h.needShown) {
       const key = `build:${site.id}`;
       const it = this.item(key);
-      if (it.locked) {
-        if (!h.needShown) { h.needShown = true; this.emit('need', { text: `Needs ${it.locked}` }); }
-      } else {
-        h.fundAcc += Math.min(80, 8 + h.fundT * 30) * dt;
-        const n = Math.floor(h.fundAcc);
-        h.fundAcc -= n;
-        const paid = this.fund(key, n, h.needShown);
-        if (paid) this.emit('spend', { n: paid, x: site.x, z: site.z });
-        if (site.state === 'site' && (this.funds[key] || 0) >= (it.cost.gold || 0)) h.needShown = true;
+      h.needShown = true;  // one attempt per visit
+      if (it.locked) this.emit('need', { text: `Needs ${it.locked}` });
+      else {
+        const paid = this.fund(key);
+        if (paid) this.emit('spend', { n: it.cost.gold || 0, x: site.x, z: site.z });
       }
     }
+  }
+
+  atCastle() { return hyp(this.hero.x, this.hero.z) < CASTLE_R + HERO.healRadius; }
+
+  // Which built building is at this ground point? Used for tapping buildings.
+  buildingAt(x, z, pad = 0.6) {
+    let best = null, bd = Infinity;
+    for (const b of Object.values(this.b)) {
+      if (b.state !== 'built' || b.type === 'bridge' || b.type === 'pass') continue;
+      const d = b.type === 'castle' ? Math.max(0, hyp(x - b.x, z - b.z) - CASTLE_R) : rectDist(x, z, b);
+      if (d <= pad && d < bd) { bd = d; best = b; }
+    }
+    return best;
   }
 
   // Which built building is the king standing beside (for its menu)?
@@ -1360,7 +1384,7 @@ export class World {
     this.phase = 'build';
     this.wave = s.wave;
     this.res = { ...s.res };
-    this.funds = { ...s.funds };
+    this.funds = {};
     this.objective = s.objective;
     this.victoryShown = s.victoryShown;
     this.stats = { ...this.stats, ...s.stats };
@@ -1368,13 +1392,20 @@ export class World {
     this.armor = s.armor || 0;
     const h = this.hero;
     h.x = s.hero.x; h.z = s.hero.z;
-    h.coins = s.hero.coins;
     h.up = { ...h.up, ...s.hero.up };
+    // Older saves could hold part-paid upgrades; hand that gold back.
+    h.coins = s.hero.coins + Object.values(s.funds || {}).reduce((a, v) => a + v, 0);
     h.weapons = { ...s.hero.weapons };
     h.weapon = s.hero.weapon;
     h.hp = this.heroMaxHp;
     this.b = {};
-    for (const d of s.buildings) this.addBuilding({ ...d, born: 0 });
+    const fixed = Object.fromEntries(FIXED_PADS.map((p) => [p.id, p]));
+    for (const d of s.buildings) {
+      // Fixed pads always sit where the current map puts them.
+      const f = d.fixed && fixed[d.id];
+      if (d.fixed && !f) continue;
+      this.addBuilding({ ...d, ...(f ? { x: f.x, z: f.z } : {}), born: 0 });
+    }
     // Pads added in a later version of the map.
     for (const p of FIXED_PADS) if (!this.b[p.id]) this.addBuilding({ id: p.id, type: p.type, x: p.x, z: p.z, lane: p.lane, fixed: true, state: 'site', level: 0 });
     for (const d of s.buildings) {

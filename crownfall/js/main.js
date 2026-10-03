@@ -51,17 +51,12 @@ const ui = new UI({
   },
   onPlaceCancel: () => { audio.tap(); placing = null; },
   onFund: (key, bid) => {
-    const before = world.hero.coins;
+    // All or nothing: world.fund refuses (and says what's missing) unless the
+    // king has every coin, log and stone it costs.
     const it = world.item(key);
-    if (it && !it.locked && world.hero.coins === 0 && (world.funds[key] || 0) < (it.cost.gold || 0)) {
-      audio.deny();
-      ui.toast('No coins! Collect gold from enemies or the mine.', true);
-      return;
-    }
     const paid = world.fund(key);
     const b = world.b[bid];
-    if (paid && b) world.emit('spend', { n: paid, x: b.x, z: b.z });
-    if (!paid && before === world.hero.coins && !world.events.some((e) => e.type === 'bought')) audio.deny();
+    if (paid && b && it.cost.gold) world.emit('spend', { n: it.cost.gold, x: b.x, z: b.z });
     dirty = true;
   },
   onEquip: (w) => { world.equip(w); audio.buy(); dirty = true; },
@@ -163,6 +158,14 @@ for (const c of document.querySelectorAll('.js-sound')) {
 }
 audio.setEnabled(save.settings.sound);
 input.onFirstTouch = () => audio.unlock();
+// Tap a building to open its menu; tap open ground to close it.
+input.onTap = (x, y) => {
+  if (state !== 'play' || placing) return;
+  const b = renderer.pick(x, y, world);
+  if (b) { audio.tap(); ui.openMenu(b.id); }
+  else ui.closeMenu();
+};
+$('btn-recenter').addEventListener('click', () => { audio.tap(); renderer.recenter(); });
 window.addEventListener('pointerdown', () => audio.unlock(), { once: true });
 
 document.addEventListener('visibilitychange', () => {
@@ -304,6 +307,11 @@ function frame(now) {
 
   ui.update(world, dt, { placing });
   renderer.zoom = input.zoom;
+  const pan = input.takePan();
+  if (state === 'play') renderer.panBy(pan.x, pan.y);
+  // Placing a building needs the view on the king.
+  if (placing && renderer.free) renderer.recenter();
+  $('btn-recenter').hidden = !renderer.free || state !== 'play';
 
   // Point the trail at the objective, or at a tower's range while its menu is open.
   const obj = state === 'play' && !placing ? world.objectiveInfo() : null;

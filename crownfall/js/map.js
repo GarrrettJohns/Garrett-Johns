@@ -17,6 +17,10 @@ export const CASTLE_R = 4.6;       // castle footprint radius
 export const PATH_HALF = 1.7;      // half width of a dirt road
 export const GRID = 2;             // placement grid cell size
 
+// The rocky highland east of the castle. Its gold and stone stay sealed until
+// the king clears the rockfall at the pass.
+export const MOUNTAIN = { x: 29, z: -16, r: 9.5 };
+
 // Enemy lanes, from the map edge in to the castle. `opens` is the first wave
 // that uses the lane.
 const LANE_DEFS = [
@@ -161,13 +165,14 @@ function towerPads() {
 
 // Every fixed pad. `size` is the footprint in metres.
 export const FIXED_PADS = [
-  { id: 'goldmine', type: 'goldmine', x: -15, z: 15 },
   { id: 'bridge', type: 'bridge', x: BRIDGE.x, z: BRIDGE.z },
+  { id: 'pass', type: 'pass', x: 22, z: -11 },
+  { id: 'goldmine', type: 'goldmine', x: 31, z: -22 },
   { id: 'lumber-1', type: 'lumber', x: -14, z: -38 },
   { id: 'lumber-2', type: 'lumber', x: 13, z: -38 },
   { id: 'lumber-3', type: 'lumber', x: 27, z: -43 },
-  { id: 'quarry-1', type: 'quarry', x: 21, z: -15 },
-  { id: 'quarry-2', type: 'quarry', x: 30, z: -18 },
+  { id: 'quarry-1', type: 'quarry', x: 23, z: -19 },
+  { id: 'quarry-2', type: 'quarry', x: 37, z: -15 },
   ...towerPads(),
 ];
 
@@ -176,7 +181,7 @@ export const START = {
   house: { x: -6, z: 6 },
   hero: { x: 3, z: 9 },
   tower: 'tower-S1',
-  coins: { x: 4, z: 13, n: 14 },
+  coins: { x: 4, z: 13, n: 30 },
 };
 
 // Scenery: trees in the forest and scattered across the grassland, rocks by
@@ -212,6 +217,7 @@ export function scenery() {
     const z = RIVER_Z + RIVER_HALF + 2 + rnd() * (62 - RIVER_Z);
     const r = Math.hypot(x, z);
     if (r < WALL_RADII[2] + 4) continue;
+    if (Math.hypot(x - MOUNTAIN.x, z - MOUNTAIN.z) < MOUNTAIN.r + 3) continue;
     if (distToLanes(x, z) < PATH_HALF + 2.5) continue;
     if (!clearOf(x, z, 5)) continue;
     if (trees.some((t) => Math.hypot(t.x - x, t.z - z) < 4)) continue;
@@ -242,6 +248,30 @@ export function scenery() {
 
   // Mountains ringing the map, like the cliffs in the reference shots.
   const cliffs = [];
+
+  // Crags around the highland, leaving the side that faces the pass open.
+  const pass = pads.find((p) => p.id === 'pass');
+  const open = Math.atan2(pass.z - MOUNTAIN.z, pass.x - MOUNTAIN.x);
+  for (let i = 0; i < 26; i++) {
+    const a = (i / 26) * Math.PI * 2;
+    let da = Math.abs(a - open);
+    if (da > Math.PI) da = Math.PI * 2 - da;
+    if (da < 0.9) continue;
+    const d = MOUNTAIN.r + 1.5 + rnd() * 1.5;
+    const x = MOUNTAIN.x + Math.cos(a) * d, z = MOUNTAIN.z + Math.sin(a) * d;
+    if (distToLanes(x, z) < PATH_HALF + 2.5) continue;
+    if (z < RIVER_Z + RIVER_HALF + 1.2) continue;
+    if (!clearOf(x, z, 4)) continue;
+    cliffs.push({ x, z, w: 2.6 + rnd() * 2, h: 2.2 + rnd() * 3.2, d: 2.6 + rnd() * 2, r: rnd() * 6.28 });
+  }
+  // Boulders scattered across the highland itself.
+  for (let i = 0; i < 40; i++) {
+    const a = rnd() * Math.PI * 2, d = rnd() * MOUNTAIN.r;
+    const x = MOUNTAIN.x + Math.cos(a) * d, z = MOUNTAIN.z + Math.sin(a) * d;
+    if (!clearOf(x, z, 4.2)) continue;
+    if (distToLanes(x, z) < PATH_HALF + 1.5) continue;
+    rocks.push({ x, z, s: 0.35 + rnd() * 0.6, r: rnd() * 6.28 });
+  }
   for (let i = 0; i < 120; i++) {
     const t = i / 120;
     const side = Math.floor(t * 4);

@@ -706,3 +706,27 @@ export function chevronGeo() {
   g.rotateX(-Math.PI / 2);
   return g;
 }
+
+// The rockfall blocking the mountain pass, shown until it is cleared.
+export function rockfallGeo() {
+  const b = new Builder();
+  const pts = [[-1.6, 0.4, 1.3], [0.2, -0.6, 1.6], [1.7, 0.3, 1.1], [-0.6, 1.4, 1.0], [0.9, 1.6, 0.9], [-1.9, -1.2, 0.8], [1.8, -1.4, 0.9], [0, 0.4, 1.5]];
+  pts.forEach(([x, z, s], i) => b.add(new THREE.DodecahedronGeometry(s, 0), i % 2 ? C.rock : C.rockDark, { x, y: s * 0.55, z, sy: 0.8, ry: i }));
+  b.box(0.12, 1.4, 0.12, C.woodDark, { x: 2.6, z: 2.4 });
+  b.box(1.0, 0.5, 0.08, C.woodLight, { x: 2.6, y: 1.0, z: 2.45 });
+  return b.build();
+}
+
+// A cleared pass: gravel, a signpost and a timber arch.
+export function passGeo() {
+  const b = new Builder();
+  b.box(4.2, 0.08, 4.2, 0xb9b2a4);
+  for (const x of [-1.9, 1.9]) b.cyl(0.22, 0.26, 3.2, 6, C.wood, { x });
+  b.box(4.4, 0.35, 0.4, C.woodDark, { y: 3.0 });
+  b.box(1.8, 0.7, 0.12, C.woodLight, { y: 3.3, z: 0.22 });
+  b.cone(0.28, 0.4, 4, C.stoneDark, { x: -0.4, y: 3.42, z: 0.3 });
+  b.cone(0.36, 0.5, 4, C.stone, { x: 0.25, y: 3.42, z: 0.3 });
+  b.add(new THREE.DodecahedronGeometry(0.7, 0), C.rock, { x: -2.6, y: 0.4, z: 1.4 });
+  b.add(new THREE.DodecahedronGeometry(0.5, 0), C.rockDark, { x: 2.7, y: 0.3, z: -1.2 });
+  return b.build();
+}
