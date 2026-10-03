@@ -86,10 +86,10 @@ export const BUILDINGS = {
     name: 'Castle', icon: '🏰', size: 9,
     desc: 'The heart of the kingdom. If it falls, the kingdom falls.',
     levels: [
-      { hp: 900, army: 4 },
-      { hp: 1250, army: 6, cost: { gold: 120, wood: 40 } },
-      { hp: 1700, army: 8, cost: { gold: 280, wood: 90, stone: 60 } },
-      { hp: 2200, army: 10, cost: { gold: 520, wood: 160, stone: 150 } },
+      { hp: 900, army: 0 },
+      { hp: 1250, army: 2, cost: { gold: 120, wood: 40 } },
+      { hp: 1700, army: 4, cost: { gold: 280, wood: 90, stone: 60 } },
+      { hp: 2200, army: 6, cost: { gold: 520, wood: 160, stone: 150 } },
     ],
   },
   house: {
@@ -111,10 +111,10 @@ export const BUILDINGS = {
     ],
   },
   barracks: {
-    name: 'Barracks', icon: '⚔️', size: 6, place: true, castle: 2,
-    desc: 'Turn villagers into soldiers.',
+    name: 'Barracks', icon: '⚔️', size: 6, place: true,
+    desc: 'Where the army is raised: villagers enlist here as knights, archers and raiders.',
     levels: [
-      { army: 6, cost: { gold: 60, wood: 30 } },
+      { army: 6, cost: { gold: 60 } },
       { army: 10, cost: { gold: 120, wood: 50 } },
       { army: 16, cost: { gold: 220, stone: 80 } },
     ],

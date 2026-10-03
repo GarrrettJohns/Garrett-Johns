@@ -364,6 +364,14 @@ body:not([data-state="play"]) #btn-recenter { visibility: hidden; }
   font-family: var(--font); font-weight: 800; font-size: 14px;
   border-radius: 99px; padding: 8px 14px; border: 2px solid var(--panel-line); background: #fff; color: var(--ink-dark);
 }
+.btn.dev { background: #2a2f3a; color: #ffd25a; font-size: 15px; padding: 10px 14px; border: 2px solid #444b5a; }
+.dev-card { text-align: left; }
+.dev-card h2, .dev-card .sub { text-align: center; }
+.dev-group { display: flex; flex-direction: column; gap: 6px; }
+.dev-group > b { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.dev-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.dev-row .chip { font-size: 13px; padding: 7px 11px; }
+.dev-row .chip.on { background: #ffd25a; border-color: #b8700a; }
 .tip { font-size: 13px; color: var(--muted); margin: 6px 0 0; }
 .howto { list-style: none; padding: 0; margin: 0 0 6px; text-align: left; display: flex; flex-direction: column; gap: 8px; }
 .howto li { display: flex; gap: 10px; background: #fff; border-radius: 14px; padding: 10px; border: 2px solid var(--panel-line); }

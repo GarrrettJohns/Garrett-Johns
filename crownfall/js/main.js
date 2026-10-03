@@ -6,7 +6,8 @@ import { Input } from './input.js';
 import { UI } from './ui.js';
 import { audio } from './audio.js';
 import { save } from './save.js';
-import { BUILDINGS, levelInfo } from './config.js';
+import { BUILDINGS, HERO_UPGRADES, levelInfo } from './config.js';
+import { CASTLE_R } from './map.js';
 
 const $ = (id) => document.getElementById(id);
 const stage = $('stage');
@@ -154,6 +155,113 @@ $('btn-howto').addEventListener('click', () => { audio.unlock(); audio.tap(); ho
 $('btn-howto2').addEventListener('click', () => { audio.tap(); howtoBack = 'screen-pause'; show('screen-howto'); });
 $('btn-howto-back').addEventListener('click', () => { audio.tap(); show(howtoBack); });
 $('btn-resume').addEventListener('click', () => { audio.tap(); play(); });
+
+// ------------------------------------------------------------ dev tools
+// Jump between levels and battles for testing. Reached from the pause menu.
+const MAX_LEVELS = 4;
+
+// What a king who has fought his way to level n might carry.
+function devCarry(n) {
+  const up = {};
+  for (const [k, u] of Object.entries(HERO_UPGRADES)) up[k] = Math.min(u.values.length - 1, (n - 1) * 2);
+  const weapons = { bow: true };
+  if (n >= 2) weapons.crossbow = true;
+  if (n >= 3) { weapons.fire = true; weapons.multi = true; }
+  const army = [];
+  for (let i = 0; i < (n - 1) * 3; i++) army.push(i % 3 === 2 ? 'knight' : 'archer');
+  return { up, weapons, weapon: n >= 3 ? 'multi' : n >= 2 ? 'crossbow' : 'bow', armor: Math.min(3, n - 1), army, coins: 250 };
+}
+
+// Stop any battle in progress and return to the build phase.
+function devCalm() {
+  world.enemies = [];
+  world.spawnQueue = [];
+  world.projectiles = [];
+  world.siege = false;
+  world.sgGate = world.sgKeep = null;
+  if (world.phase !== 'won') world.phase = 'build';
+  world.castleHp = world.castleMax;
+  for (const g of Object.values(world.gates)) g.hp = g.max;
+  if (!world.hero.alive) { world.hero.alive = true; world.hero.hp = world.heroMaxHp; world.hero.x = 0; world.hero.z = 8; }
+  lostAt = 0;
+}
+
+const DEV = {
+  level(n) {
+    world = new World(null, { level: n, carry: devCarry(n) });
+    renderer.reset();
+    return `Level ${n}: ${world.levelInfo.name}`;
+  },
+  wave(n) {
+    devCalm();
+    world.wave = n - 1;
+    world.hero.coins = Math.max(world.hero.coins, 200);
+    return `Ready for wave ${n} — tap Start Wave`;
+  },
+  siege() {
+    devCalm();
+    world.wave = Math.max(world.wave, 15);
+    DEV.outposts();
+    return 'Siege Camp built — tap Lay Siege!';
+  },
+  outposts() {
+    world.wave = Math.max(world.wave, 14);
+    for (const id of ['outpost-1', 'outpost-2', 'outpost-3']) if (!world.built(id)) world.finishBuilding(world.b[id]);
+    return 'All outposts claimed';
+  },
+  gold() { world.hero.coins += 500; return '+500 gold'; },
+  mats() { world.res.wood += 300; world.res.stone += 300; return '+300 wood and stone'; },
+  king() {
+    const h = world.hero;
+    for (const [k, u] of Object.entries(HERO_UPGRADES)) h.up[k] = u.values.length - 1;
+    h.weapons = { bow: true, crossbow: true, fire: true, multi: true };
+    h.hp = world.heroMaxHp;
+    return 'The king is maxed out';
+  },
+  army() {
+    for (let i = 0; i < 6; i++) world.addSoldier(['knight', 'archer', 'raider'][i % 3], (i % 3) * 1.5 - 1.5, CASTLE_R + 2 + Math.floor(i / 3));
+    return '+6 soldiers';
+  },
+  castle() {
+    const c = world.b.castle;
+    c.level = Math.max(c.level, 2);
+    world.castleHp = world.castleMax;
+    world.walls.level = Math.max(world.walls.level, 2);
+    world.rebuildGates();
+    return 'Castle Lv 3, walls fully expanded';
+  },
+  win() { devCalm(); world.winLevel(); return null; },
+  lose() {
+    if (world.phase !== 'wave') return 'Start a wave first';
+    world.hurtHero(1e9);
+    return null;
+  },
+};
+
+function devRun(cmd) {
+  const [name, arg] = cmd.split(':');
+  const msg = DEV[name](arg !== undefined ? Number(arg) : undefined);
+  placing = null;
+  ui.closeMenu();
+  ui.closeBuild();
+  play();
+  if (world.phase === 'build') persist();
+  if (msg) ui.banner('🛠 Dev', msg, 2.2);
+}
+
+$('dev-levels').innerHTML = Array.from({ length: MAX_LEVELS }, (_, i) => `<button class="chip" data-dev="level:${i + 1}">${i + 1} · ${levelInfo(i + 1).name}</button>`).join('');
+$('btn-dev').addEventListener('click', () => {
+  audio.tap();
+  for (const b of document.querySelectorAll('#dev-levels .chip')) b.classList.toggle('on', b.dataset.dev === `level:${world.level}`);
+  show('screen-dev');
+});
+$('btn-dev-back').addEventListener('click', () => { audio.tap(); show('screen-pause'); });
+$('screen-dev').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-dev]');
+  if (!b) return;
+  audio.tap();
+  devRun(b.dataset.dev);
+});
 $('btn-quit').addEventListener('click', () => { audio.tap(); toTitle(); });
 $('btn-retry').addEventListener('click', () => {
   audio.tap();
@@ -268,6 +376,7 @@ function handle(ev, events = []) {
     case 'waveClear':
       audio.waveClear();
       ui.banner(`Wave ${ev.n} cleared!`, `+${ev.bonus} gold at the castle`, 2.4);
+      if (ev.n >= 2 && !world.count('barracks')) setTimeout(() => ui.toast('Build Barracks (🔨) to raise an army!'), 2600);
       // Save once the bonus is on the ground.
       setTimeout(persist, 0);
       break;

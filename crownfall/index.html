@@ -120,7 +120,8 @@
         <li><b>🎥 Look</b><span>Drag with two fingers to look around, pinch to zoom. Tap 👑 to snap back to the king.</span></li>
         <li><b>🪙 Gold</b><span>Fallen enemies drop coins. Ride over them and they stack up on your horse. Clear the mountain pass to dig for more.</span></li>
         <li><b>🏗️ Pads</b><span>A pad turns green when you can afford it. Stand on it to build.</span></li>
-        <li><b>👑 The castle</b><span>Tap the castle to upgrade the king (bow, horse, weapons), train troops and upgrade the castle and walls. You need the full cost to buy anything.</span></li>
+        <li><b>👑 The castle</b><span>Tap the castle to upgrade the king (bow, horse, weapons) and the castle and walls. You need the full cost to buy anything.</span></li>
+        <li><b>⚔️ The army</b><span>Build Barracks and tap them to train knights, archers and raiders.</span></li>
         <li><b>🔨 Placing</b><span>Between waves tap Build, pick a building, then drag it on the grid and tap Build here.</span></li>
         <li><b>❤️ Healing</b><span>During a wave the king only heals at the castle — ride back inside the green square. If he falls during a wave, the wave is lost and you fight it again.</span></li>
         <li><b>🗼 Defences</b><span>Tap a tower to upgrade it: first with gold, then wood, then stone. Gates upgrade the same way from the castle.</span></li>
@@ -135,11 +136,50 @@
 
   <section id="screen-pause" class="screen">
     <div class="card">
+      <button id="btn-dev" class="btn dev" type="button">🛠 Developer tools</button>
       <h2>Paused</h2>
       <button id="btn-resume" class="btn primary" type="button">Resume</button>
       <div class="toggles"><button class="chip js-sound" type="button"></button></div>
       <button id="btn-howto2" class="btn ghost" type="button">How to play</button>
       <button id="btn-quit" class="btn ghost" type="button">Main menu</button>
+    </div>
+  </section>
+
+  <section id="screen-dev" class="screen">
+    <div class="card wide dev-card">
+      <h2>🛠 Developer tools</h2>
+      <p class="sub">Jump around for testing. The king gets upgrades and troops to match the level.</p>
+      <div class="dev-group"><b>Jump to level</b>
+        <div class="dev-row" id="dev-levels"></div>
+      </div>
+      <div class="dev-group"><b>Jump to a battle in this level</b>
+        <div class="dev-row">
+          <button class="chip" data-dev="wave:1">Wave 1</button>
+          <button class="chip" data-dev="wave:4">Wave 4 · East</button>
+          <button class="chip" data-dev="wave:5">Wave 5 · Treant</button>
+          <button class="chip" data-dev="wave:8">Wave 8 · West</button>
+          <button class="chip" data-dev="wave:10">Wave 10 · Boss</button>
+          <button class="chip" data-dev="wave:11">Wave 11 · Forest</button>
+          <button class="chip" data-dev="siege">Siege ready</button>
+        </div>
+      </div>
+      <div class="dev-group"><b>Give</b>
+        <div class="dev-row">
+          <button class="chip" data-dev="gold">+500 gold</button>
+          <button class="chip" data-dev="mats">+300 wood &amp; stone</button>
+          <button class="chip" data-dev="king">Max out the king</button>
+          <button class="chip" data-dev="army">+6 soldiers</button>
+          <button class="chip" data-dev="outposts">Claim all outposts</button>
+          <button class="chip" data-dev="castle">Castle Lv 3 + walls</button>
+        </div>
+      </div>
+      <div class="dev-group"><b>Finish</b>
+        <div class="dev-row">
+          <button class="chip" data-dev="win">Win this level</button>
+          <button class="chip" data-dev="lose">Lose this wave</button>
+        </div>
+      </div>
+      <button id="btn-dev-back" class="btn ghost" type="button">Back</button>
     </div>
   </section>
 

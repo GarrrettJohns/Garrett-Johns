@@ -17,9 +17,10 @@ It then launches full screen and works offline.
 - **Look:** drag with two fingers to move the camera on its own, and pinch to
   zoom. Tap 👑 to snap back to the king. On a desktop, right-drag pans.
 - **The castle:** tap it. Its **King** tab upgrades the bow, horse and weapons,
-  **Army** trains knights, archers and raiders, and **Castle** upgrades the
-  keep, walls and gates. Nothing is bought in parts: you need all the gold,
-  wood and stone first.
+  and **Castle** upgrades the keep, walls and gates. Nothing is bought in
+  parts: you need all the gold, wood and stone first.
+- **The army:** build Barracks (the game nudges you after wave 2) and tap it to
+  train knights, archers and raiders. Each barracks raises the army cap.
 - **Gold:** at first gold comes only from waves: kills drop coins and every
   cleared wave pays a bonus. Clearing the Mountain Pass (it needs wood) opens a
   highland with a gold mine and quarries. Wave 5's boss, the Elder Treant,
@@ -54,6 +55,18 @@ It then launches full screen and works offline.
 - **Levels:** the king's upgrades, weapons and army march on to the next
   land: the Greenwood, then the Sunscorch desert, then the Frostmarch. Each is
   tougher, and you build a new kingdom in each.
+
+## Developer tools
+
+Pause, then tap **🛠 Developer tools** at the top of the pause menu. From
+there you can:
+
+- Jump to any level, with a king upgraded to match.
+- Jump to a key battle: east front, Treant, west front, boss, forest front,
+  or the siege.
+- Hand out gold, wood and stone, max out the king, add soldiers, claim every
+  outpost, or upgrade the castle and walls.
+- Win the level or lose the current wave on the spot.
 
 ## Files
 

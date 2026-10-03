@@ -80,6 +80,16 @@ const OBJECTIVES = [
     at: (w) => w.siteOf('house'),
   },
   {
+    text: 'Raise an army: tap 🔨 Build and place Barracks',
+    done: (w) => w.count('barracks') >= 1,
+    at: (w) => w.siteOf('barracks'),
+  },
+  {
+    text: 'Tap the Barracks and train an Archer for your towers',
+    done: (w) => w.armyCount('archer') >= 1,
+    at: (w) => w.firstOf('barracks'),
+  },
+  {
     text: 'Build the bridge into the forest',
     done: (w) => w.built('bridge'),
     at: (w) => w.b.bridge,
@@ -102,11 +112,6 @@ const OBJECTIVES = [
   {
     text: 'Tap the Castle and upgrade it',
     done: (w) => w.b.castle.level >= 1,
-    at: (w) => ({ x: 0, z: CASTLE_R + 1 }),
-  },
-  {
-    text: 'Tap the Castle, open Army and train an Archer',
-    done: (w) => w.armyCount('archer') >= 1,
     at: (w) => ({ x: 0, z: CASTLE_R + 1 }),
   },
   {
@@ -426,7 +431,6 @@ export class World {
     if (t === 'castle') {
       tabs = [
         { tab: 'King', items: ['hero:damage', 'hero:rate', 'hero:range', 'weapon:bow', 'weapon:crossbow', 'weapon:fire', 'weapon:multi', 'hero:speed', 'hero:hp', 'hero:carry', 'hero:magnet'] },
-        { tab: 'Army', items: ['train:castle:knight', 'train:castle:archer', 'train:castle:raider', 'armor'] },
         { tab: 'Castle', items: ['up:castle', 'walls', 'gates'] },
       ];
     } else if (t === 'barracks') {
