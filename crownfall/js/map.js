@@ -64,12 +64,42 @@ export const IRON = { x: spread(40), z: spread(64), r: 12 };
 // reveal the first time he comes within `sight` metres. Working names.
 export const LANDMARKS = [
   { id: 'forest', name: 'The Greenwood', sub: 'Pines and timber beyond the river', x: -4, z: spread(-29) - 14, sight: 22 },
-  { id: 'fort', name: 'The Mountain Fort', sub: 'It holds the only way into the eastern mountains', x: spread(46), z: -8, sight: 52 },
+  // Seen close up, or revealed from the foothill overlook (slice.js). A
+  // landmark may also name a `view` point { x, z, r } it is seen from.
+  { id: 'fort', name: 'The Mountain Fort', sub: 'It holds the only way into the eastern mountains', x: spread(46), z: -8, sight: 16 },
   { id: 'riverford', name: 'Riverford', sub: 'The first camp on the road south', x: spread(1), z: spread(58), sight: 40 },
   { id: 'iron', name: 'The Iron Hills', sub: 'Rust-streaked rock, full of ore', x: spread(40), z: spread(64), sight: 34 },
   { id: 'stonehill', name: 'Stonehill', sub: 'Halfway to the enemy', x: spread(-12), z: spread(106), sight: 40 },
   { id: 'stronghold', name: 'The Enemy Stronghold', sub: 'The Warlord waits behind its walls', x: 0, z: spread(179), sight: 75 },
 ];
+// The Greenwood journey: authored places along the opening route (working
+// names). Each is a site with props; slice.js says what happens there.
+export const SITES = {
+  farmland: { x: -64, z: 30, r: 13, name: "King's Farmland" },
+  village: { x: -63, z: -30, r: 11, name: 'The Fallen Village' },
+  ruin: { x: -36, z: -70, r: 6, name: 'The Old Ruin' },
+  ridge: { x: 51, z: -37, r: 7, name: 'The East Ridge' },
+  overlook: { x: 54, z: -28, r: 4, name: 'The Foothill Overlook' },
+};
+// Props at each site, offsets from its centre. `r` > 0 makes it solid to the
+// king (a circle). The renderer builds the same list.
+const prop = (site, kind, dx, dz, r = 0, ry = 0) => ({ site, kind, x: SITES[site].x + dx, z: SITES[site].z + dz, r, ry });
+export const SITE_PROPS = [
+  prop('farmland', 'field', -6, -6, 0, 0), prop('farmland', 'field', 4, -6, 0, 0),
+  prop('farmland', 'field', -6, 5, 0, Math.PI / 2), prop('farmland', 'field', 4, 5, 0, 0),
+  prop('farmland', 'barn', 11, -1, 2.2, -Math.PI / 2), prop('farmland', 'hay', 9.5, 4, 0.8), prop('farmland', 'hay', 11, 5.5, 0.8),
+  prop('farmland', 'scarecrow', -6, 5), prop('farmland', 'cart', -12, 0, 1.0, 0.4),
+  prop('village', 'cottage', -5, -4, 2.2, 0.3), prop('village', 'cottage', 4, -5, 2.2, -0.2), prop('village', 'cottage', -1, 5, 2.2, Math.PI + 0.1),
+  prop('village', 'well', 1, 0, 0.9), prop('village', 'cart', 6, 3, 1.0, -0.6), prop('village', 'hay', -6, 3, 0.8),
+  prop('village', 'garden', -7.5, -0.5, 0, 0), prop('village', 'laundry', 3, 6.5, 0, 0.2),
+  prop('village', 'tent', 8, -1, 0, -0.4), prop('village', 'tent', -8.5, -8.5, 0, 0.7), prop('village', 'campfire', -2.5, 0.5),
+  prop('ruin', 'column', 3, 0, 0.6), prop('ruin', 'column', 0.9, 2.9, 0.6), prop('ruin', 'column', -2.4, 1.8, 0.6),
+  prop('ruin', 'column', -2.4, -1.8, 0.6), prop('ruin', 'arch', 0.9, -2.9, 0.9, 1.2), prop('ruin', 'chest', 0, 0),
+  prop('ridge', 'watchtower', 2.5, -2, 1.4), prop('ridge', 'tent', -3, -3, 0, 0.5), prop('ridge', 'tent', -2.5, 3, 0, -0.3), prop('ridge', 'campfire', 0, 0.5),
+  prop('overlook', 'cairn', 0, 0, 0.8),
+];
+const inSite = (x, z, pad) => Object.values(SITES).some((S) => Math.hypot(x - S.x, z - S.z) < S.r + pad);
+
 // Land around a claimed outpost where houses, farms and workshops can go.
 export const OUTPOST_ZONE = 14;
 // Enemy camps guarding the trails. Each is a list of enemy kinds.
@@ -424,5 +454,6 @@ export function scenery() {
   for (let z = sp(64); z <= sp(222); z += 4.6) wall(sp(60) + rnd() * 8, z);
   for (let x = sp(-68); x <= sp(68); x += 4.6) wall(x, sp(214) + rnd() * 8);
 
-  return { trees, rocks, cliffs };
+  // Clear the journey's sites.
+  return { trees: trees.filter((t) => !inSite(t.x, t.z, 3)), rocks: rocks.filter((r) => r.highland || r.iron || !inSite(r.x, r.z, 2)), cliffs };
 }

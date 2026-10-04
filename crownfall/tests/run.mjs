@@ -5,6 +5,8 @@
 import { World } from '../js/world.js';
 import { LANES, RIVER_Z, RIVER_HALF, RIVER_X1, FIXED_PADS, WALL_HALF, FORT, BRIDGE, LANDMARKS, inHighland, eastLimit } from '../js/map.js';
 import { groundH, slopeAt, footing, standH, setBridge, DECK_Y, TERRAIN } from '../js/terrain.js';
+import { ENCOUNTERS } from '../js/slice.js';
+import { SITES, SITE_PROPS } from '../js/map.js';
 import { initialCam, stepCam, cycleOverride, stickToWorld, CAM } from '../js/camera.js';
 
 let pass = 0, fail = 0;
@@ -145,12 +147,12 @@ test('a legacy save without the new fields still loads', () => {
 test('a landmark is discovered once, and remembered across a save', () => {
   const w = new World();
   const L = LANDMARKS.find((l) => l.id === 'fort');
-  w.hero.x = L.x - 30; w.hero.z = L.z;
+  w.hero.x = L.x - L.sight + 2; w.hero.z = L.z;
   let n = 0;
   for (let i = 0; i < 30; i++) { w.update(dt, { x: 0, z: 0 }); n += w.events.filter((e) => e.type === 'discovered' && e.id === 'fort').length; w.events.length = 0; }
   assert(n === 1, `discovered ${n} times`);
   const w2 = new World(JSON.parse(JSON.stringify(w.snapshot())));
-  w2.hero.x = L.x - 30; w2.hero.z = L.z;
+  w2.hero.x = L.x - L.sight + 2; w2.hero.z = L.z;
   for (let i = 0; i < 10; i++) { w2.update(dt, { x: 0, z: 0 }); assert(!w2.events.some((e) => e.type === 'discovered'), 'rediscovered after reload'); w2.events.length = 0; }
 });
 test('landmarks beyond the claimed road stay hidden', () => {
@@ -165,6 +167,128 @@ test('a malformed save is rejected rather than half-loaded', () => {
   let ok = false;
   try { const w = new World({ v: 1, hero: null, buildings: 'nope' }); ok = !!w.hero; } catch { ok = true; /* main.js safeLoad falls back to a new game */ }
   assert(ok, 'malformed save produced a world without a king');
+});
+
+console.log('the Greenwood journey');
+const step = (w, n = 1, input = { x: 0, z: 0 }) => { for (let i = 0; i < n; i++) { w.update(dt, input); } };
+const evs = (w, type) => { const n = w.events.filter((e) => e.type === type).length; w.events.length = 0; return n; };
+const guardsAt = (w, id) => w.enemies.filter((e) => e.guard && e.guard.camp === 'enc:' + id && e.hp > 0);
+const killAll = (w, id, n = Infinity) => { for (const e of guardsAt(w, id).slice(0, n)) { e.hp = 0; w.killEnemy(e); } step(w); };
+// Ride the king along waypoints with the stick, as a player would.
+function ride(w, pts, limit = 90) {
+  const h = w.hero;
+  for (const [x, z] of pts) {
+    let t = 0;
+    while (Math.hypot(x - h.x, z - h.z) > 2.2) {
+      const dx = x - h.x, dz = z - h.z, d = Math.hypot(dx, dz);
+      w.update(dt, { x: dx / d, z: dz / d });
+      w.events.length = 0;
+      t += dt;
+      assert(h.alive, `king fell on the way to ${x},${z}`);
+      if (!inRiver(h.x, h.z)) assert(slopeAt(h.x, h.z) <= TERRAIN.maxSlope + 0.05, `too steep at ${h.x.toFixed(1)},${h.z.toFixed(1)}`);
+      if (t > limit) throw new Error(`stuck at ${h.x.toFixed(1)},${h.z.toFixed(1)} on the way to ${x},${z}`);
+    }
+  }
+}
+
+test('the journey opens in order: farmland after wave 1, the village after wave 2, the ruin with the bridge', () => {
+  const w = new World();
+  step(w, 2);
+  assert(ENCOUNTERS.every((e) => w.enc[e.id] === 'locked'), `open before the first wave: ${JSON.stringify(w.enc)}`);
+  w.wave = 1; step(w, 2);
+  assert(w.enc.farmland === 'open' && w.enc.village === 'locked' && w.enc.ruin === 'locked', JSON.stringify(w.enc));
+  w.wave = 2; step(w, 2);
+  assert(w.enc.village === 'open' && guardsAt(w, 'village').length === ENCOUNTERS.find((e) => e.id === 'village').guards.length, 'village guards not posted');
+  w.finishBuilding(w.b.bridge); step(w, 2);
+  assert(w.enc.ruin === 'open', 'ruin did not open with the bridge');
+});
+test('camp guards never hold up a wave', () => {
+  const w = new World();
+  w.wave = 2; step(w, 2);
+  const before = w.enemiesLeft;
+  assert(before === 0, `guards counted as wave enemies: ${before}`);
+  w.startWave(); w.spawnQueue = []; w.enemies = w.enemies.filter((e) => e.guard); step(w, 2);
+  assert(w.phase === 'build' && w.wave === 3, `wave did not end with guards alive (${w.phase}, wave ${w.wave})`);
+});
+test('freeing the village pays once: villagers and coins, not again after a reload', () => {
+  const w = new World();
+  w.wave = 2; step(w, 2); w.events.length = 0;
+  const pop = w.villagers.length, coins = w.coins.length;
+  killAll(w, 'village');
+  assert(w.enc.village === 'done', w.enc.village);
+  assert(w.villagers.length === pop + 3, `villagers ${pop} -> ${w.villagers.length}`);
+  assert(w.coins.length > coins, 'no reward coins');
+  const w2 = new World(JSON.parse(JSON.stringify(w.snapshot())));
+  const pop2 = w2.villagers.length;
+  step(w2, 30);
+  assert(w2.enc.village === 'done' && guardsAt(w2, 'village').length === 0, 'village camp came back');
+  assert(w2.villagers.length === pop2, 'reward paid twice');
+});
+test('a half-cleared camp keeps its losses across a reload', () => {
+  const w = new World();
+  w.wave = 2; step(w, 2);
+  killAll(w, 'village', 2);
+  const left = guardsAt(w, 'village').length;
+  const w2 = new World(JSON.parse(JSON.stringify(w.snapshot())));
+  step(w2, 2);
+  assert(guardsAt(w2, 'village').length === left, `${left} left before, ${guardsAt(w2, 'village').length} after`);
+});
+test('a camp wiped out of the world without a fight comes back (no free reward)', () => {
+  const w = new World();
+  w.wave = 2; step(w, 2);
+  w.enemies = []; step(w, 2);
+  assert(w.enc.village === 'open' && guardsAt(w, 'village').length > 0, 'village finished without its guards being beaten');
+});
+test('the ruin opens the ridge raid: a scout rides in and the troops fall in behind the king', () => {
+  const w = new World();
+  w.finishBuilding(w.b.bridge);
+  for (const k of ['knight', 'archer']) w.addSoldier(k, 0, 8);
+  step(w, 2);
+  const R = SITES.ruin; w.hero.x = R.x; w.hero.z = R.z; step(w, 2);
+  assert(w.enc.ruin === 'done' && w.enc.ridge === 'open', JSON.stringify(w.enc));
+  const scout = w.allies.find((a) => a.scout);
+  assert(scout, 'no scout');
+  w.hero.x = 20; w.hero.z = -20;   // he finds the king wherever he is
+  let warned = 0;
+  for (let i = 0; i < 30 * 20 && !warned; i++) { w.update(dt, { x: 0, z: 0 }); warned += w.events.filter((e) => e.type === 'scout').length; w.events.length = 0; }
+  assert(warned === 1, 'the scout never reached the king');
+  assert(w.allies.filter((a) => !a.station).every((a) => a.follow), 'troops did not join');
+  assert(guardsAt(w, 'ridge').length > 0, 'no raiders on the ridge');
+});
+test('clearing the ridge opens the overlook, which reveals the Mountain Fort and ends the journey', () => {
+  const w = new World();
+  for (const E of ENCOUNTERS) if (E.id !== 'ridge' && E.id !== 'overlook') w.enc[E.id] = 'done';
+  w.enc.ridge = 'open'; w.encLeft.ridge = 6;
+  step(w, 2); killAll(w, 'ridge'); step(w, 2);
+  assert(w.enc.ridge === 'done' && w.enc.overlook === 'open', JSON.stringify(w.enc));
+  const O = SITES.overlook; w.hero.x = O.x; w.hero.z = O.z;
+  w.events.length = 0; w.update(dt, { x: 0, z: 0 });
+  assert(w.events.some((e) => e.type === 'encounter' && e.id === 'overlook'), 'no overlook reveal');
+  assert(w.events.some((e) => e.type === 'journeyDone'), 'journey not finished');
+  assert(w.discovered.includes('fort'), 'fort not discovered');
+});
+test('the whole journey can be ridden: castle → farmland → village → bridge → ruin → ridge → overlook → home', () => {
+  const w = new World();
+  for (const E of ENCOUNTERS) w.enc[E.id] = 'done';   // just the ride here
+  w.finishBuilding(w.b.bridge);
+  const bx = BRIDGE.x, F = SITES;
+  ride(w, [[0, 8], [F.farmland.x, F.farmland.z], [F.village.x, F.village.z], [bx, RIVER_Z + 6], [bx, RIVER_Z - 6],
+    [F.ruin.x, F.ruin.z], [bx, RIVER_Z - 6], [bx, RIVER_Z + 6], [F.ridge.x - 3, F.ridge.z + 2], [F.overlook.x, F.overlook.z], [0, 8]]);
+});
+test('the journey props are solid and sit off the roads', () => {
+  const w = new World();
+  const p = SITE_PROPS.find((q) => q.kind === 'well');
+  w.hero.x = p.x - 4; w.hero.z = p.z;
+  for (let i = 0; i < 60; i++) w.update(dt, { x: 1, z: 0 });
+  assert(Math.hypot(w.hero.x - p.x, w.hero.z - p.z) >= p.r, 'rode through the well');
+  for (const q of SITE_PROPS) if (q.r > 0) for (const l of LANES) for (const [x, z] of l.pts) assert(Math.hypot(x - q.x, z - q.z) > q.r + 2, `${q.site} ${q.kind} on lane ${l.id}`);
+});
+test('saves from before the journey load with it at the start', () => {
+  const w = new World();
+  const snap = JSON.parse(JSON.stringify(w.snapshot()));
+  delete snap.enc; delete snap.encLeft;
+  const w2 = new World(snap);
+  assert(ENCOUNTERS.every((e) => w2.enc[e.id] === 'locked'), JSON.stringify(w2.enc));
 });
 
 console.log(`\n${pass} passed, ${fail} failed`);

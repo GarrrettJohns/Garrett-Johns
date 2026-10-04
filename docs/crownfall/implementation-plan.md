@@ -38,18 +38,24 @@ ability buttons, authored exploration encounters, settlement dressing.
 |---|---|---|
 | 0 | Audit, this plan, traceability, asset manifest, world layout, baseline, device matrix | done (this milestone) |
 | 1 | Terrain and camera proof: terrain under the existing map, three camera modes plus cinematic reveals, camera-relative steering, right-side camera turn, terrain-aware camera, bow stowed on the back, landmark discovery | implemented; desktop-headless evidence only, **iPhone unverified** |
-| 2 | Greenwood vertical slice: castle hill → farmland → Whispering Woods (ruin) → Fallen Village / raider camp → ridge raid with scout warning → King's River bridge defence → foothill overlook revealing the Mountain Fort | next |
+| 2 | Greenwood vertical slice: castle hill → farmland → Fallen Village → bridge → Whispering Woods ruin → East Ridge raid with scout warning → foothill overlook revealing the Mountain Fort | implemented (milestone 2); desktop-headless evidence only, **iPhone unverified** |
 | 3 | Streaming: chunked render working set over the persistent logical world; bounded AI and VFX | planned |
 | 4 | Campaign expansion through data, one region at a time | planned |
 | 5 | Art integration (real king GLBs once concepts exist) and release verification | blocked on art |
 
-### Phase 2 task list (next session starts here)
+### Phase 2 task list (done in milestone 2, kept for the record)
 1. Author the slice POIs in `world-layout.json` (working names): King's Farmland, Whispering Woods ruin, Fallen Village, the ridge, Old Stone Bridge.
 2. Add an `encounters` system to `world.js`: data-driven, saved, with one-shot state (`pending → active → done`) so reloads don't respawn or duplicate loot.
 3. Scout-raid encounter: a scout rides in, warns, the king's followers join, a small raider party on the ridge; uses the existing enemy types and camera combat mode.
 4. Fallen Village: a burnt hamlet that restores (visible houses, villagers) once the camp is cleared; grants people.
 5. Settlement dressing near the castle (fences, wells, hay, carts) from a bounded set, kept off build cells and formation paths.
 6. Tests: encounter state survives save/reload; no duplicate spawns; the wave schedule is unaffected.
+
+### Next (in order)
+1. Run the iPhone checklist in `implementation-status.md` on real devices and record results.
+2. Tune the combat camera and encounter strength from that playtest.
+3. Phase 3 below.
+4. Decide the region order (see ambiguities) before Phase 4.
 
 ### Phase 3 outline
 Keep the simulation authoritative and whole-map (it is small and cheap).
@@ -74,6 +80,11 @@ on a larger map only after measuring the slice on a phone.
 | 2026-10-04 | Discovery cinematic | — | 3.4 s, skippable by tap, never taken while an enemy is within 18 m; landmark beyond the claimed road stays hidden | No control loss in a fight; no spoilers through fog | R24, R09 |
 | 2026-10-04 | Bow stowing | bow upright in hand at all times | stowed diagonally on the back 1.1 s after the last shot or while holding a tool | Fixes the vertical silhouette in the critique | R12, art contract |
 | 2026-10-04 | Save version | `v: 1` | still `v: 1`; new field `discovered` defaults to `[]` | Additive change; old saves load (tested) | R07 |
+| 2026-10-04 | Slice route order | doc: woods → village → ridge → river → overlook | farmland → village → bridge → ruin → ridge → overlook, on the existing map | Fits the existing geography (village south of the river, ruin across it, ridge by the fort) | R25, R24 |
+| 2026-10-04 | Encounter state | — | `enc` (locked/open/done) + `encLeft` saved, still `v: 1`; rewards once | No duplicate loot or spawns across reloads (tested) | R29, R07 |
+| 2026-10-04 | Fort reveal | discovered within 52 m (so from inside the walls) | within 16 m, or from the overlook encounter | The reveal belongs at the end of the slice | R24 |
+| 2026-10-04 | Combat camera | dist 10, height 5.6 | dist 12.5, height 7.4, shoulder 1.9 | The king and followers blocked targets in portrait | R03, R27 |
+| 2026-10-04 | Scout joins | — | the scout becomes a raider in the army; field soldiers get `follow` | "Troops join" without changing the standing order | R20 |
 
 ## Ambiguities recorded
 

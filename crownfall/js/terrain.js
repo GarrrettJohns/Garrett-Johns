@@ -11,7 +11,7 @@
 
 import {
   HIGHLAND, RIVER_Z, RIVER_HALF, RIVER_X1, BOUNDS, STRONGHOLD, FIXED_PADS, WALL_HALF, FORT,
-  OUTPOST_ZONE, eastLimit, LANES, BRIDGE,
+  OUTPOST_ZONE, eastLimit, LANES, BRIDGE, SITES,
 } from './map.js';
 
 // Where each enemy road enters the map: the rim hills open up there.
@@ -31,6 +31,7 @@ export const TERRAIN = {
   rimHeight: 16,         // hills beyond the map edge, behind the cliffs
   maxSlope: 0.65,        // walkable areas are tested against this (tests/run.mjs)
   mountainSlope: 0.75,   // the mountains may be a little steeper
+  ridge: 1.5,            // the foothill ridge west of the Mountain Fort
 };
 
 const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
@@ -70,6 +71,11 @@ function raw(x, z) {
   const rise = smooth(-2, 24, into) * (T.mountainRise + Math.max(0, into) * 0.06) + clamp01(into / 30) * noise(x / 16, z / 16) * 0.9;
   h += rise * wz;
 
+  // The East Ridge: a long foothill between the castle and the fort, its
+  // north end an overlook towards the fort.
+  const along = smooth(-45, -36, z) * (1 - smooth(-31, -21, z));
+  h += T.ridge * along * Math.exp(-(((x - 52) / 6) ** 2));
+
   // Hills behind the cliffs at the map edge hide its border.
   const e = Math.max(-BOUNDS - x, -BOUNDS - z, x - eastLimit(z), z - (STRONGHOLD.z + 22));
   let mouth = 1;
@@ -101,6 +107,12 @@ for (const p of FIXED_PADS) {
   else flat(p.x, p.z, 3.6, 7, true);
 }
 flat(STRONGHOLD.x, (STRONGHOLD.gateZ + STRONGHOLD.z) / 2 + 2, STRONGHOLD.half + 14, 10);
+// The journey's sites sit on level ground.
+flat(SITES.farmland.x, SITES.farmland.z, SITES.farmland.r, 8);
+flat(SITES.village.x, SITES.village.z, SITES.village.r, 8, true);
+flat(SITES.ruin.x, SITES.ruin.z, SITES.ruin.r - 1, 9, true);
+flat(SITES.ridge.x, SITES.ridge.z, 2.5, 5, true);
+flat(SITES.overlook.x, SITES.overlook.z, 1.5, 4, true);
 for (const p of FIXED_PADS) {
   if (p.type === 'outpost') flat(p.x, p.z, OUTPOST_ZONE + 1, 8);
   else if (p.type === 'pass') flat(FORT.x, FORT.z, 9, 14);

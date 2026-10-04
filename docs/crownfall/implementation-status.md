@@ -3,12 +3,86 @@
 ## Resume note (read this first)
 
 - **Branch:** `main` (every Crownfall change is pushed to `main`; GitHub Pages deploys it).
-- **Milestone:** Phase 0 (audit) done, Phase 1 (terrain and camera proof) implemented. Next: Phase 2, the Greenwood vertical slice. The task list is in `implementation-plan.md` → *Phase 2 task list*.
+- **Milestone:** Phase 2 (Greenwood vertical slice) implemented: milestone 2 below. Phase 0 and Phase 1 are done (milestone 1). Next: a real-iPhone pass with the checklist below, then Phase 3 (render streaming). See `implementation-plan.md`.
 - **Run the checks:** `node crownfall/tests/run.mjs` (no dependencies). Module syntax check: `node --input-type=module --check < crownfall/js/<file>.js`. A plain `node --check` misses ES module errors.
 - **Perf overlay:** open the game with `?perf`.
 - **Release rule:** bump `CACHE` in `crownfall/sw.js` on every release. Add any new JS file to its asset list.
-- **Blockers:** the five king concept images and the macro map concept are not in the pack (R05). The procedural king stays a labelled placeholder.
+- **Blockers:** the five king concept images and the macro map concept are not in the pack (R05). Both handoff uploads so far were the same package (same checksum). The procedural king stays a labelled placeholder.
 - **Not verified:** anything on a real iPhone (see the device checklist below).
+
+## Milestone 2: the Greenwood journey (2026-10-04)
+
+Requirement IDs: R02, R06, R11, R20, R23, R24, R25, R26, R29 (and R03/R27 camera retune).
+
+### The route as built (working names)
+The route keeps the existing map: north river and forest, the eastern mountains, the road south. The handoff's order was adapted to that geography; the ridge raid now comes after the woods, which the doc allows as a suggestion.
+
+| # | Place | Where (m) | What happens | Opens |
+|---|---|---|---|---|
+| 1 | Castle hill | 0, 0 | The existing capital and tutorial | start |
+| 2 | King's Farmland | −64, 30 (west) | Fields, barn, hay, scarecrow. Riding in gives a bundle of wood and the farming hint | after wave 1 |
+| 3 | The Fallen Village | −63, −30 (north-west) | Three burnt cottages and raider tents, with five raiders camped there. Beating them rebuilds the village (cottages, well, garden, laundry, chimney smoke), and 3 villagers join the kingdom plus a coin reward | after wave 2 |
+| 4 | King's River crossing | the bridge | The existing bridge (and its wave defence on the north road). Riders stand on its deck | build the bridge |
+| 5 | The Old Ruin, Whispering Woods | −36, −70 (forest) | Columns and an arch in a clearing, with a chest of coins. The reveal looks across the valley to the raiders' watchtower on the East Ridge | the bridge |
+| 6 | The East Ridge raid | 51, −37 | A scout rides in to warn the king, and every soldier in the field falls in behind him. Six raiders hold the ridge under a red watchtower. Clearing it flies the king's banner and the scout joins the army | the ruin (or wave 4) |
+| 7 | The Foothill Overlook | 54, −28 | A cairn where the king plants his flag. The reveal looks down on the Mountain Fort, and the journey ends | the ridge |
+
+A light beam and an edge-of-screen arrow mark the next place, between waves only.
+
+### Rules recorded
+- **Waves and encounters coexist (R29).** Camp guards never count towards a wave, and a wave ends with them still standing. Waves are still started by the player. A wave goes on while the king is away, and the first time he rides far out mid-wave a toast says so.
+- **Rewards are paid once.** Each encounter goes locked → open → done. The state and the number of guards still standing are saved. After a reload a half-cleared camp keeps its losses, and a finished one never comes back.
+- **Guards need beating.** If a camp is removed from the world without a fight (dev tools, reloads), it respawns rather than paying out.
+- **Solid props.** Cottages, the well, the cart, the barn, columns, the arch, the watchtower and the cairn are solid circles for the king (`SITE_PROPS` with `r > 0`), and all of them are tested to stay off the roads.
+
+### Code paths
+| What | Where |
+|---|---|
+| Encounter data and opening rules | `crownfall/js/slice.js` (`ENCOUNTERS`) |
+| Sites and props (one list shared by simulation and renderer) | `crownfall/js/map.js` (`SITES`, `SITE_PROPS`; scenery is cleared around sites) |
+| Encounter simulation, guards, scout, rewards, save | `crownfall/js/world.js` (`updateEncounters`, `spawnGuards`, `finishEncounter`, `sendScout`, `updateScout`, `nextEncounter`; `enc` and `encLeft` in `snapshot`/`load`; prop collision in `updateHero`) |
+| East Ridge and levelled sites | `crownfall/js/terrain.js` (`TERRAIN.ridge`, site `flat()`s) |
+| Prop models | `crownfall/js/models.js` (`fieldGeo` … `cairnGeo`, `mergePlaced`) |
+| Site meshes, before/after swap, beam, smoke | `crownfall/js/render.js` (`buildSites`, `syncSites`) |
+| Banners and reveals | `crownfall/js/main.js` (`encounter`, `scout`, `journeyDone` events) |
+| Next-place arrow | `crownfall/js/ui.js` (`updateThreats`) |
+| Combat camera retune: further back and higher so the king blocks less | `crownfall/js/camera.js` (`CAM.combat`: dist 10 → 12.5, height 5.6 → 7.4, shoulder 1.4 → 1.9) |
+
+### Checks run
+| Check | Result |
+|---|---|
+| `node crownfall/tests/run.mjs` | **28 passed, 0 failed**. The 10 new tests cover: opening order; guards never hold up a wave; village pays once and not again after reload; half-cleared camp survives reload; a camp wiped without a fight comes back; ruin → scout → troops join; ridge → overlook reveals the fort and ends the journey; **a bot rides the whole route** (castle → farmland → village → bridge → ruin → bridge → ridge → overlook → home) with the stick, never stuck, never on a slope over the limit; props solid and off the roads; pre-journey saves load |
+| Module syntax check of every changed JS file | clean |
+| Headless economy sim | unchanged: wave 1 pays 99 gold, wave 2 pays 111 |
+| Headless smoke sim | fort blocks at x 69.8. In a fresh world the river still blocks at z −50.4. In the sim's own run the world had already been defeated in its unattended wave 3 (it varies run to run) |
+| Headless siege sim (60 troops ×3) | won 3 of 3 in 76–78 s, castle untouched, the same as before |
+| Browser run (Playwright + Chromium SwiftShader, 390×844 at DPR 2, touch) | no page errors through the whole route |
+
+### Evidence (`docs/crownfall/evidence/`)
+- `m2-farmland.png`: King's Farmland from the Kingdom view.
+- `m2-fallen-village-raiders.png` / `m2-fallen-village-restored.png`: the same view before and after freeing the village (rebuilt cottages, garden, laundry, smoke, reward coins).
+- `m2-ruin-whispering-woods.png`: the ruin in its forest clearing, Adventure view.
+- `m2-ruin-reveal-watchtower.png`: the reveal from the ruin across the river to the ridge watchtower.
+- `m2-scout-warning.png`: the scout's warning.
+- `m2-ridge-raid-combat.png`: the Combat view (retuned) on the ridge with knights, archers and the scout.
+- `m2-overlook-reveals-fort.png`: the overlook reveal of the Mountain Fort.
+
+### Measurements (headless, not a phone; same method as milestone 1)
+| Scene | Draw calls | Triangles | Entities |
+|---|---|---|---|
+| Idle capital, Kingdom view | 97 | 251k | 8 foes, 3 villagers |
+| By the Fallen Village, raiders posted | 94 | 247k | 13 foes |
+| Wave 9 fight plus a camp, Combat view | 123 | 272k | 34 foes |
+
+The sites add at most three merged meshes each, plus the beam. Fewer triangles than milestone 1 because trees were cleared from the sites.
+
+### Known limitations
+- **iPhone unverified**, as before.
+- The slice runs on every land (the map repeats with a new biome after each Stronghold), so the farmland and village also appear in Sunscorch and Frostmarch.
+- The scout goes straight to the king and only avoids the river by stopping at its bank. If the king is across the river he gives his warning after 40 s wherever he is.
+- People from the village can push the head count over the beds (the HUD shows e.g. 7/4). Growth still needs beds.
+- Settlement dressing (R26) is limited to the farmland and the village. Houses inside the walls are unchanged.
+- There is no Attack, Ability or Dodge input yet. The ridge fight is still auto-fire plus troops.
 
 ## Milestone 1: terrain and camera proof (2026-10-04)
 
@@ -95,6 +169,7 @@ Record the device, iOS version, Safari or home-screen launch, Low Power Mode, an
 8. Tap the camera button through Kingdom, Adventure, Combat and Auto while riding. Movement and firing must not stop or double.
 9. Ride to the Mountain Fort for the first time: the reveal plays, and a tap skips it.
 10. Cross the bridge with followers: everyone stays on the planks.
+10a. Ride the journey (farmland → village → ruin → ridge → overlook). Each reveal plays once, the beam and arrow lead on, the village rebuilds, and the scout's troops follow you onto the ridge.
 11. Rotate to landscape and back, background the app for 30 s, and return. No black screen, and no stuck touch.
 12. Reload mid-build phase: the kingdom, discovered landmarks and resources are all kept.
 13. Play for 15 minutes. Note whether fps falls as the phone warms.

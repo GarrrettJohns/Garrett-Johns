@@ -16,7 +16,7 @@ export const MODES = ['kingdom', 'adventure', 'combat'];
 export const CAM = {
   blend: 0.9,              // seconds for most of a transition
   adventure: { dist: 15, height: 8.5, ahead: 7, lookUp: 1.4, fov: 52 },
-  combat: { dist: 10, height: 5.6, ahead: 4, lookUp: 2.4, shoulder: 1.4, fov: 56 },
+  combat: { dist: 12.5, height: 7.4, ahead: 5, lookUp: 1.6, shoulder: 1.9, fov: 56 },
   enterCombat: 14,         // an enemy this close to the king starts a fight view...
   leaveCombat: 22,         // ...which lasts until none is within this...
   combatHold: 2.5,         // ...for this long (hysteresis, so the view doesn't jerk)

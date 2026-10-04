@@ -655,6 +655,18 @@ function handle(ev, events = []) {
       audio.horn();
       break;
     }
+    case 'encounter': {
+      // A place on the journey: reveal what it points to, unless mid-fight.
+      const h = world.hero;
+      const busy = world.enemies.some((e) => e.hp > 0 && !e.static && Math.hypot(e.x - h.x, e.z - h.z) < 18);
+      if (!busy) renderer.cinematic(ev.x, ev.z);
+      ui.banner(`${ev.icon} ${ev.title}`, ev.sub, 3);
+      audio.horn();
+      dirty = true;
+      break;
+    }
+    case 'scout': audio.horn(); ui.banner('🐎 A scout rides in!', ev.text, 3); break;
+    case 'journeyDone': setTimeout(() => ui.toast('🗺️ You have ridden the whole Greenwood. Next: take the Mountain Fort and open the mountains.'), 3400); break;
     case 'deposit': audio.spend(); ui.float(at(ev.x, 2.6, ev.z), `🏦 +${ev.n} banked`, '#ffe28a'); break;
     case 'rally': ui.toast({ follow: '🚩 Your troops ride with you', posts: '🏰 Troops head back to their posts', march: '⚔️ Your troops march on the stronghold. They muster at the furthest outpost and storm it in the siege.' }[ev.order || (ev.on ? 'follow' : 'posts')]); break;
     case 'toast': ui.toast(ev.text); break;

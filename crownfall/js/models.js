@@ -1202,3 +1202,209 @@ RIGS.treant = () => {
   });
   return { parts, height: 2.6 };
 };
+
+// ------------------------------------------------------- the journey's sites
+// Props for the Greenwood journey (map.js SITE_PROPS). Unit-ish scale, metres.
+export function fieldGeo() {
+  const b = new Builder();
+  b.box(5.2, 0.08, 7.2, 0x7d5e3a);
+  for (let i = 0; i < 6; i++) {
+    const x = -2.1 + i * 0.84;
+    b.box(0.5, 0.18, 6.6, 0x6a4f30, { x, y: 0.06 });
+    for (let k = 0; k < 8; k++) b.cone(0.2, 0.5, 5, i % 2 ? C.crop : 0x9ac74a, { x, y: 0.2, z: -2.9 + k * 0.83 });
+  }
+  return b.build();
+}
+
+export function barnGeo() {
+  const b = new Builder();
+  b.box(4.6, 0.25, 3.8, C.woodDark);
+  b.box(4.2, 2.4, 3.4, C.redDark, { y: 0.25 });
+  for (const x of [-2.1, 2.1]) for (const z of [-1.7, 1.7]) b.box(0.22, 2.4, 0.22, C.cream, { x, y: 0.25, z });
+  b.box(1.5, 1.8, 0.1, C.woodDark, { y: 0.25, z: 1.72 });
+  b.box(1.6, 0.12, 0.12, C.cream, { y: 1.1, z: 1.78, rz: 0.85 });
+  b.box(1.6, 0.12, 0.12, C.cream, { y: 1.1, z: 1.78, rz: -0.85 });
+  b.roof(4.9, 1.7, 4.2, C.roofBrown, { y: 2.65 });
+  return b.build();
+}
+
+export function hayGeo() {
+  const b = new Builder();
+  b.cyl(0.55, 0.55, 0.8, 9, C.hay, { y: 0.55 - 0.4, rx: Math.PI / 2 });
+  b.cyl(0.45, 0.45, 0.7, 9, 0xd8b04a, { x: 0.6, y: 0.06, z: 0.7, rz: Math.PI / 2 });
+  return b.build();
+}
+
+export function scarecrowGeo() {
+  const b = new Builder();
+  b.box(0.12, 2.0, 0.12, C.woodDark);
+  b.box(1.5, 0.1, 0.1, C.woodDark, { y: 1.5 });
+  b.box(0.6, 0.7, 0.3, 0x5a7ab0, { y: 1.1 });
+  b.ball(0.24, C.hay, { y: 2.05 });
+  b.cone(0.38, 0.35, 7, 0x8a6a42, { y: 2.18 });
+  return b.build();
+}
+
+export function cartGeo() {
+  const b = new Builder();
+  b.box(1.6, 0.5, 1.0, C.wood, { y: 0.45 });
+  b.box(1.7, 0.08, 1.1, C.woodLight, { y: 0.4 });
+  for (const s of [-1, 1]) b.cyl(0.42, 0.42, 0.1, 10, C.woodDark, { y: 0.37, z: s * 0.58, rx: Math.PI / 2, x: 0.1 });
+  b.box(1.4, 0.07, 0.07, C.woodDark, { x: -1.4, y: 0.5, z: 0.3 });
+  b.box(1.4, 0.07, 0.07, C.woodDark, { x: -1.4, y: 0.5, z: -0.3 });
+  b.cyl(0.25, 0.25, 0.7, 8, C.hay, { x: 0.2, y: 0.9, rz: Math.PI / 2 });
+  return b.build();
+}
+
+// A cottage of the Fallen Village, burnt or rebuilt.
+export function cottageGeo(burnt) {
+  if (!burnt) return houseGeo(1);
+  const b = new Builder();
+  const w = 3.4, d = 3.0;
+  const char = 0x3a302a, ash = 0x5b524a;
+  b.box(w + 0.3, 0.3, d + 0.3, C.stoneDark);
+  b.box(w, 1.3, 0.2, ash, { y: 0.3, z: -d / 2 });
+  b.box(0.2, 1.0, d, ash, { x: -w / 2, y: 0.3 });
+  b.box(0.2, 0.6, d * 0.6, ash, { x: w / 2, y: 0.3, z: -d * 0.2 });
+  b.box(w * 0.5, 0.8, 0.2, ash, { x: -w * 0.25, y: 0.3, z: d / 2 });
+  for (const [x, z, h] of [[-w / 2, -d / 2, 2.0], [w / 2, -d / 2, 1.5], [-w / 2, d / 2, 1.2]]) b.box(0.22, h, 0.22, char, { x, y: 0.3, z });
+  b.box(3.0, 0.18, 0.18, char, { x: 0.2, y: 0.55, z: 0.4, ry: 0.5, rz: 0.15 });
+  b.box(2.4, 0.18, 0.18, char, { x: -0.3, y: 0.4, z: -0.5, ry: -0.8 });
+  b.box(0.45, 1.6, 0.45, C.stoneDark, { x: w / 4, y: 0.3, z: -0.5 });
+  return b.build();
+}
+
+export function wellGeo() {
+  const b = new Builder();
+  b.cyl(0.8, 0.85, 0.75, 10, C.stone);
+  b.cyl(0.62, 0.62, 0.05, 10, C.water, { y: 0.7 });
+  for (const s of [-1, 1]) b.box(0.12, 1.5, 0.12, C.woodDark, { x: s * 0.7, y: 0.75 });
+  b.box(1.6, 0.1, 0.1, C.woodDark, { y: 2.2 });
+  b.roof(1.9, 0.6, 1.3, C.roofRed, { y: 2.25 });
+  return b.build();
+}
+
+export function gardenGeo() {
+  const b = new Builder();
+  b.box(2.6, 0.12, 2.0, 0x6a4f30);
+  for (let i = 0; i < 3; i++) for (let k = 0; k < 4; k++) b.ball(0.2, k % 2 ? 0x5cae48 : 0xe0603a, { x: -0.9 + k * 0.6, y: 0.25, z: -0.6 + i * 0.6 });
+  for (const s of [-1, 1]) {
+    b.box(2.8, 0.07, 0.07, C.woodLight, { y: 0.45, z: s * 1.1 });
+    b.box(0.07, 0.07, 2.2, C.woodLight, { x: s * 1.4, y: 0.45 });
+  }
+  for (const [x, z] of [[-1.4, -1.1], [1.4, -1.1], [-1.4, 1.1], [1.4, 1.1], [0, -1.1], [0, 1.1]]) b.box(0.1, 0.6, 0.1, C.wood, { x, z });
+  return b.build();
+}
+
+export function laundryGeo() {
+  const b = new Builder();
+  for (const s of [-1, 1]) b.box(0.1, 1.7, 0.1, C.woodDark, { x: s * 1.6 });
+  b.box(3.2, 0.03, 0.03, C.cream, { y: 1.6 });
+  [0xf4f1ea, 0x5a7ab0, 0xd8342c, 0xe8c35a].forEach((c, i) => b.box(0.5, 0.6, 0.04, c, { x: -1.1 + i * 0.72, y: 1.0 }));
+  return b.build();
+}
+
+export function tentGeo() {
+  const b = new Builder();
+  b.roof(2.0, 1.5, 2.4, 0x8e2a22, { y: 0 });
+  b.box(0.06, 2.0, 0.06, C.woodDark, { x: 0, z: 1.3 });
+  b.box(0.6, 0.4, 0.03, C.red, { x: 0.3, y: 1.6, z: 1.3 });
+  return b.build();
+}
+
+export function campfireGeo() {
+  const b = new Builder();
+  for (let i = 0; i < 7; i++) { const a = (i / 7) * Math.PI * 2; b.box(0.3, 0.22, 0.3, C.stoneDark, { x: Math.cos(a) * 0.6, z: Math.sin(a) * 0.6, ry: a }); }
+  b.box(0.9, 0.12, 0.12, C.woodDark, { y: 0.05, ry: 0.6 });
+  b.box(0.9, 0.12, 0.12, C.woodDark, { y: 0.05, ry: -0.6 });
+  b.cone(0.3, 0.6, 6, 0xff8a2a, { y: 0.1 });
+  b.cone(0.16, 0.4, 5, 0xffd04a, { y: 0.15 });
+  return b.build();
+}
+
+export function columnGeo() {
+  const b = new Builder();
+  b.box(1.1, 0.3, 1.1, C.stoneDark);
+  b.cyl(0.4, 0.45, 2.4, 8, C.stone, { y: 0.3 });
+  b.cyl(0.4, 0.4, 0.5, 8, C.stone, { x: 0.15, y: 2.7, rz: 0.25 });
+  b.box(0.9, 0.18, 0.5, 0x6fa84a, { y: 0.3, z: 0.45 });
+  return b.build();
+}
+
+export function archGeo() {
+  const b = new Builder();
+  for (const s of [-1, 1]) b.box(0.6, 3.2, 0.7, C.stone, { x: s * 1.2 });
+  b.box(3.0, 0.6, 0.8, C.stoneDark, { y: 3.2 });
+  b.box(1.0, 0.5, 0.7, C.stone, { x: 2.2, y: 0, ry: 0.5 });
+  b.box(0.7, 0.4, 0.6, C.stone, { x: -2.0, y: 0, z: 0.7, ry: 1.1 });
+  b.box(2.6, 0.12, 0.6, 0x6fa84a, { y: 3.8 });
+  return b.build();
+}
+
+export function chestGeo(open) {
+  const b = new Builder();
+  b.box(1.0, 0.6, 0.7, C.wood);
+  b.box(1.04, 0.08, 0.74, C.goldDark, { y: 0.3 });
+  if (open) {
+    b.box(1.0, 0.1, 0.7, C.woodDark, { y: 0.9, z: -0.5, rx: -1.2 });
+    b.cyl(0.38, 0.38, 0.1, 8, C.gold, { y: 0.56 });
+  } else {
+    b.box(1.0, 0.3, 0.7, C.woodDark, { y: 0.6 });
+    b.box(0.2, 0.25, 0.06, C.gold, { y: 0.45, z: 0.37 });
+  }
+  return b.build();
+}
+
+// The raiders' watchtower on the East Ridge; it flies the king's banner once taken.
+export function watchtowerGeo(taken) {
+  const b = new Builder();
+  const post = taken ? C.wood : 0x4a3a2c;
+  for (const dx of [-0.8, 0.8]) for (const dz of [-0.8, 0.8]) b.box(0.22, 4.6, 0.22, post, { x: dx, z: dz, rx: -dz * 0.05, rz: dx * 0.05 });
+  b.box(0.1, 0.1, 2.0, post, { y: 1.6, rx: 0.9 });
+  b.box(2.2, 0.22, 2.2, C.plank, { y: 4.5 });
+  for (const s of [-1, 1]) { b.box(2.2, 0.6, 0.1, post, { y: 4.7, z: s * 1.05 }); b.box(0.1, 0.6, 2.2, post, { x: s * 1.05, y: 4.7 }); }
+  b.roof(2.5, 1.0, 2.5, taken ? C.roofBlue : 0x6a2a24, { y: 5.6 });
+  b.box(0.07, 2.4, 0.07, C.ironDark, { x: 0.9, y: 6.0, z: 0.9 });
+  b.box(1.0, 0.7, 0.04, taken ? C.blue : C.red, { x: 1.4, y: 7.6, z: 0.9 });
+  if (taken) b.cyl(0.18, 0.18, 0.05, 8, C.gold, { x: 1.4, y: 7.6, z: 0.93, rx: Math.PI / 2 });
+  return b.build();
+}
+
+// A stone cairn on the overlook; the king plants his flag on it.
+export function cairnGeo(flag) {
+  const b = new Builder();
+  b.add(new THREE.DodecahedronGeometry(0.9, 0), C.stoneDark, { y: 0.5, sy: 0.6 });
+  b.add(new THREE.DodecahedronGeometry(0.6, 0), C.stone, { y: 1.1, sy: 0.7, ry: 0.5 });
+  b.add(new THREE.DodecahedronGeometry(0.35, 0), C.stoneDark, { y: 1.55, sy: 0.8 });
+  if (flag) {
+    b.box(0.07, 3.0, 0.07, C.ironDark, { y: 1.5 });
+    b.box(1.2, 0.8, 0.04, C.blue, { x: 0.62, y: 3.9 });
+    b.cyl(0.22, 0.22, 0.05, 8, C.gold, { x: 0.62, y: 3.9, z: 0.03, rx: Math.PI / 2 });
+  }
+  return b.build();
+}
+
+// Merge already-built vertex-coloured geometries placed by matrices into one
+// (one draw call for a whole site).
+export function mergePlaced(list) {
+  let count = 0;
+  for (const { geo } of list) count += geo.attributes.position.count;
+  const pos = new Float32Array(count * 3), clr = new Float32Array(count * 3);
+  const v = new THREE.Vector3();
+  let o = 0;
+  for (const { geo, m } of list) {
+    const a = geo.attributes.position, c = geo.attributes.color;
+    for (let i = 0; i < a.count; i++) {
+      v.fromBufferAttribute(a, i).applyMatrix4(m);
+      pos[(o + i) * 3] = v.x; pos[(o + i) * 3 + 1] = v.y; pos[(o + i) * 3 + 2] = v.z;
+      clr[(o + i) * 3] = c.getX(i); clr[(o + i) * 3 + 1] = c.getY(i); clr[(o + i) * 3 + 2] = c.getZ(i);
+    }
+    o += a.count;
+  }
+  const out = new THREE.BufferGeometry();
+  out.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  out.setAttribute('color', new THREE.BufferAttribute(clr, 3));
+  out.computeVertexNormals();
+  out.computeBoundingSphere();
+  return out;
+}

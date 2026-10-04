@@ -26,6 +26,13 @@ It then launches full screen and works offline.
   Mountain Fort. The first time the king sees a landmark (the forest, the
   Fort, Riverford, the Iron Hills, Stonehill or the Stronghold), the camera
   rises for a short look. Tap to skip it.
+- **The Greenwood journey:** after the first waves a light beam and an arrow
+  lead the king out on a short adventure. He visits King's Farmland in the
+  west and frees the Fallen Village from raiders, and it rebuilds and three
+  villagers come home. Over the bridge he finds an old ruin in the woods, then
+  a scout warns of raiders on the East Ridge. Your soldiers ride with the king
+  to fight them, and from the foothill overlook he sees the Mountain Fort.
+  Raider camps never hold up a wave, and waves go on while he is away.
 - **Look:** drag with two fingers to move the camera on its own, and pinch to
   zoom. Tap 👑 to snap back to the king. On a desktop, right-drag pans.
 - **The castle:** tap it. Its **King** tab upgrades the bow, horse and weapons,
@@ -212,6 +219,7 @@ handoff, plan and status live in `docs/crownfall/`; start with
 | `js/config.js` | All balance data: buildings, upgrades, units, enemies, wave generation |
 | `js/terrain.js` | The shape of the land: one height function, levelled build areas, the bridge deck |
 | `js/camera.js` | Camera views (kingdom / adventure / combat) and when they change |
+| `js/slice.js` | The Greenwood journey: its encounters and when each opens |
 | `js/map.js` | Layout: enemy roads, the road to the stronghold, outposts and frontiers, river, square walls, fixed pads, scenery |
 | `js/world.js` | The simulation: king, economy, villagers, army, enemies, waves, saving |
 | `js/models.js` | Every 3D model, built from primitives in code |

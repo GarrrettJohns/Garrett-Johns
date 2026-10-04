@@ -10,8 +10,9 @@ import {
 import {
   LANES, LANE, lanePoint, laneCrossing, laneAtZ, FIXED_PADS, START, BRIDGE, RIVER_Z,
   RIVER_HALF, BOUNDS, CASTLE_R, distToLanes, PATH_HALF, GRID, STRONGHOLD, FRONTIERS, OUTPOSTS,
-  HIGHLAND, inHighland, GORGE_OUT, GORGE_IN, CAMPS, FOREST_Z, scenery, FORT, RIVER_X1, eastLimit, OUTPOST_ZONE, LANDMARKS,
+  HIGHLAND, inHighland, GORGE_OUT, GORGE_IN, CAMPS, FOREST_Z, scenery, FORT, RIVER_X1, eastLimit, OUTPOST_ZONE, LANDMARKS, SITES, SITE_PROPS,
 } from './map.js';
+import { ENCOUNTERS, ENCOUNTER } from './slice.js';
 
 // Trees the king can chop (the forest and southern grove) and boulders he can
 // mine (in the highland). Same seeded scenery the renderer draws.
@@ -68,6 +69,7 @@ const OUTPOST = Object.fromEntries(OUTPOSTS.map((o, i) => [o.id, { ...o, index: 
 const castleDist = (x, z) => hyp(Math.max(Math.abs(x) - CASTLE_R, 0), Math.max(Math.abs(z) - CASTLE_R, 0));
 
 const TAU = Math.PI * 2;
+const SOLID_PROPS = SITE_PROPS.filter((p) => p.r > 0);   // the journey's buildings, wells, columns...
 const MAX_GROUND_COINS = 360;
 const tmpP = { x: 0, z: 0, dx: 0, dz: 1 };
 
@@ -339,6 +341,9 @@ export class World {
     this.res = { wood: 0, stone: 0, iron: 0, gold: 0 };   // gold here is banked at a warehouse
     this.smith = { king: 0, workers: 0, arrows: 0 };
     this.discovered = [];   // landmarks the king has seen (ids)
+    this.enc = Object.fromEntries(ENCOUNTERS.map((e) => [e.id, 'locked']));   // the journey: locked | open | done
+    this.encLeft = {};      // guards still standing at each camp encounter
+    this.awayTip = false;
     this.order = 'posts';   // standing order for soldiers in the field: posts | follow | march
     this.stations = { S: 0, E: 0, W: 0, N: 0 };   // soldiers wanted on guard at each road's gate
     this.income = [];     // recent production: { t, res, src, n, kind: 'made' | 'home' }
@@ -516,12 +521,114 @@ export class World {
     if (!h.alive) return;
     for (const L of LANDMARKS) {
       if (this.discovered.includes(L.id)) continue;
-      if (Math.hypot(L.x - h.x, L.z - h.z) > L.sight) continue;
+      const seen = Math.hypot(L.x - h.x, L.z - h.z) <= L.sight || (L.view && Math.hypot(L.view.x - h.x, L.view.z - h.z) <= L.view.r);
+      if (!seen) continue;
       // Beyond the claimed road the fog still hides it.
       if (L.z > this.frontier + 25) continue;
       this.discovered.push(L.id);
       this.emit('discovered', { id: L.id, name: L.name, sub: L.sub, x: L.x, z: L.z });
     }
+  }
+
+  // ------------------------------------------------------------ the journey
+  // Authored encounters along the opening route (slice.js). They run beside
+  // the waves: guards stay at their camp and never count towards a wave, and
+  // a wave goes on while the king is away.
+  updateEncounters() {
+    const h = this.hero;
+    if (this.phase === 'wave' && !this.awayTip && h.alive && Math.max(Math.abs(h.x), Math.abs(h.z)) > this.wallRadius + 22) {
+      this.awayTip = true;
+      this.emit('toast', { text: '🏰 The wave goes on while you ride. Towers and road guards hold the gates until you are back.' });
+    }
+    for (const E of ENCOUNTERS) {
+      const st = this.enc[E.id];
+      if (st === 'done') continue;
+      if (st !== 'open') {
+        if (!E.opens(this)) continue;
+        this.enc[E.id] = 'open';
+        if (E.guards) this.encLeft[E.id] = E.guards.length;
+        if (E.hint) this.emit('toast', { text: `${E.icon} ${E.hint}` });
+        if (E.scout) this.sendScout(E);
+        continue;
+      }
+      const S = SITES[E.site];
+      if (!E.guards) {
+        if (h.alive && hyp(h.x - S.x, h.z - S.z) < E.reach) this.finishEncounter(E);
+        continue;
+      }
+      const left = this.encLeft[E.id] ?? E.guards.length;
+      if (left <= 0) { this.finishEncounter(E); continue; }
+      // Guards (re)appear at their camp: on opening, and after a reload.
+      const camp = 'enc:' + E.id;
+      if (!this.enemies.some((e) => e.guard && e.guard.camp === camp && e.hp > 0)) this.spawnGuards(E, left);
+    }
+  }
+
+  spawnGuards(E, n) {
+    const S = SITES[E.site];
+    const mul = levelMul(this.level) * (1 + 0.08 * this.wave);
+    E.guards.slice(0, n).forEach((kind, i) => {
+      const def = ENEMIES[kind];
+      const a = (i / n) * TAU;
+      const gx = S.x + Math.cos(a) * 3.2, gz = S.z + Math.sin(a) * 3.2;
+      this.enemies.push({
+        id: this.id(), kind, lane: LANE.E, s: 0, off: 0, x: gx, z: gz, yaw: rand(0, TAU), guard: { x: gx, z: gz, camp: 'enc:' + E.id },
+        hp: def.hp * mul, max: def.hp * mul, dmg: def.dmg * levelMul(this.level), atkCd: rand(0, 1), speed: def.speed * 1.2,
+        target: null, retarget: Math.random() * 0.3, burn: 0, burnDps: 0, flash: 0, anim: Math.random() * 10, moving: false,
+        attackT: 0, def, scale: def.scale || 1, coins: def.coins + 1, name: null,
+      });
+    });
+  }
+
+  finishEncounter(E) {
+    this.enc[E.id] = 'done';
+    delete this.encLeft[E.id];
+    const S = SITES[E.site], r = E.reward || {};
+    if (r.coins) this.burstCoins(S.x, S.z, r.coins);
+    if (r.wood) for (let i = 0; i < 5; i++) this.dropCoin(S.x, S.z, Math.ceil(r.wood / 5), 1, 'wood');
+    for (let i = 0; i < (r.people || 0); i++) {
+      const v = this.spawnVillager(S.x + rand(-2, 2), S.z + rand(-2, 2));
+      this.emit('villager', { x: v.x, z: v.z });
+    }
+    // Where the reveal looks: the next place on the journey, or the fort.
+    const look = E.look === 'fort' ? FORT : E.look ? SITES[E.look] : S;
+    if (E.look === 'fort' && !this.discovered.includes('fort')) this.discovered.push('fort');
+    this.emit('encounter', { id: E.id, icon: E.icon, title: E.title, sub: E.sub, x: look.x, z: look.z });
+    if (ENCOUNTERS.every((e) => this.enc[e.id] === 'done')) this.emit('journeyDone', {});
+  }
+
+  // The next place on the journey to point the player at, if any.
+  nextEncounter() {
+    const E = ENCOUNTERS.find((e) => this.enc[e.id] === 'open');
+    return E ? { ...E, at: SITES[E.site] } : null;
+  }
+
+  // A scout rides in from the ridge to warn the king, and the soldiers in
+  // the field fall in behind him.
+  sendScout(E) {
+    const S = SITES[E.site];
+    const a = this.addSoldier('raider', S.x - 6, S.z + 5);
+    a.scout = { text: E.scout.text, t: 0 };
+  }
+
+  updateScout(a, dt) {
+    const h = this.hero;
+    const tx = h.alive ? h.x : 0, tz = h.alive ? h.z : CASTLE_R + 2;
+    const dx = tx - a.x, dz = tz - a.z, d = hyp(dx, dz);
+    a.scout.t += dt;
+    if (d < 3.5 || a.scout.t > 40) {
+      this.emit('scout', { text: a.scout.text, x: a.x, z: a.z });
+      a.scout = null;
+      for (const s of this.allies) if (!s.station) s.follow = true;
+      return;
+    }
+    const sp = 7.5;
+    a.x += (dx / d) * sp * dt; a.z += (dz / d) * sp * dt;
+    // He keeps to the bridge like everyone else.
+    if (a.x < RIVER_X1 && Math.abs(a.z - RIVER_Z) < RIVER_HALF + 0.4 && Math.abs(a.x - BRIDGE.x) > 2.1) a.z = a.z < RIVER_Z ? RIVER_Z - RIVER_HALF - 0.4 : RIVER_Z + RIVER_HALF + 0.4;
+    a.yaw = Math.atan2(dx, dz);
+    a.moving = true;
+    a.anim += dt * 9;
   }
 
   // Remind the player (now and then, between waves) when stock is stuck.
@@ -1636,6 +1743,7 @@ export class World {
 
     for (let i = this.allies.length - 1; i >= 0; i--) {
       const a = this.allies[i];
+      if (a.scout) { this.updateScout(a, dt); continue; }
       const u = UNITS[a.kind];
       a.flash = Math.max(0, a.flash - dt * 4);
       a.atkCd -= dt;
@@ -1901,6 +2009,8 @@ export class World {
 
   killEnemy(e) {
     this.stats.kills++;
+    const camp = e.guard && String(e.guard.camp);
+    if (camp && camp.startsWith('enc:')) { const id = camp.slice(4); this.encLeft[id] = Math.max(0, (this.encLeft[id] ?? 1) - 1); }
     this.emit('kill', { x: e.x, z: e.z, kind: e.kind, scale: e.scale, boss: !!e.name, structure: !!e.static });
     const n = e.coins;
     if (n > 12) this.burstCoins(e.x, e.z, n);
@@ -2278,6 +2388,11 @@ export class World {
         else nz += Math.sign(dz || 1) * pz;
       }
     }
+    // The journey's cottages, wells, columns and towers are solid too.
+    if (!this.noclip) for (const p of SOLID_PROPS) {
+      const dx = nx - p.x, dz = nz - p.z, d = hyp(dx, dz), rr = p.r + R;
+      if (d < rr && d > 1e-6) { nx = p.x + (dx / d) * rr; nz = p.z + (dz / d) * rr; }
+    }
     h.x = nx; h.z = nz;
     const v = hyp(h.vx, h.vz);
     h.moving = v > 0.6;
@@ -2589,6 +2704,7 @@ export class World {
     this.updateAllies(dt);
     this.updateAdvice(dt);
     this.updateDiscovery();
+    this.updateEncounters();
     this.updateTowers(dt);
     this.updateEnemies(dt);
     this.updateProjectiles(dt);
@@ -2628,6 +2744,8 @@ export class World {
       objective: this.objective,
       order: this.order,
       discovered: [...this.discovered],
+      enc: { ...this.enc },
+      encLeft: { ...this.encLeft },
       stations: { ...this.stations },
       smith: { ...this.smith },
       level: this.level,
@@ -2651,6 +2769,8 @@ export class World {
     this.smith = { king: 0, workers: 0, arrows: 0, ...(s.smith || {}) };
     this.order = s.order || (s.rally ? 'follow' : 'posts');
     this.discovered = [...(s.discovered || [])];
+    this.enc = { ...this.enc, ...(s.enc || {}) };
+    this.encLeft = { ...(s.encLeft || {}) };
     this.stations = { S: 0, E: 0, W: 0, N: 0, ...(s.stations || {}) };
     this.funds = {};
     this.objective = s.objective;

@@ -9,10 +9,12 @@ import {
   bridgeGeo, towerGeo, towerGunGeo, coinGeo, arrowGeo, chevronGeo, rockfallGeo, passGeo, treeGeo, outpostGeo, logGeo,
   strongholdWallsGeo, strongholdGateGeo, strongholdTowerGeo, strongholdKeepGeo, warehouseGeo, stumpGeo,
   fortWallsGeo, fortGateGeo, fortTowerGeo, ironmineGeo, blacksmithGeo, catapultBaseGeo, catapultFrameGeo, catapultArmGeo,
+  fieldGeo, barnGeo, hayGeo, scarecrowGeo, cartGeo, cottageGeo, wellGeo, gardenGeo, laundryGeo, tentGeo, campfireGeo,
+  columnGeo, archGeo, chestGeo, watchtowerGeo, cairnGeo, mergePlaced,
 } from './models.js';
 import {
   LANES, lanePoint, BRIDGE, RIVER_Z, RIVER_HALF, FOREST_Z, PATH_HALF, CASTLE_R, scenery, HIGHLAND, HIGHLAND_TRAILS, BOUNDS, STRONGHOLD,
-  FORT, RIVER_X1,
+  FORT, RIVER_X1, SITES, SITE_PROPS,
 } from './map.js';
 import { BUILDINGS, HERO, STYLES } from './config.js';
 import { groundH as G, standH, setBridge, footing, TERRAIN } from './terrain.js';
@@ -395,6 +397,9 @@ export class Renderer {
 
     // The enemy stronghold at the end of the road.
     this.buildStronghold(scene);
+
+    // The places along the Greenwood journey.
+    this.buildSites(scene);
 
     // Fog over land the king hasn't claimed yet.
     const fc = document.createElement('canvas');
@@ -967,6 +972,7 @@ export class Renderer {
     this.syncFort(world);
     setBridge(world.built('bridge'));
     this.syncFog(world, dt);
+    this.syncSites(world, dt);
     this.ready = true;
 
     // ---- units
@@ -1386,6 +1392,90 @@ export class Renderer {
     const tx = Math.round(P.lx), tz = Math.round(P.lz);
     this.sun.position.set(tx - 16, P.ly + 36, tz - 10);
     this.sun.target.position.set(tx, P.ly, tz);
+  }
+
+  // ------------------------------------------------------- the journey's sites
+  // Each site's props merge into at most three meshes: always there, there
+  // until its encounter is done (raider tents, burnt cottages), and there
+  // after (rebuilt cottages, the king's flag). A light beam marks the next
+  // place to go.
+  buildSites(scene) {
+    const one = {
+      field: fieldGeo, barn: barnGeo, hay: hayGeo, scarecrow: scarecrowGeo, cart: cartGeo, well: wellGeo, garden: gardenGeo,
+      laundry: laundryGeo, tent: tentGeo, campfire: campfireGeo, column: columnGeo, arch: archGeo,
+    };
+    const two = {   // [before, after]
+      cottage: [() => cottageGeo(true), () => cottageGeo(false)], chest: [() => chestGeo(false), () => chestGeo(true)],
+      watchtower: [() => watchtowerGeo(false), () => watchtowerGeo(true)], cairn: [() => cairnGeo(false), () => cairnGeo(true)],
+    };
+    const only = { village: { tent: 'before', campfire: 'before', garden: 'after', laundry: 'after', hay: 'after' }, ridge: { tent: 'before', campfire: 'before' } };
+    const cache = new Map();
+    const geo = (key, f) => { if (!cache.has(key)) cache.set(key, f()); return cache.get(key); };
+    this.sites = {};
+    for (const id of Object.keys(SITES)) {
+      const groups = { always: [], before: [], after: [] };
+      for (const p of SITE_PROPS) {
+        if (p.site !== id) continue;
+        const m = new THREE.Matrix4().compose(_v.set(p.x, G(p.x, p.z) - 0.04, p.z), _q.setFromAxisAngle(UP, p.ry || 0), _s.set(1, 1, 1));
+        if (two[p.kind]) {
+          groups.before.push({ geo: geo(p.kind + '0', two[p.kind][0]), m: m.clone() });
+          groups.after.push({ geo: geo(p.kind + '1', two[p.kind][1]), m });
+        } else groups[only[id]?.[p.kind] || 'always'].push({ geo: geo(p.kind, one[p.kind]), m });
+      }
+      const meshes = {};
+      for (const [k, list] of Object.entries(groups)) {
+        if (!list.length) continue;
+        const mesh = new THREE.Mesh(mergePlaced(list), vcMat);
+        mesh.castShadow = mesh.receiveShadow = true;
+        mesh.visible = k !== 'after';
+        scene.add(mesh);
+        meshes[k] = mesh;
+      }
+      this.sites[id] = meshes;
+    }
+    for (const g of cache.values()) g.dispose();
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 1.1, 40, 10, 1, true), new THREE.MeshBasicMaterial({ color: 0xffe9a0, transparent: true, opacity: 0.22, depthWrite: false, side: 2 /* DoubleSide (not in the bundle) */, fog: false }));
+    beam.visible = false;
+    scene.add(beam);
+    this.beam = beam;
+    this.siteSig = '';
+    this.smokeT = 0;
+  }
+
+  syncSites(world, dt) {
+    const sig = JSON.stringify(world.enc);
+    if (sig !== this.siteSig) {
+      this.siteSig = sig;
+      for (const [id, meshes] of Object.entries(this.sites)) {
+        const done = world.enc[id] === 'done';
+        if (meshes.before) meshes.before.visible = !done;
+        if (meshes.after) meshes.after.visible = done;
+      }
+    }
+    // A shaft of light over the next place on the journey (not mid-wave).
+    const next = world.phase !== 'wave' && world.nextEncounter();
+    this.beam.visible = !!next;
+    if (next) {
+      this.beam.position.set(next.at.x, G(next.at.x, next.at.z) + 20, next.at.z);
+      this.beam.material.opacity = 0.16 + Math.sin(this.time * 2.4) * 0.05;
+    }
+    // Smoke: from the burnt village and the raiders' fire, then from rebuilt chimneys.
+    this.smokeT -= dt;
+    if (this.smokeT > 0) return;
+    this.smokeT = 0.22;
+    const h = world.hero;
+    const near = (x, z) => Math.abs(x - h.x) < 70 && Math.abs(z - h.z) < 70;
+    const vDone = world.enc.village === 'done';
+    for (const p of SITE_PROPS) {
+      if (!near(p.x, p.z)) continue;
+      if (p.kind === 'cottage' && Math.random() < (vDone ? 0.35 : 0.6)) {
+        const c = Math.cos(p.ry || 0), s2 = Math.sin(p.ry || 0);
+        const cx = vDone ? p.x + c * 0.9 + s2 * -0.5 : p.x, cz = vDone ? p.z - s2 * 0.9 + c * -0.5 : p.z;
+        this.spark(cx, vDone ? 4.3 : 1.4, cz, vDone ? 0xd9d9d9 : 0x4a4440, 1, vDone ? 0.32 : 0.5, 0.5, 2.6, -0.35);
+      } else if (p.kind === 'campfire' && world.enc[p.site] !== 'done' && Math.random() < 0.7) {
+        this.spark(p.x, 0.7, p.z, Math.random() < 0.3 ? 0xff9a3a : 0x6a625c, 1, 0.34, 0.45, 2.2, -0.4);
+      }
+    }
   }
 
   // Short landmark reveal (skippable; never takes away control).

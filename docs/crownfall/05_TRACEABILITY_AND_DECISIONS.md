@@ -5,11 +5,11 @@ This table started unimplemented and is now mapped to the repository (see `imple
 | ID | Requirement | State (2026-10-04, milestone 1) | Code / evidence |
 |---|---|---|---|
 | R01 | Portrait iPhone-browser play | existing-verified (desktop headless, 390×844); **iPhone unverified this milestone** | PWA `crownfall/index.html`, `style.css` safe areas; evidence `evidence/m1-*.png`; device checklist in `implementation-status.md` |
-| R02 | Bigger epic exploration maps | in-progress | map measured ≈160 × 316 m plus a 58 × 138 m mountain range (`js/map.js`); terrain now has relief (`js/terrain.js`); no streaming yet |
+| R02 | Bigger epic exploration maps | in-progress | map measured ≈160 × 316 m plus a 58 × 138 m mountain range; terrain relief (`js/terrain.js`); the Greenwood journey adds 5 authored places (`js/slice.js`, `SITES` in `js/map.js`); no streaming yet |
 | R03 | Close rear-view RPG combat | implemented-unverified | combat camera behind the king (`js/camera.js` `CAM.combat`, `js/render.js` `updateCamera`); camera-relative steering `stickToWorld`; evidence `evidence/m1-combat-wave.png`; still auto-fire only |
 | R04 | Durable full handoff | verified | `docs/crownfall/` (this pack plus plan, status, layout) |
 | R05 | Five regional king identities | blocked | the five concept images are missing from the pack; procedural placeholder king in `js/models.js`; manifest lists them `missing` |
-| R06 | Exploration/elevation/landmark inspiration | in-progress | rolling hills, river valley, faceted peaks, rim hills (`js/terrain.js`, `js/models.js` `peakGeo`); landmark reveals (`LANDMARKS` in `js/map.js`) |
+| R06 | Exploration/elevation/landmark inspiration | in-progress | rolling hills, river valley, East Ridge, faceted peaks, rim hills; successive reveals (ruin → ridge watchtower → overlook → fort); evidence `evidence/m2-*.png` |
 | R07 | Preserve strategy and building loop | existing-verified | all systems in `js/world.js` untouched by terrain; headless economy and siege sims re-run (see status); legacy save test in `crownfall/tests/run.mjs` |
 | R08 | Chunky bright low-poly style | existing-verified (placeholder art) | flat-shaded vertex-coloured terrain and models; screenshot comparison in `evidence/` |
 | R09 | Three cameras + cinematic reveals | implemented-unverified | `js/camera.js` (state machine, tested), `js/render.js` (`updateCamera`, `cinematic`, `skipCinematic`), camera button `#btn-cam`; evidence `evidence/m1-*.png` |
@@ -23,16 +23,16 @@ This table started unimplemented and is now mapped to the repository (see `imple
 | R17 | Friendly buildings/levels | existing-verified | `BUILDINGS` in `js/config.js`; buildings now stand on `footing()` ground |
 | R18 | Tower/catapult/wall progression | existing-verified | tower and catapult tiers in `BUILDINGS`; `WALLS` 6 expansions + 5 gate materials (Palisade → Iron) |
 | R19 | Mountain Fort/final Stronghold | existing-verified | `FORT`, `STRONGHOLD`, camps in `js/map.js`; built on levelled ground (`FLATS` in `js/terrain.js`); evidence `evidence/m1-cinematic-mountain-fort.png` |
-| R20 | Orders/claims/waves/siege | existing-verified | follow/defend/march orders, stations, outposts, siege columns in `js/world.js` |
+| R20 | Orders/claims/waves/siege | existing-verified; scout join implemented-unverified | orders/stations/outposts/siege in `js/world.js`; the ridge scout puts field soldiers on follow (`updateScout`), tested |
 | R21 | Full effects inventory | existing (unaudited per effect) | `js/render.js` particles and rings, now ground-relative |
 | R22 | UI style and controls | existing-verified | `js/ui.js`, `style.css`; new camera button next to pause |
 | R23 | Elevation/natural boundaries/traversal | implemented-unverified | `js/terrain.js`; tests: roads walkable, ridable map within slope limits, castle grounds and pads level, river below water, footing never floats |
-| R24 | Landmark sightlines/reveals | implemented-unverified | `LANDMARKS` (6) + `world.updateDiscovery()`; banner + cinematic in `js/main.js`; saved in `world.discovered`; tests for once-only and fog |
-| R25 | Routes/branches/chokepoints | existing (partial) | 4 lanes, bridge, fort gorge (`js/map.js`); route graph in `world-layout.json`; side roads planned (Phase 2) |
-| R26 | Settlements feel inhabited/grow visibly | planned | Phase 2 dressing |
+| R24 | Landmark sightlines/reveals | implemented-unverified | `LANDMARKS` + encounter reveals with `look` targets (`js/slice.js`), light beam + arrow to the next place (`syncSites`, `updateThreats`); tests; evidence `evidence/m2-ruin-reveal-watchtower.png`, `m2-overlook-reveals-fort.png` |
+| R25 | Routes/branches/chokepoints | in-progress | 4 lanes, bridge, fort gorge; the journey route with side places off the roads; bot traversal test of the whole route; route graph and journey in `world-layout.json` |
+| R26 | Settlements feel inhabited/grow visibly | in-progress (bounded) | the Fallen Village rebuilds visibly with people returning; King's Farmland dressing; houses inside the walls not yet dressed |
 | R27 | Smooth collision-aware camera states | implemented-unverified | pose easing over `CAM.blend` 0.9 s, hysteresis, terrain lift along the view line, ground raycast for taps (`rayGround`) in `js/render.js`; camera tests |
 | R28 | Simple concurrent touch controls | implemented-unverified | `js/input.js` pointer tracking; right-side drag turns the camera in chase modes; **needs real iPhone test** |
-| R29 | Waves and exploration encounters coexist | existing (waves); encounters planned | rule: waves continue while travelling (decision log in `implementation-plan.md`) |
+| R29 | Waves and exploration encounters coexist | implemented-unverified | camp guards never count towards a wave (tested); waves continue while travelling, with a one-time toast; encounter state saved |
 | R30 | Standard per-king asset inventory | planned | `crownfall/assets/manifest.json` lists every item, all `missing` / `placeholder` |
 | R31 | Shared animation/socket/cargo contract | planned | procedural rig poses only (`js/render.js`); clip names mapped in manifest |
 | R32 | Key art/sheets/icons/UI/concepts | planned | needs separate art production |
@@ -63,6 +63,8 @@ This table started unimplemented and is now mapped to the repository (see `imple
 2026-10-04 · terrain relief · flat ground · `groundH` relief with levelled build areas · R23 · render-only, saves untouched · tests in `crownfall/tests/run.mjs`, evidence `evidence/m1-*.png`.
 2026-10-04 · camera modes · single 55° view · kingdom / adventure / combat + cinematic, manual override · R09, R27 · camera tests, evidence screenshots.
 2026-10-04 · bow stow · upright bow · diagonal on the back when not shooting · R12 · `evidence/m1-adventure-road-south.png`.
+2026-10-04 · Greenwood journey · none · five authored places with saved encounter state · R24, R25, R26, R29 · 10 tests incl. whole-route ride, `evidence/m2-*.png`.
+2026-10-04 · combat camera · dist 10 / height 5.6 · dist 12.5 / height 7.4 · R03, R27 · `evidence/m2-ridge-raid-combat.png`.
 
 ## Change log template
 Date · decision · previous rule · new rule · reason · requirement IDs affected · owner approval if scope changes · evidence. Keep old numeric proposals recorded as superseded; don't let future sessions revive them accidentally.

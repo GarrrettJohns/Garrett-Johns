@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-10-04",
+  "updated": "2026-10-04 (milestone 2)",
   "convention": {
     "units": "metres",
     "origin": "castle centre (0, 0)",
@@ -38,7 +38,8 @@
     "mountainRise": 3.5,
     "rimHeight": 16,
     "maxSlope": 0.65,
-    "mountainSlope": 0.75
+    "mountainSlope": 0.75,
+    "ridge": 1.5
   },
   "regions": [
     {
@@ -585,7 +586,7 @@
       "z": -67,
       "sight": 22,
       "height": -0.2,
-      "revealRule": "discovered within sight m of the king, unless beyond the claimed road (z > frontier + 25)"
+      "revealRule": "discovered within sight m of the king (or at its view point), unless beyond the claimed road (z > frontier + 25)"
     },
     {
       "id": "fort",
@@ -593,9 +594,9 @@
       "sub": "It holds the only way into the eastern mountains",
       "x": 70,
       "z": -8,
-      "sight": 52,
+      "sight": 16,
       "height": -1.5,
-      "revealRule": "discovered within sight m of the king, unless beyond the claimed road (z > frontier + 25)"
+      "revealRule": "discovered within sight m of the king (or at its view point), unless beyond the claimed road (z > frontier + 25)"
     },
     {
       "id": "riverford",
@@ -605,7 +606,7 @@
       "z": 82,
       "sight": 40,
       "height": 0.4,
-      "revealRule": "discovered within sight m of the king, unless beyond the claimed road (z > frontier + 25)"
+      "revealRule": "discovered within sight m of the king (or at its view point), unless beyond the claimed road (z > frontier + 25)"
     },
     {
       "id": "iron",
@@ -615,7 +616,7 @@
       "z": 88,
       "sight": 34,
       "height": 2.4,
-      "revealRule": "discovered within sight m of the king, unless beyond the claimed road (z > frontier + 25)"
+      "revealRule": "discovered within sight m of the king (or at its view point), unless beyond the claimed road (z > frontier + 25)"
     },
     {
       "id": "stonehill",
@@ -625,7 +626,7 @@
       "z": 130,
       "sight": 40,
       "height": 1.5,
-      "revealRule": "discovered within sight m of the king, unless beyond the claimed road (z > frontier + 25)"
+      "revealRule": "discovered within sight m of the king (or at its view point), unless beyond the claimed road (z > frontier + 25)"
     },
     {
       "id": "stronghold",
@@ -635,7 +636,7 @@
       "z": 203,
       "sight": 75,
       "height": -1.5,
-      "revealRule": "discovered within sight m of the king, unless beyond the claimed road (z > frontier + 25)"
+      "revealRule": "discovered within sight m of the king (or at its view point), unless beyond the claimed road (z > frontier + 25)"
     }
   ],
   "camps": [
@@ -942,8 +943,183 @@
   "workingNames": [
     "Whispering Woods",
     "Fallen Village",
+    "King's Farmland",
+    "East Ridge",
+    "Foothill Overlook",
+    "Old Ruin",
     "King's River",
-    "Old Stone Bridge",
-    "King's Farmland"
-  ]
+    "Old Stone Bridge"
+  ],
+  "journey": {
+    "note": "The Greenwood vertical slice (working names). Code: crownfall/js/slice.js (encounters), map.js SITES / SITE_PROPS (places and props), terrain.js (levelled sites, the East Ridge).",
+    "route": [
+      "castle",
+      "farmland",
+      "village",
+      "bridge",
+      "ruin",
+      "bridge",
+      "ridge",
+      "overlook",
+      "castle"
+    ],
+    "sites": {
+      "farmland": {
+        "x": -64,
+        "z": 30,
+        "r": 13,
+        "name": "King's Farmland",
+        "height": 1,
+        "props": [
+          "field",
+          "field",
+          "field",
+          "field",
+          "barn (solid r 2.2)",
+          "hay (solid r 0.8)",
+          "hay (solid r 0.8)",
+          "scarecrow",
+          "cart (solid r 1)"
+        ]
+      },
+      "village": {
+        "x": -63,
+        "z": -30,
+        "r": 11,
+        "name": "The Fallen Village",
+        "height": 0.6,
+        "props": [
+          "cottage (solid r 2.2)",
+          "cottage (solid r 2.2)",
+          "cottage (solid r 2.2)",
+          "well (solid r 0.9)",
+          "cart (solid r 1)",
+          "hay (solid r 0.8)",
+          "garden",
+          "laundry",
+          "tent",
+          "tent",
+          "campfire"
+        ]
+      },
+      "ruin": {
+        "x": -36,
+        "z": -70,
+        "r": 6,
+        "name": "The Old Ruin",
+        "height": 3.3,
+        "props": [
+          "column (solid r 0.6)",
+          "column (solid r 0.6)",
+          "column (solid r 0.6)",
+          "column (solid r 0.6)",
+          "arch (solid r 0.9)",
+          "chest"
+        ]
+      },
+      "ridge": {
+        "x": 51,
+        "z": -37,
+        "r": 7,
+        "name": "The East Ridge",
+        "height": 3.6,
+        "props": [
+          "watchtower (solid r 1.4)",
+          "tent",
+          "tent",
+          "campfire"
+        ]
+      },
+      "overlook": {
+        "x": 54,
+        "z": -28,
+        "r": 4,
+        "name": "The Foothill Overlook",
+        "height": 2.5,
+        "props": [
+          "cairn (solid r 0.8)"
+        ]
+      }
+    },
+    "encounters": [
+      {
+        "id": "farmland",
+        "site": "farmland",
+        "kind": "visit",
+        "opens": "(w) => w.wave >= 1",
+        "guards": null,
+        "reward": {
+          "wood": 15
+        },
+        "revealLooksAt": null
+      },
+      {
+        "id": "village",
+        "site": "village",
+        "kind": "clear",
+        "opens": "(w) => w.wave >= 2",
+        "guards": [
+          "grunt",
+          "grunt",
+          "raider",
+          "archer",
+          "grunt"
+        ],
+        "reward": {
+          "coins": 40,
+          "people": 3
+        },
+        "revealLooksAt": null
+      },
+      {
+        "id": "ruin",
+        "site": "ruin",
+        "kind": "visit",
+        "opens": "(w) => w.built('bridge')",
+        "guards": null,
+        "reward": {
+          "coins": 30
+        },
+        "revealLooksAt": "ridge"
+      },
+      {
+        "id": "ridge",
+        "site": "ridge",
+        "kind": "raid",
+        "opens": "(w) => w.enc.ruin === 'done' || w.wave >= 4",
+        "guards": [
+          "raider",
+          "grunt",
+          "grunt",
+          "archer",
+          "grunt",
+          "archer"
+        ],
+        "reward": {
+          "coins": 60
+        },
+        "revealLooksAt": null
+      },
+      {
+        "id": "overlook",
+        "site": "overlook",
+        "kind": "visit",
+        "opens": "(w) => w.enc.ridge === 'done'",
+        "guards": null,
+        "reward": {
+          "coins": 20
+        },
+        "revealLooksAt": "fort"
+      }
+    ],
+    "ridge": {
+      "centreX": 52,
+      "crestZ": [
+        -36,
+        -31
+      ],
+      "height": 1.5,
+      "note": "the castle hill eastern lip raised into a ridge; north end at the river bank, south end above the Mountain Fort"
+    }
+  }
 }

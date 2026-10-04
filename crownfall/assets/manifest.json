@@ -3,7 +3,7 @@
   "updated": "2026-10-04",
   "note": "Every model in the game today is procedural geometry (status placeholder). No GLB exists in the repository; nothing is marked ready unless the file exists. Paths are relative to crownfall/.",
   "counts": {
-    "placeholder": 53,
+    "placeholder": 69,
     "missing": 95,
     "ready": 1
   },
@@ -3543,6 +3543,250 @@
       "status": "ready",
       "source": "repository",
       "note": "PWA icons 192/512/maskable/apple-touch"
+    },
+    {
+      "id": "prop.field",
+      "region": "greenwood",
+      "kind": "prop",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "hooks": [
+        "map.js SITE_PROPS"
+      ]
+    },
+    {
+      "id": "prop.barn",
+      "region": "greenwood",
+      "kind": "prop",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "hooks": [
+        "map.js SITE_PROPS"
+      ]
+    },
+    {
+      "id": "prop.hay",
+      "region": "greenwood",
+      "kind": "prop",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "hooks": [
+        "map.js SITE_PROPS"
+      ]
+    },
+    {
+      "id": "prop.scarecrow",
+      "region": "greenwood",
+      "kind": "prop",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "hooks": [
+        "map.js SITE_PROPS"
+      ]
+    },
+    {
+      "id": "prop.cart",
+      "region": "greenwood",
+      "kind": "prop",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "hooks": [
+        "map.js SITE_PROPS"
+      ]
+    },
+    {
+      "id": "prop.cottage",
+      "region": "greenwood",
+      "kind": "prop",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "hooks": [
+        "map.js SITE_PROPS"
+      ],
+      "note": "two states: before / after its encounter"
+    },
+    {
+      "id": "prop.well",
+      "region": "greenwood",
+      "kind": "prop",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "hooks": [
+        "map.js SITE_PROPS"
+      ]
+    },
+    {
+      "id": "prop.garden",
+      "region": "greenwood",
+      "kind": "prop",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "hooks": [
+        "map.js SITE_PROPS"
+      ]
+    },
+    {
+      "id": "prop.laundry",
+      "region": "greenwood",
+      "kind": "prop",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "hooks": [
+        "map.js SITE_PROPS"
+      ]
+    },
+    {
+      "id": "prop.tent",
+      "region": "greenwood",
+      "kind": "prop",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "hooks": [
+        "map.js SITE_PROPS"
+      ]
+    },
+    {
+      "id": "prop.campfire",
+      "region": "greenwood",
+      "kind": "prop",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "hooks": [
+        "map.js SITE_PROPS"
+      ]
+    },
+    {
+      "id": "prop.column",
+      "region": "greenwood",
+      "kind": "prop",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "hooks": [
+        "map.js SITE_PROPS"
+      ]
+    },
+    {
+      "id": "prop.arch",
+      "region": "greenwood",
+      "kind": "prop",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "hooks": [
+        "map.js SITE_PROPS"
+      ]
+    },
+    {
+      "id": "prop.chest",
+      "region": "greenwood",
+      "kind": "prop",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "hooks": [
+        "map.js SITE_PROPS"
+      ],
+      "note": "two states: before / after its encounter"
+    },
+    {
+      "id": "prop.watchtower",
+      "region": "greenwood",
+      "kind": "prop",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "hooks": [
+        "map.js SITE_PROPS"
+      ],
+      "note": "two states: before / after its encounter"
+    },
+    {
+      "id": "prop.cairn",
+      "region": "greenwood",
+      "kind": "prop",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "hooks": [
+        "map.js SITE_PROPS"
+      ],
+      "note": "two states: before / after its encounter"
     }
   ]
 }

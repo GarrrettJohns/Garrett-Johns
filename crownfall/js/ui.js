@@ -237,6 +237,9 @@ export class UI {
     if (ctx.view && world.phase !== 'wave') {
       const fort = world.enemies.find((e) => e.fort && e.kind === 'fgate' && e.hp > 0);
       if (fort) list.push({ lane: 'fort', x: fort.x, z: fort.z, label: '⛰ Mountain Fort', landmark: true });
+      // And at the next place on the Greenwood journey.
+      const next = world.nextEncounter();
+      if (next) list.push({ lane: 'journey', x: next.at.x, z: next.at.z, label: `${next.icon} ${next.at.name}`, landmark: true });
     }
     this.threatEls = this.threatEls || {};
     const seen = new Set();
