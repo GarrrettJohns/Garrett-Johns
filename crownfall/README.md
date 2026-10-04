@@ -78,11 +78,18 @@ It then launches full screen and works offline.
   walls and one on each outpost's land, so the army it takes (the guide asks
   for 60) means upgraded Barracks and Houses at every outpost. In simulation
   with a fully upgraded king: 50 soldiers win 1 in 3, 58+ win.
+- **Troop orders:** the orders button (bottom left) gives every soldier in the
+  field a standing order that new recruits obey too: 🏰 Hold posts (archers
+  man towers, knights stay by the king), 🚩 Follow me (ride with the king),
+  or ⚔️ March on the stronghold (head out on their own, muster at the
+  furthest claimed outpost, and storm the gate, then the keep, once the siege
+  begins).
 - **Roads that hold on their own:** Castle → 🛡️ Defence rates each road home
   (✅ holds on its own, ⚠️ needs a hand, ❌ weak) from its towers, posted
   archers and nearby catapults, and its − / + buttons station soldiers at that
-  road's gate. Stationed soldiers hold there, fight anything on that road and
-  don't follow the king.
+  road's gate (the same tab is on Barracks and outposts). Stationed soldiers
+  stand just outside the gate under a "🛡️ N on guard" tag, fight anything on
+  that road, and ignore troop orders.
 - **Escorts fight from further out:** soldiers riding with the king all turn
   on anything that comes within 15 m of him, and otherwise take on enemies
   within 16 m of themselves, so they don't hang back while he fights.

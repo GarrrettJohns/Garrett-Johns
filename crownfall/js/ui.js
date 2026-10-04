@@ -20,7 +20,7 @@ export class UI {
       sheet: $('sheet'), sheetIcon: $('sheet-icon'), sheetName: $('sheet-name'), sheetSub: $('sheet-sub'), sheetList: $('sheet-list'),
       buildSheet: $('build-sheet'), buildList: $('build-list'),
       placeBar: $('place-bar'), placeText: $('place-text'), placeOk: $('btn-place-ok'), threats: $('threats'),
-      bank: $('hud-bank'), bankN: $('hud-bank-n'), follow: $('btn-follow'),
+      bank: $('hud-bank'), bankN: $('hud-bank-n'), follow: $('btn-follow'), orders: $('orders'), guards: $('guards'),
       tip: $('tip'), tipTitle: $('tip-title'), tipText: $('tip-text'),
       rates: $('rates'), ratesTitle: $('rates-title'), ratesBody: $('rates-body'),
       load: $('hud-load'), loadN: $('hud-load-n'), loadCap: $('hud-load-cap'), loadI: $('hud-load-i'), padtip: $('padtip'),
@@ -39,7 +39,13 @@ export class UI {
     $('btn-place-ok').addEventListener('click', () => h.onPlaceOk());
     $('btn-place-cancel').addEventListener('click', () => h.onPlaceCancel());
     $('btn-pause').addEventListener('click', () => h.onPause());
-    this.el.follow.addEventListener('click', () => h.onFollow());
+    this.el.follow.addEventListener('click', () => { h.tap(); this.el.orders.hidden = !this.el.orders.hidden; });
+    this.el.orders.addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-order]');
+      if (!b) return;
+      this.el.orders.hidden = true;
+      h.onOrder(b.dataset.order);
+    });
     $('tip-ok').addEventListener('click', () => { h.tap(); this.el.tip.hidden = true; });
     // Tap a resource in the HUD for where it comes from, per minute.
     for (const pill of document.querySelectorAll('.pill[data-res]')) {
@@ -123,10 +129,15 @@ export class UI {
     const inWave = world.phase === 'wave';
     // 🚩 Follow me: shown once there are soldiers out in the field.
     const field = world.allies.length;
-    this.set('follow', `${field > 0 || world.rally}|${world.rally}|${!!ctx.placing}`, () => {
-      e.follow.hidden = !(field > 0 || world.rally) || !!ctx.placing;
-      e.follow.classList.toggle('on', world.rally);
-      e.follow.innerHTML = world.rally ? '<span>🏰</span><small>To posts</small>' : '<span>🚩</span><small>Follow me</small>';
+    const order = world.order || 'posts';
+    this.set('follow', `${field > 0 || order !== 'posts'}|${order}|${!!ctx.placing}`, () => {
+      const show = (field > 0 || order !== 'posts') && !ctx.placing;
+      e.follow.hidden = !show;
+      if (!show) e.orders.hidden = true;
+      e.follow.classList.toggle('on', order === 'follow');
+      e.follow.classList.toggle('march', order === 'march');
+      e.follow.innerHTML = { posts: '<span>🏰</span><small>Posts</small>', follow: '<span>🚩</span><small>Following</small>', march: '<span>⚔️</span><small>Marching</small>' }[order];
+      for (const b of e.orders.querySelectorAll('button')) b.classList.toggle('on', b.dataset.order === order);
     });
     const left = inWave ? world.enemiesLeft : 0;
     this.set('left', left, () => {
@@ -175,6 +186,7 @@ export class UI {
     });
     this.updateThreats(world, ctx);
     this.updateRates(world, dt);
+    this.updateGuards(world, ctx);
     this.updatePadTip(world, ctx);
     this.updateMenu(world, dt, ctx);
     if (!e.buildSheet.hidden) this.renderBuild(world);
@@ -258,6 +270,25 @@ export class UI {
       el.hidden = false;
     }
     for (const [id, el] of Object.entries(this.threatEls)) if (!seen.has(id)) el.hidden = true;
+  }
+
+  // A tag over each road gate that has soldiers on guard.
+  updateGuards(world, ctx) {
+    const box = this.el.guards;
+    this.guardEls = this.guardEls || {};
+    for (const lane of ['S', 'E', 'W', 'N']) {
+      let el = this.guardEls[lane];
+      const n = world.allies.filter((a) => a.station === lane).length;
+      const g = world.gates[lane];
+      const p = n && g && ctx.view ? ctx.view.project(g.x, 4.2, g.z) : null;
+      const on = p && !p.behind && p.x > -40 && p.x < ctx.view.w + 40 && p.y > 0 && p.y < ctx.view.h;
+      if (!on) { if (el) el.hidden = true; continue; }
+      if (!el) { el = document.createElement('div'); el.className = 'guard-tag'; box.appendChild(el); this.guardEls[lane] = el; }
+      const txt = `🛡️ ${n} on guard`;
+      if (el.textContent !== txt) el.textContent = txt;
+      el.style.left = `${p.x}px`; el.style.top = `${p.y}px`;
+      el.hidden = false;
+    }
   }
 
   updateRates(world, dt) {

@@ -471,3 +471,28 @@ body:not([data-state="play"]) .rates-card { display: none; }
 .dev-status { position: sticky; top: 0; z-index: 2; background: #ece6da; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); border-radius: 12px; padding: 10px 12px; margin: 0 0 12px; text-align: left; font-size: 14px; }
 .dev-status b { display: block; margin-bottom: 4px; }
 .dev-status span { display: block; opacity: 0.75; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+
+/* Troop orders tray, opened from the orders button */
+.orders {
+  position: absolute; left: calc(var(--safe-l) + 12px); bottom: calc(var(--safe-b) + 96px); z-index: 20;
+  display: flex; flex-direction: column; gap: 6px; width: min(78vw, 300px);
+}
+.orders button {
+  display: grid; grid-template-columns: 36px 1fr; grid-template-rows: auto auto; column-gap: 8px; align-items: center; text-align: left;
+  background: rgba(30, 34, 42, 0.94); color: #fff; border: 2px solid transparent; border-radius: 14px; padding: 8px 10px;
+  font-family: var(--font); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+.orders button span { grid-row: span 2; font-size: 24px; text-align: center; }
+.orders button b { font-size: 15px; }
+.orders button small { font-size: 12px; opacity: 0.75; }
+.orders button.on { border-color: #ffd25a; background: rgba(60, 50, 20, 0.95); }
+.round-btn.follow.march { border-color: #5a2a8a; background: linear-gradient(#b07aff, #7a3ad8); box-shadow: 0 4px 0 #4a1f7a, 0 8px 16px rgba(0, 0, 0, 0.25); }
+body:not([data-state="play"]) .orders { display: none; }
+/* Labels over road gates with soldiers on guard */
+#guards { position: absolute; inset: 0; pointer-events: none; }
+.guard-tag {
+  position: absolute; transform: translate(-50%, -100%); white-space: nowrap;
+  background: rgba(30, 70, 140, 0.9); color: #fff; font-weight: 900; font-size: 12px; padding: 3px 8px; border-radius: 99px;
+  border: 2px solid rgba(255, 255, 255, 0.85); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+body:not([data-state="play"]) #guards { visibility: hidden; }

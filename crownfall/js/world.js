@@ -191,9 +191,9 @@ const OBJECTIVES = [
     at: (w) => w.firstOf('barracks'),
   },
   {
-    text: 'Tap 🚩 Follow me so your troops ride with you',
+    text: 'Tap the orders button (bottom left) and pick Follow me or March',
     tip: 'follow',
-    done: (w) => w.built('pass') || w.rally,
+    done: (w) => w.built('pass') || w.order !== 'posts',
     at: () => null,
   },
   {
@@ -338,7 +338,7 @@ export class World {
     this.wave = 0;
     this.res = { wood: 0, stone: 0, iron: 0, gold: 0 };   // gold here is banked at a warehouse
     this.smith = { king: 0, workers: 0, arrows: 0 };
-    this.rally = false;
+    this.order = 'posts';   // standing order for soldiers in the field: posts | follow | march
     this.stations = { S: 0, E: 0, W: 0, N: 0 };   // soldiers wanted on guard at each road's gate
     this.income = [];     // recent production: { t, res, src, n, kind: 'made' | 'home' }
     this.adviceT = 20;
@@ -803,9 +803,13 @@ export class World {
       tabs = [
         { tab: 'King', items: KING },
         { tab: 'Army', items: [`train:${b.id}:knight`, `train:${b.id}:archer`, `train:${b.id}:raider`, 'armor'] },
+        { tab: 'Defence', items: this.lanesOpen.map((l) => `station:${l.id}`) },
       ];
     } else if (t === 'barracks') {
-      tabs = [{ tab: 'Barracks', items: [`train:${b.id}:knight`, `train:${b.id}:archer`, `train:${b.id}:raider`, `up:${b.id}`, 'armor'] }];
+      tabs = [
+        { tab: 'Barracks', items: [`train:${b.id}:knight`, `train:${b.id}:archer`, `train:${b.id}:raider`, `up:${b.id}`, 'armor'] },
+        { tab: 'Defence', items: this.lanesOpen.map((l) => `station:${l.id}`) },
+      ];
     } else if (t === 'blacksmith') {
       const opts = (cat) => Object.keys(STYLES[cat].options).map((o) => `style:${cat}:${o}`);
       tabs = [
@@ -1540,11 +1544,31 @@ export class World {
 
   // 🚩 Follow me: every soldier in the field rides with the king. Tapping it
   // again sends them back to their posts (archers to free tower slots).
-  setRally(on) {
-    this.rally = on;
-    if (!on) for (const a of this.allies) a.follow = false;
-    if (on) for (const a of this.allies) if (a.station) a.follow = false;
-    this.emit('rally', { on });
+  get rally() { return this.order === 'follow'; }
+  setRally(on) { this.setOrder(on ? 'follow' : 'posts'); }
+
+  // Standing orders for soldiers in the field (not those on guard at a road):
+  // hold their posts, ride with the king, or march on the stronghold.
+  // Newly trained soldiers obey whichever is set.
+  setOrder(order) {
+    if (!['posts', 'follow', 'march'].includes(order)) return;
+    this.order = order;
+    if (order !== 'follow') for (const a of this.allies) a.follow = false;
+    this.emit('rally', { on: order === 'follow', order });
+  }
+
+  // Where marching soldiers head: the stronghold in a siege (its gate, then
+  // the keep), otherwise a muster point at the furthest claimed outpost.
+  marchPoint() {
+    const S = STRONGHOLD;
+    if (this.siege && this.sgGate) return this.sgGate.hp > 0 ? { x: S.x, z: S.gateZ - 5, siege: true } : { x: S.x, z: S.z, siege: true };
+    const out = [...OUTPOSTS].reverse().map((o) => this.b[o.id]).find((b) => b && b.state === 'built');
+    if (out) {
+      const s0 = laneAtZ(LANE.S, out.z);
+      lanePoint(LANE.S, s0, tmpP);
+      return { x: tmpP.x, z: tmpP.z };
+    }
+    return { x: 0, z: this.wallRadius + 4 };
   }
 
   // Call one archer down from a tower to ride with the king.
@@ -1591,7 +1615,9 @@ export class World {
     // Knights, and anyone called with 🚩 Follow me, take formation slots
     // behind the king (not those on guard at a road).
     let ki = 0;
-    for (const a of this.allies) if (!a.station && (a.kind === 'knight' || a.follow || this.rally)) a.slot = ki++;
+    const marching = this.order === 'march';
+    const muster = marching ? this.marchPoint() : null;
+    for (const a of this.allies) if (!a.station && (a.kind === 'knight' || a.follow || this.rally || marching)) a.slot = ki++;
 
     for (let i = this.allies.length - 1; i >= 0; i--) {
       const a = this.allies[i];
@@ -1619,6 +1645,15 @@ export class World {
         a.post = null;
         const e = this.nearestEnemy(a.x, a.z, a.kind === 'archer' ? u.range : 12);
         if (e && hyp(e.x - g.x, e.z - g.z) < 18) target = e;
+      } else if (marching && !a.follow) {
+        // Marching on the stronghold, independent of the king.
+        const col = a.slot % 6, row = Math.floor(a.slot / 6);
+        gx = muster.x + (col - 2.5) * 1.5;
+        gz = muster.z - 2 - row * 1.4;
+        a.post = null;
+        const reach = muster.siege ? 30 : a.kind === 'archer' ? u.range : 14;
+        const e = this.nearestEnemy(a.x, a.z, reach);
+        if (e && (muster.siege || hyp(e.x - muster.x, e.z - muster.z) < 26)) target = e;
       } else if (follows) {
         const row = Math.floor(a.slot / 5), col = a.slot % 5;
         const ang = Math.PI + (col - 2) * 0.55;
@@ -1655,7 +1690,7 @@ export class World {
           target = this.nearestEnemy(a.x, a.z, u.range);
         }
       } else if (a.kind === 'knight') {
-        if (hero.alive && !a.station) {
+        if (hero.alive) {
           const row = Math.floor(a.slot / 5), col = a.slot % 5;
           const ang = Math.PI + (col - 2) * 0.55;
           const r = 2.2 + row * 1.4;
@@ -1677,7 +1712,7 @@ export class World {
         a.yaw = Math.atan2(target.x - a.x, target.z - a.z);
         if (d > u.range + target.def.radius) {
           // Escorting archers close to bow range; everyone else charges.
-          if (a.kind !== 'archer' || ((a.follow || this.rally) && !a.station)) { gx = target.x; gz = target.z; }
+          if (a.kind !== 'archer' || ((a.follow || this.rally || marching) && !a.station)) { gx = target.x; gz = target.z; }
         } else {
           gx = a.x; gz = a.z;
           if (a.atkCd <= 0) {
@@ -2574,7 +2609,7 @@ export class World {
       res: { ...this.res },
       funds: { ...this.funds },
       objective: this.objective,
-      rally: this.rally,
+      order: this.order,
       stations: { ...this.stations },
       smith: { ...this.smith },
       level: this.level,
@@ -2596,7 +2631,7 @@ export class World {
     this.wave = s.wave;
     this.res = { gold: 0, iron: 0, ...s.res };
     this.smith = { king: 0, workers: 0, arrows: 0, ...(s.smith || {}) };
-    this.rally = !!s.rally;
+    this.order = s.order || (s.rally ? 'follow' : 'posts');
     this.stations = { S: 0, E: 0, W: 0, N: 0, ...(s.stations || {}) };
     this.funds = {};
     this.objective = s.objective;

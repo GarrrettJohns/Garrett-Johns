@@ -64,7 +64,13 @@
       <button id="btn-build" class="round-btn" type="button" aria-label="Build"><span>🔨</span><small>Build</small></button>
       <button id="btn-wave" class="btn primary wave-btn" type="button">⚔️ Start Wave 1</button>
     </div>
-    <button id="btn-follow" class="round-btn follow" type="button" aria-label="Troops follow me" hidden><span>🚩</span><small>Follow me</small></button>
+    <button id="btn-follow" class="round-btn follow" type="button" aria-label="Orders for your troops" hidden><span>🚩</span><small>Orders</small></button>
+    <div id="orders" class="orders" hidden role="menu" aria-label="Troop orders">
+      <button type="button" data-order="posts"><span>🏰</span><b>Hold posts</b><small>Guard towers, gates and the castle</small></button>
+      <button type="button" data-order="follow"><span>🚩</span><b>Follow me</b><small>Ride with the king and fight at his side</small></button>
+      <button type="button" data-order="march"><span>⚔️</span><b>March on the stronghold</b><small>Muster at the furthest outpost; storm the stronghold in the siege</small></button>
+    </div>
+    <div id="guards"></div>
     <section id="rates" class="rates-card" hidden aria-live="polite">
       <header><h3 id="rates-title"></h3><button id="rates-close" class="icon-btn dark" type="button" aria-label="Close">✕</button></header>
       <div id="rates-body"></div>

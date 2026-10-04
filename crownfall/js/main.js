@@ -85,6 +85,7 @@ const ui = new UI({
   onWorkers: (id, d) => { world.setWorkers(id, d); audio.tap(); dirty = true; },
   onStation: (lane, d) => { world.setStation(lane, d); audio.tap(); dirty = true; },
   onFollow: () => { audio.tap(); world.setRally(!world.rally); dirty = true; },
+  onOrder: (o) => { audio.tap(); world.setOrder(o); dirty = true; },
 });
 
 // Tutorial cards: shown once each, when the guide first reaches them.
@@ -164,9 +165,14 @@ const TIPS = {
       <li>Then build a <b>Blacksmith</b> (🔨) to forge iron tools for the king and your workers, and iron arrowheads for every bow.</li>
       <li>Iron also turns a catapult into a Trebuchet.</li>
     </ul>`],
-  follow: ['🚩 Follow me', `
-    <p>Tap it and every soldier in the field rides with you: knights fight at your side, archers shoot whatever comes near, raiders charge.</p>
-    <p>Tap it again to send them back to their posts. At a tower, use <b>Call an archer</b> to bring posted archers along one at a time.</p>`],
+  follow: ['🚩 Orders for your troops', `
+    <p>Tap the orders button (bottom left) to give every soldier in the field a standing order. New recruits obey it too.</p>
+    <ul>
+      <li><b>🏰 Hold posts</b>: archers man the towers, knights stay by the king.</li>
+      <li><b>🚩 Follow me</b>: everyone rides with you and fights at your side.</li>
+      <li><b>⚔️ March on the stronghold</b>: they set off on their own, muster at your furthest outpost, and storm the stronghold when the siege begins.</li>
+    </ul>
+    <p>Soldiers on guard at a road (Castle, Barracks or outpost → 🛡️ Defence) stay put whatever the order. At a tower, <b>Call an archer</b> brings posted archers along one at a time.</p>`],
 };
 function checkTip() {
   if (state !== 'play' || world.phase !== 'build' || placing || ui.sheetOpen) return;
@@ -633,7 +639,7 @@ function handle(ev, events = []) {
     case 'column': if (ev.n === 1 || ev.n % 3 === 0) ui.toast(`⚔️ A column of ${ev.size} marches out of the stronghold!`, true); break;
     case 'wrecked': audio.crash(); ui.toast(`🔥 ${ev.name} ${ev.outpost ? 'has fallen' : 'was wrecked'}!`, true); break;
     case 'deposit': audio.spend(); ui.float(at(ev.x, 2.6, ev.z), `🏦 +${ev.n} banked`, '#ffe28a'); break;
-    case 'rally': ui.toast(ev.on ? '🚩 Your troops ride with you' : '🏰 Troops head back to their posts'); break;
+    case 'rally': ui.toast({ follow: '🚩 Your troops ride with you', posts: '🏰 Troops head back to their posts', march: '⚔️ Your troops march on the stronghold. They muster at the furthest outpost and storm it in the siege.' }[ev.order || (ev.on ? 'follow' : 'posts')]); break;
     case 'toast': ui.toast(ev.text); break;
     case 'deliver':
       audio.deliver();
