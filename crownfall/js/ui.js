@@ -6,7 +6,7 @@ import { BUILDINGS } from './config.js';
 const $ = (id) => document.getElementById(id);
 const PLACEABLE = ['house', 'warehouse', 'farm', 'barracks', 'blacksmith'];
 const LIMIT = { barracks: 4, blacksmith: 1 };
-const TAB_ICON = { King: '👑', Army: '⚔️', Castle: '🏰', Bow: '🏹', Style: '✨', Weapons: '⚔️', Iron: '⚙️' };
+const TAB_ICON = { King: '👑', Army: '⚔️', Castle: '🏰', Defence: '🛡️', Bow: '🏹', Style: '✨', Weapons: '⚔️', Iron: '⚙️' };
 
 export class UI {
   constructor(h) {
@@ -54,6 +54,8 @@ export class UI {
     $('rates-close').addEventListener('click', () => { h.tap(); this.ratesFor = null; this.el.rates.hidden = true; });
 
     this.el.sheetList.addEventListener('click', (e) => {
+      const st = e.target.closest('button[data-station]');
+      if (st) { const [lane, d] = st.dataset.station.split(':'); h.onStation(lane, Number(d)); this.sig = ''; this.sigT = 0; return; }
       const wk = e.target.closest('button[data-workers]');
       if (wk) { const [id, d] = wk.dataset.workers.split(':'); h.onWorkers(id, Number(d)); this.sig = ''; this.sigT = 0; return; }
       const tab = e.target.closest('button[data-tab]');
@@ -307,7 +309,7 @@ export class UI {
     const tabs = world.menu(b);
     if (!tabs.some((g) => g.tab === this.tab)) this.tab = tabs[0].tab;
     const items = tabs.find((g) => g.tab === this.tab).items;
-    const sig = JSON.stringify([info, this.tab, items.map((i) => [i.key, i.locked, i.maxed, i.owned, i.equipped, i.level, i.cost, i.assigned, i.working, i.free]), world.gold, world.res]);
+    const sig = JSON.stringify([info, this.tab, items.map((i) => [i.key, i.locked, i.maxed, i.owned, i.equipped, i.level, i.cost, i.assigned, i.working, i.free, i.on, i.want, i.desc]), world.gold, world.res]);
     if (sig === this.sig) return;
     this.sig = sig;
 
@@ -320,6 +322,20 @@ export class UI {
   }
 
   row(world, it) {
+    if (it.kind === 'station') {
+      return `<div class="row workers station ${it.rating}">
+        <div class="ri">${it.icon}</div>
+        <div class="rb">
+          <div class="rt">${esc(it.title)} · ${it.on} on guard</div>
+          <div class="rd">${esc(it.desc)}</div>
+          <div class="rd free">${it.free} soldier${it.free === 1 ? '' : 's'} free in the field</div>
+        </div>
+        <div class="stepper">
+          <button class="rbtn step ${it.want <= 0 ? 'off' : ''}" type="button" data-station="${it.lane}:-1">−</button>
+          <button class="rbtn step ${it.free <= 0 ? 'off' : ''}" type="button" data-station="${it.lane}:1">+</button>
+        </div>
+      </div>`;
+    }
     if (it.kind === 'workers') {
       const dots = Array.from({ length: it.slots }, (_, i) => `<i class="${i < it.working ? 'on' : i < it.assigned ? 'coming' : ''}"></i>`).join('');
       return `<div class="row workers">

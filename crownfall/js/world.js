@@ -54,6 +54,9 @@ const STRUCT_HP = {
   catapult: (lv) => 900 + 300 * lv,
   outpost: () => 3000,
 };
+// A road whose defences score this much holds on its own while the king is
+// away (two Stone Towers with posted archers, for example).
+const ROAD_HOLDS = 110;
 const DEFAULT_STYLE = { finish: 'gold', gem: 'none', string: 'white', trail: 'gold' };
 const HUT_RES = { lumber: 'wood', quarry: 'stone', ironmine: 'iron' };     // a wheelbarrow "item" of gold is a sack of 5 coins
 const GATHER_REACH = 3.2;
@@ -269,9 +272,15 @@ const OBJECTIVES = [
     at: (w) => w.b['outpost-3'],
   },
   {
-    text: 'Muster 65 soldiers for the siege: upgraded Barracks and Houses at every outpost',
+    text: 'Make the roads home hold without you: Castle → Defence shows each one',
+    tip: 'roads',
+    done: (w) => w.won || ['E', 'W', 'N'].every((l) => w.roadStrength(l).rating === 'holds'),
+    at: (w) => ({ x: 0, z: CASTLE_R + 1 }),
+  },
+  {
+    text: 'Muster 60 soldiers for the siege: upgraded Barracks and Houses at every outpost',
     tip: 'siege',
-    done: (w) => w.won || w.soldiers >= 65,
+    done: (w) => w.won || w.soldiers >= 60,
     at: () => null,
   },
   {
@@ -330,6 +339,7 @@ export class World {
     this.res = { wood: 0, stone: 0, iron: 0, gold: 0 };   // gold here is banked at a warehouse
     this.smith = { king: 0, workers: 0, arrows: 0 };
     this.rally = false;
+    this.stations = { S: 0, E: 0, W: 0, N: 0 };   // soldiers wanted on guard at each road's gate
     this.income = [];     // recent production: { t, res, src, n, kind: 'made' | 'home' }
     this.adviceT = 20;
     this.adviceSeen = {};
@@ -706,6 +716,17 @@ export class World {
         apply: () => { w.hero.styles[`${a}:${c}`] = true; w.hero.style[a] = c; },
       };
     }
+    if (kind === 'station') {
+      const lane = LANE[a];
+      const r = this.roadStrength(a);
+      const on = this.allies.filter((x) => x.station === a).length;
+      const field = this.allies.filter((x) => !x.station).length;
+      const label = { holds: '✅ Holds on its own', fair: '⚠️ Needs a hand', weak: '❌ Weak' }[r.rating];
+      return {
+        key, kind: 'station', icon: '🛡️', title: `${lane.name} road`, lane: a, want: this.stations[a] || 0, on, free: field, rating: r.rating,
+        desc: `${label} · defence ${r.score}/${ROAD_HOLDS}`, cost: {},
+      };
+    }
     if (kind === 'workers') {
       const b = this.b[a];
       const per = {
@@ -774,6 +795,7 @@ export class World {
       tabs = [
         { tab: 'King', items: KING },
         { tab: 'Castle', items: ['up:castle', 'walls', 'gates'] },
+        { tab: 'Defence', items: this.lanesOpen.map((l) => `station:${l.id}`) },
       ];
     } else if (t === 'outpost') {
       // Outposts serve the king in the field: the same upgrades as the
@@ -1045,7 +1067,7 @@ export class World {
     }
     // The garrison: elite defenders who hold the ground before the gate and
     // the courtyard behind it. The king can't win this alone.
-    const hpK = 3.2 * this.spec.hpMul * mul, dmgK = this.spec.dmgMul * 1.5;
+    const hpK = 2.8 * this.spec.hpMul * mul, dmgK = this.spec.dmgMul * 1.4;
     const post = (kind, x, z) => {
       const def = ENEMIES[kind];
       this.enemies.push({
@@ -1472,11 +1494,56 @@ export class World {
     this.emit('trained', { kind, x: a.x, z: a.z });
   }
 
+  // Road guards: keep the wanted number of soldiers stationed at each road,
+  // taking them from the field (knights and raiders first) and releasing
+  // any extra.
+  assignStations() {
+    for (const lane of ['S', 'E', 'W', 'N']) {
+      const want = this.gates[lane] ? this.stations[lane] || 0 : 0;
+      const on = this.allies.filter((a) => a.station === lane);
+      for (const a of on.slice(want)) a.station = null;
+      if (on.length < want) {
+        const free = this.allies.filter((a) => !a.station && !a.follow).sort((a, b) => (a.kind === 'archer') - (b.kind === 'archer'));
+        for (const a of free.slice(0, want - on.length)) a.station = lane;
+      }
+      this.allies.filter((a) => a.station === lane).forEach((a, i) => { a.stationIdx = i; });
+    }
+  }
+
+  setStation(lane, d) {
+    const cur = this.stations[lane] || 0;
+    const field = this.allies.filter((a) => !a.station || a.station === lane).length;
+    if (d > 0 && cur >= field) { this.emit('need', { text: 'No soldiers free in the field: train more at the Barracks' }); return; }
+    this.stations[lane] = Math.max(0, Math.min(16, cur + d));
+    this.assignStations();
+    this.emit('station', { lane, n: this.stations[lane] });
+  }
+
+  // How well a road holds without the king: its towers (and their posted
+  // archers) plus the soldiers stationed at its gate.
+  roadStrength(lane) {
+    let score = 0;
+    for (const t of this.list('tower')) {
+      if (t.state !== 'built' || t.lane !== lane) continue;
+      const lv = BUILDINGS.tower.levels[t.level];
+      score += (lv.dmg / lv.interval) * (1 + 0.6 * t.garrison) * (lv.pierce ? 1.6 : 1);
+    }
+    for (const c of this.list('catapult')) {
+      if (c.state !== 'built') continue;
+      const p = LANE[lane] && hyp(c.x - this.gates[lane]?.x, c.z - this.gates[lane]?.z);
+      if (p < 40) { const lv = BUILDINGS.catapult.levels[c.level]; score += (lv.dmg / lv.interval) * 2; }
+    }
+    for (const a of this.allies) if (a.station === lane) { const u = UNITS[a.kind]; score += (u.dmg / u.interval) * 2; }
+    score *= this.smithMul('arrows');
+    return { score: Math.round(score), rating: score >= ROAD_HOLDS ? 'holds' : score >= ROAD_HOLDS / 2 ? 'fair' : 'weak' };
+  }
+
   // 🚩 Follow me: every soldier in the field rides with the king. Tapping it
   // again sends them back to their posts (archers to free tower slots).
   setRally(on) {
     this.rally = on;
     if (!on) for (const a of this.allies) a.follow = false;
+    if (on) for (const a of this.allies) if (a.station) a.follow = false;
     this.emit('rally', { on });
   }
 
@@ -1520,10 +1587,11 @@ export class World {
     const repost = this.postT <= 0;
     if (repost) this.postT = 1.5;
 
+    this.assignStations();
     // Knights, and anyone called with 🚩 Follow me, take formation slots
-    // behind the king.
+    // behind the king (not those on guard at a road).
     let ki = 0;
-    for (const a of this.allies) if (a.kind === 'knight' || a.follow || this.rally) a.slot = ki++;
+    for (const a of this.allies) if (!a.station && (a.kind === 'knight' || a.follow || this.rally)) a.slot = ki++;
 
     for (let i = this.allies.length - 1; i >= 0; i--) {
       const a = this.allies[i];
@@ -1538,7 +1606,20 @@ export class World {
       let target = null;
 
       const follows = hero.alive && a.kind !== 'knight' && (a.follow || this.rally);
-      if (follows) {
+      if (a.station && this.gates[a.station]) {
+        // On guard at a road's gate: hold just outside it and fight whatever
+        // comes down that road, without wandering off.
+        const g = this.gates[a.station];
+        const out = Math.hypot(g.x, g.z) || 1;
+        const k = a.stationIdx || 0;
+        const side = ((k % 5) - 2) * 1.5, row = Math.floor(k / 5);
+        const ox = g.x / out, oz = g.z / out;
+        gx = g.x + ox * (a.kind === 'archer' ? 1 : 3 + row * 1.3) - oz * side;
+        gz = g.z + oz * (a.kind === 'archer' ? 1 : 3 + row * 1.3) + ox * side;
+        a.post = null;
+        const e = this.nearestEnemy(a.x, a.z, a.kind === 'archer' ? u.range : 12);
+        if (e && hyp(e.x - g.x, e.z - g.z) < 18) target = e;
+      } else if (follows) {
         const row = Math.floor(a.slot / 5), col = a.slot % 5;
         const ang = Math.PI + (col - 2) * 0.55;
         const r = 2.2 + row * 1.4;
@@ -1574,7 +1655,7 @@ export class World {
           target = this.nearestEnemy(a.x, a.z, u.range);
         }
       } else if (a.kind === 'knight') {
-        if (hero.alive) {
+        if (hero.alive && !a.station) {
           const row = Math.floor(a.slot / 5), col = a.slot % 5;
           const ang = Math.PI + (col - 2) * 0.55;
           const r = 2.2 + row * 1.4;
@@ -1596,7 +1677,7 @@ export class World {
         a.yaw = Math.atan2(target.x - a.x, target.z - a.z);
         if (d > u.range + target.def.radius) {
           // Escorting archers close to bow range; everyone else charges.
-          if (a.kind !== 'archer' || a.follow || this.rally) { gx = target.x; gz = target.z; }
+          if (a.kind !== 'archer' || ((a.follow || this.rally) && !a.station)) { gx = target.x; gz = target.z; }
         } else {
           gx = a.x; gz = a.z;
           if (a.atkCd <= 0) {
@@ -1612,7 +1693,7 @@ export class World {
       const dx = gx - a.x, dz = gz - a.z;
       const d = hyp(dx, dz);
       if (d > 0.25) {
-        const escort = (a.kind === 'knight' || a.follow || this.rally) && hero.alive && !target;
+        const escort = !a.station && (a.kind === 'knight' || a.follow || this.rally) && hero.alive && !target;
         const sp = escort ? Math.max(u.speed, this.heroStat('speed') * (d > 3 ? 1.15 : 0.9)) : u.speed;
         const step = Math.min(d, sp * dt);
         a.x += (dx / d) * step; a.z += (dz / d) * step;
@@ -2440,8 +2521,8 @@ export class World {
           this.reinforceT = 15;
           const lanes = this.lanesOpen.filter((l) => l.id !== 'S');
           const MIX = ['grunt', 'grunt', 'brute', 'archer', 'grunt', 'hound', 'brute', 'raider', 'archer', 'grunt'];
-          const column = Math.min(36, 12 + 3 * n), raid = Math.min(12, 3 + n);
-          const hpK = 1.4 * (1 + 0.08 * n);
+          const column = Math.min(30, 10 + 3 * n), raid = Math.min(8, 2 + Math.floor(n / 2));
+          const hpK = 1.3 * (1 + 0.06 * n);
           this.spawnQueue = [
             ...Array.from({ length: column }, (_, i) => ({ kind: MIX[i % MIX.length], lane: 'S', hpK })),
             ...Array.from({ length: raid }, (_, i) => ({ kind: MIX[(i + 3) % MIX.length], lane: lanes[i % lanes.length]?.id || 'S' })),
@@ -2494,6 +2575,7 @@ export class World {
       funds: { ...this.funds },
       objective: this.objective,
       rally: this.rally,
+      stations: { ...this.stations },
       smith: { ...this.smith },
       level: this.level,
       camps: this.built('pass') ? this.campsAlive() : null,
@@ -2515,6 +2597,7 @@ export class World {
     this.res = { gold: 0, iron: 0, ...s.res };
     this.smith = { king: 0, workers: 0, arrows: 0, ...(s.smith || {}) };
     this.rally = !!s.rally;
+    this.stations = { S: 0, E: 0, W: 0, N: 0, ...(s.stations || {}) };
     this.funds = {};
     this.objective = s.objective;
     this.level = s.level || 1;

@@ -71,14 +71,18 @@ It then launches full screen and works offline.
   longer strides, a big draw-and-loose on every shot with a glint from the
   bow, coloured arrow trails, and a shimmer on the grandest bows.
 - **The final siege is hard on purpose:** the stronghold has a 30-strong
-  elite garrison, a tough gate, towers and keep, and ever bigger columns
-  (12, 15, 18... up to 36 troops, each tougher than the last) pour out of the
-  gate every 15 seconds and march up the road, battering down every tower,
-  catapult and outpost they reach, while smaller raids hit home. Only one
-  Barracks fits inside the castle walls and one on each outpost's land, so
-  the army it takes (the guide asks for 65 of a possible 70) means upgraded
-  Barracks and Houses at every outpost. In simulation with a fully upgraded
-  king: 50 soldiers lose, 58 is a coin flip, 64+ win.
+  elite garrison, a tough gate, towers and keep, and growing columns (10, 13,
+  16... up to 30 troops) pour out of the gate every 15 seconds and march up
+  the road, battering down towers, catapults and outposts they reach, while
+  small raids hit the roads home. Only one Barracks fits inside the castle
+  walls and one on each outpost's land, so the army it takes (the guide asks
+  for 60) means upgraded Barracks and Houses at every outpost. In simulation
+  with a fully upgraded king: 50 soldiers win 1 in 3, 58+ win.
+- **Roads that hold on their own:** Castle → 🛡️ Defence rates each road home
+  (✅ holds on its own, ⚠️ needs a hand, ❌ weak) from its towers, posted
+  archers and nearby catapults, and its − / + buttons station soldiers at that
+  road's gate. Stationed soldiers hold there, fight anything on that road and
+  don't follow the king.
 - **Escorts fight from further out:** soldiers riding with the king all turn
   on anything that comes within 15 m of him, and otherwise take on enemies
   within 16 m of themselves, so they don't hang back while he fights.

@@ -83,6 +83,7 @@ const ui = new UI({
   },
   onEquip: (w) => { world.equip(w); audio.buy(); dirty = true; },
   onWorkers: (id, d) => { world.setWorkers(id, d); audio.tap(); dirty = true; },
+  onStation: (lane, d) => { world.setStation(lane, d); audio.tap(); dirty = true; },
   onFollow: () => { audio.tap(); world.setRally(!world.rally); dirty = true; },
 });
 
@@ -129,10 +130,17 @@ const TIPS = {
       <li>Soldiers are villagers who enlist, so build <b>Houses</b> on the outpost land too.</li>
       <li>Train troops at any outpost's Army tab once it has Barracks.</li>
     </ul>`],
+  roads: ['🛡️ Roads that hold on their own', `
+    <p>When you ride off to war, the enemy still raids the roads home. Tap the <b>Castle → 🛡️ Defence</b> tab to see how each road holds without you.</p>
+    <ul>
+      <li><b>Towers</b> count most: upgrade them and keep archers posted inside.</li>
+      <li>Use <b>− / +</b> to <b>station soldiers</b> at a road's gate. They hold there, fight anything coming down that road, and don't follow the king.</li>
+      <li>A road marked ✅ <b>Holds on its own</b> can be left alone.</li>
+    </ul>`],
   siege: ['🏰 The enemy stronghold', `
     <p>The stronghold is held by a <b>garrison of elite troops</b>, towers, a massive gate and keep, and fresh troops pour out every few seconds. The king cannot take it alone.</p>
     <ul>
-      <li>Muster at least <b>65 soldiers</b>: that takes fully upgraded Barracks at the castle <b>and every outpost</b>, with Houses to fill them.</li>
+      <li>Muster at least <b>60 soldiers</b>: that takes fully upgraded Barracks at the castle <b>and every outpost</b>, with Houses to fill them.</li>
       <li>Columns of troops <b>keep pouring out of the gate</b> and march up the road, wrecking every tower, catapult and outpost they reach. Hold the road.</li>
       <li>Tap 🚩 Follow me so they march with you, and keep the king behind the line.</li>
       <li>Leave your home towers and gates strong: the enemy still attacks the castle while you're away.</li>
@@ -401,7 +409,10 @@ function devBuild(stage) {
     place('house', 10, null, 2);
     king(Object.fromEntries(Object.keys(HERO_UPGRADES).map((k) => [k, 99])), { weapons: ['crossbow', 'fire', 'multi', 'storm'], bow: 4, weapon: 'storm' });
     w.smith = { king: 3, workers: 3, arrows: 3 };
-    army(66);
+    // An archer in every tower on the roads home, so they hold on their own,
+    // and 60 soldiers in the field for the siege itself.
+    for (const t of w.list('tower')) if (t.state === 'built' && t.lane !== 'S') t.garrison = Math.max(t.garrison, 1);
+    army(w.soldiers + 60 - w.allies.length);
     w.wave = Math.max(w.wave, 15);
   }
   w.rebuildGates();
@@ -494,6 +505,8 @@ function devRun(cmd) {
   const [name, arg] = cmd.split(':');
   let msg;
   try { msg = DEV[name](arg !== undefined ? Number(arg) : undefined); } catch (err) { console.error(err); msg = `⚠️ ${err.message}`; }
+  // Building a whole kingdom at once would fire dozens of notices: drop them.
+  world.events.length = 0;
   placing = null;
   ui.closeMenu();
   ui.closeBuild();
