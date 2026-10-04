@@ -418,3 +418,42 @@ export const STYLES = {
     },
   },
 };
+
+// The five regional kings, from the approved reference sheet
+// (docs/crownfall/asset-workup/references/approved/03_five_regional_kings.jpeg,
+// reconciled in its specs/06). One shared mounted rig, five colour kits.
+// Which king the player rides as is `hero.kit`; how the others are unlocked
+// is not decided yet (see docs/crownfall/implementation-plan.md).
+export const KINGS = {
+  greenwood: {
+    name: 'The Greenwood King', region: 'Greenwood', emblem: 'crown',
+    skin: 0xf2c49b, hair: 0x6b4426, beard: 0x6b4426, armor: 0x2f62c8, armorDark: 0x1f4598, trim: 0xf2c33a,
+    cape: 0xc8332c, capeTrim: 0xf2c33a, fur: 0xf6f1e6, crown: 0xf2c33a, gem: 0x2f6fdc, glove: 0x5a3a24, boot: 0x4a2f1e,
+    horse: 0xf3f0ea, mane: 0xe6e0d4, barding: 0x2f62c8, bardingTrim: 0xf2c33a, hoof: 0x5a5048,
+  },
+  eastern_mountains: {
+    name: 'The Mountain King', region: 'Eastern Mountains', emblem: 'peak',
+    skin: 0xf0c8a6, hair: 0xf2f2f0, beard: 0xf2f2f0, armor: 0x2d5ca8, armorDark: 0x24447e, trim: 0xd8dee6,
+    cape: 0x2d5ca8, capeTrim: 0xf2f4f6, fur: 0xf8f8f6, crown: 0xe6c66b, gem: 0x7fd0ff, glove: 0x3c4658, boot: 0x2e3442,
+    horse: 0xf3f2ee, mane: 0xeef0f2, barding: 0x8eccec, bardingTrim: 0xd8dee6, hoof: 0x5a5a60,
+  },
+  iron_hills: {
+    name: 'The Iron King', region: 'Iron Hills', emblem: 'hammers',
+    skin: 0xe8b48c, hair: 0x1e1a18, beard: 0x1e1a18, armor: 0x2c2826, armorDark: 0x1c1a19, trim: 0xb8843a,
+    cape: 0x8e1f1f, capeTrim: 0xd8a03a, fur: 0x3e322c, crown: 0xf2c33a, gem: 0xe0302c, glove: 0x3a2a20, boot: 0x241c18,
+    horse: 0x4a3020, mane: 0x1e1814, barding: 0xb02a24, bardingTrim: 0xf2c33a, hoof: 0x2a2420,
+  },
+  sunscorch: {
+    name: 'The Desert King', region: 'Sunscorch', emblem: 'sun',
+    skin: 0xd9a27a, hair: 0x3a2a1e, beard: 0x3a2a1e, armor: 0x3f8a3a, armorDark: 0x2e6a2c, trim: 0xf2c33a,
+    cape: 0x3f8f4a, capeTrim: 0xf2c33a, fur: 0xefe6d0, crown: 0xf2c33a, gem: 0x2ee07a, glove: 0x6a4a2a, boot: 0x5a3e24,
+    horse: 0xe2ddd2, mane: 0xd6cfc0, barding: 0x3f8f4a, bardingTrim: 0xf2c33a, hoof: 0x5a5048,
+  },
+  frostmarch: {
+    name: 'The Frost King', region: 'Frostmarch', emblem: 'snowflake',
+    skin: 0xf0c8a6, hair: 0x2a2024, beard: 0x2a2024, armor: 0x6a3fa0, armorDark: 0x2a2632, trim: 0xc9ccd4,
+    cape: 0x5a2f90, capeTrim: 0xc9ccd4, fur: 0xf8f8f6, crown: 0xd8dce4, gem: 0xa060ff, glove: 0x2a2632, boot: 0x22202a,
+    horse: 0xf1f0ee, mane: 0xe6e4e8, barding: 0x6a3fa0, bardingTrim: 0xc9ccd4, hoof: 0x4a4650,
+  },
+};
+export const KING_ORDER = ['greenwood', 'eastern_mountains', 'iron_hills', 'sunscorch', 'frostmarch'];

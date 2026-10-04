@@ -1,0 +1,103 @@
+{
+  "version": 2,
+  "new_visuals": [
+    {
+      "id": "soldier_options",
+      "path": "visuals/soldier_options.png",
+      "title": "Soldiers: Royal Legions A / Frontier Retinue B",
+      "status": "proposal_pending_user_selection",
+      "notes": "Compare the two kit styles by kingdom. Pending your choice."
+    },
+    {
+      "id": "villain_options_b",
+      "path": "visuals/villain_options_b.png",
+      "title": "Alternate villains: Option B",
+      "status": "proposal_pending_user_selection",
+      "notes": "Compare these mythical silhouettes to commanders A on the regional sheets."
+    },
+    {
+      "id": "greenwood_armies",
+      "path": "visuals/greenwood_armies.png",
+      "title": "Greenwood: army and commander A",
+      "status": "proposal_pending_user_selection",
+      "notes": "Crown Guard, Greenhood Archer, Royal Raider; five enemy roles and Bramble Captain."
+    },
+    {
+      "id": "eastern_mountains_armies",
+      "path": "visuals/eastern_mountains_armies.png",
+      "title": "Eastern Mountains: army and commander A",
+      "status": "proposal_pending_user_selection",
+      "notes": "Pass troops and Cliff Marshal. Distinct from the playable Mountain King."
+    },
+    {
+      "id": "iron_hills_armies",
+      "path": "visuals/iron_hills_armies.png",
+      "title": "Iron Hills: army and commander A",
+      "status": "proposal_pending_user_selection",
+      "notes": "Forge troops and Forge Tyrant. Blue alliance badges distinguish friendly red outfits."
+    },
+    {
+      "id": "sunscorch_armies",
+      "path": "visuals/sunscorch_armies.png",
+      "title": "Sunscorch: army and commander A",
+      "status": "proposal_pending_user_selection",
+      "notes": "Oasis troops, desert enemy army and Dune Conqueror."
+    },
+    {
+      "id": "frostmarch_armies",
+      "path": "visuals/frostmarch_armies.png",
+      "title": "Frostmarch: army and commander A",
+      "status": "proposal_pending_user_selection",
+      "notes": "Winter troops, frost enemy army and Rime Regent."
+    },
+    {
+      "id": "warlord_armies",
+      "path": "visuals/warlord_armies.png",
+      "title": "Final realm: army and Warlord A",
+      "status": "proposal_pending_user_selection",
+      "notes": "Alliance coalition and elite enemy garrison. Warlord keeps horned black helmet and gold crown."
+    },
+    {
+      "id": "elder_treant",
+      "path": "visuals/elder_treant.png",
+      "title": "Elder Treant: separate wave-5 boss",
+      "status": "proposal_pending_user_selection",
+      "notes": "Preserved original tree boss. Proposed visual with turnaround and attack poses."
+    },
+    {
+      "id": "regional_buildings",
+      "path": "visuals/regional_buildings.png",
+      "title": "Six regional building kits",
+      "status": "proposal_pending_user_selection",
+      "notes": "Architecture motifs for castle, house and barracks. New proposal."
+    },
+    {
+      "id": "building_progression",
+      "path": "visuals/building_progression.png",
+      "title": "Building and siege progression",
+      "status": "proposal_pending_user_selection",
+      "notes": "Castle, barracks, towers, siege and five wall materials. Expansion footprints remain a separate six-level system."
+    },
+    {
+      "id": "regional_environments",
+      "path": "visuals/regional_environments.png",
+      "title": "Six regions viewed from horseback",
+      "status": "proposal_pending_user_selection",
+      "notes": "Landmark and terrain composition proposals. Not measured or in-engine screenshots."
+    },
+    {
+      "id": "portrait_ui",
+      "path": "visuals/portrait_ui.png",
+      "title": "Kingdom and combat interface",
+      "status": "proposal_pending_user_selection",
+      "notes": "Portrait layout proposal. Exact resource contract and actual boss identity govern implementation."
+    },
+    {
+      "id": "resource_and_ui_icons",
+      "path": "visuals/resource_and_ui_icons.png",
+      "title": "Resource, weapon, command and region icons",
+      "status": "proposal_pending_user_selection",
+      "notes": "Style proposal only; individual production icons and atlas metadata remain to create."
+    }
+  ]
+}

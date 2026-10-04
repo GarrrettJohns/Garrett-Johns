@@ -1,0 +1,553 @@
+id,name,kind,region,priority,design_status,production_status,runtime_path,planned_runtime_path,notes
+hero.greenwood.king,greenwood king,model,greenwood,P0,established_requirement,not_produced,,assets/crownfall/model/hero/greenwood/king.glb,
+hero.greenwood.horse,greenwood horse,model,greenwood,P0,established_requirement,not_produced,,assets/crownfall/model/hero/greenwood/horse.glb,
+hero.greenwood.barding,greenwood barding,model,greenwood,P0,established_requirement,not_produced,,assets/crownfall/model/hero/greenwood/barding.glb,
+hero.greenwood.crown,greenwood crown,model,greenwood,P0,established_requirement,not_produced,,assets/crownfall/model/hero/greenwood/crown.glb,
+hero.greenwood.cape,greenwood cape,model,greenwood,P0,established_requirement,not_produced,,assets/crownfall/model/hero/greenwood/cape.glb,
+bow.variant.greenwood.tier_01,greenwood bow tier 1,material_variant,greenwood,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/greenwood/tier_01.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+bow.variant.greenwood.tier_02,greenwood bow tier 2,material_variant,greenwood,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/greenwood/tier_02.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+bow.variant.greenwood.tier_03,greenwood bow tier 3,material_variant,greenwood,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/greenwood/tier_03.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+bow.variant.greenwood.tier_04,greenwood bow tier 4,material_variant,greenwood,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/greenwood/tier_04.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+bow.variant.greenwood.tier_05,greenwood bow tier 5,material_variant,greenwood,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/greenwood/tier_05.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+king_ui.greenwood.banner,greenwood banner,icon,greenwood,P1,established_requirement,not_produced,,assets/crownfall/icon/king_ui/greenwood/banner.png,
+king_ui.greenwood.region_emblem,greenwood region_emblem,icon,greenwood,P1,established_requirement,not_produced,,assets/crownfall/icon/king_ui/greenwood/region_emblem.png,
+king_ui.greenwood.portrait,greenwood portrait,icon,greenwood,P1,established_requirement,not_produced,,assets/crownfall/icon/king_ui/greenwood/portrait.png,
+king_ui.greenwood.upgrade_portrait,greenwood upgrade_portrait,icon,greenwood,P1,established_requirement,not_produced,,assets/crownfall/icon/king_ui/greenwood/upgrade_portrait.png,
+cargo.variant.greenwood.coins,greenwood coins attachment setup,material_variant,greenwood,P1,established_requirement,not_produced,,assets/crownfall/material_variant/cargo/variant/greenwood/coins.json,Shared cargo geometry; attachment transform and capacity display rules.
+cargo.variant.greenwood.logs,greenwood logs attachment setup,material_variant,greenwood,P1,established_requirement,not_produced,,assets/crownfall/material_variant/cargo/variant/greenwood/logs.json,Shared cargo geometry; attachment transform and capacity display rules.
+cargo.variant.greenwood.stone,greenwood stone attachment setup,material_variant,greenwood,P1,established_requirement,not_produced,,assets/crownfall/material_variant/cargo/variant/greenwood/stone.json,Shared cargo geometry; attachment transform and capacity display rules.
+cargo.variant.greenwood.iron,greenwood iron attachment setup,material_variant,greenwood,P1,established_requirement,not_produced,,assets/crownfall/material_variant/cargo/variant/greenwood/iron.json,Shared cargo geometry; attachment transform and capacity display rules.
+hero.eastern_mountains.king,eastern_mountains king,model,eastern_mountains,P2,established_requirement,not_produced,,assets/crownfall/model/hero/eastern_mountains/king.glb,
+hero.eastern_mountains.horse,eastern_mountains horse,model,eastern_mountains,P2,established_requirement,not_produced,,assets/crownfall/model/hero/eastern_mountains/horse.glb,
+hero.eastern_mountains.barding,eastern_mountains barding,model,eastern_mountains,P2,established_requirement,not_produced,,assets/crownfall/model/hero/eastern_mountains/barding.glb,
+hero.eastern_mountains.crown,eastern_mountains crown,model,eastern_mountains,P2,established_requirement,not_produced,,assets/crownfall/model/hero/eastern_mountains/crown.glb,
+hero.eastern_mountains.cape,eastern_mountains cape,model,eastern_mountains,P2,established_requirement,not_produced,,assets/crownfall/model/hero/eastern_mountains/cape.glb,
+bow.variant.eastern_mountains.tier_01,eastern_mountains bow tier 1,material_variant,eastern_mountains,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/eastern_mountains/tier_01.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+bow.variant.eastern_mountains.tier_02,eastern_mountains bow tier 2,material_variant,eastern_mountains,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/eastern_mountains/tier_02.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+bow.variant.eastern_mountains.tier_03,eastern_mountains bow tier 3,material_variant,eastern_mountains,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/eastern_mountains/tier_03.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+bow.variant.eastern_mountains.tier_04,eastern_mountains bow tier 4,material_variant,eastern_mountains,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/eastern_mountains/tier_04.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+bow.variant.eastern_mountains.tier_05,eastern_mountains bow tier 5,material_variant,eastern_mountains,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/eastern_mountains/tier_05.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+king_ui.eastern_mountains.banner,eastern_mountains banner,icon,eastern_mountains,P1,established_requirement,not_produced,,assets/crownfall/icon/king_ui/eastern_mountains/banner.png,
+king_ui.eastern_mountains.region_emblem,eastern_mountains region_emblem,icon,eastern_mountains,P1,established_requirement,not_produced,,assets/crownfall/icon/king_ui/eastern_mountains/region_emblem.png,
+king_ui.eastern_mountains.portrait,eastern_mountains portrait,icon,eastern_mountains,P1,established_requirement,not_produced,,assets/crownfall/icon/king_ui/eastern_mountains/portrait.png,
+king_ui.eastern_mountains.upgrade_portrait,eastern_mountains upgrade_portrait,icon,eastern_mountains,P1,established_requirement,not_produced,,assets/crownfall/icon/king_ui/eastern_mountains/upgrade_portrait.png,
+cargo.variant.eastern_mountains.coins,eastern_mountains coins attachment setup,material_variant,eastern_mountains,P1,established_requirement,not_produced,,assets/crownfall/material_variant/cargo/variant/eastern_mountains/coins.json,Shared cargo geometry; attachment transform and capacity display rules.
+cargo.variant.eastern_mountains.logs,eastern_mountains logs attachment setup,material_variant,eastern_mountains,P1,established_requirement,not_produced,,assets/crownfall/material_variant/cargo/variant/eastern_mountains/logs.json,Shared cargo geometry; attachment transform and capacity display rules.
+cargo.variant.eastern_mountains.stone,eastern_mountains stone attachment setup,material_variant,eastern_mountains,P1,established_requirement,not_produced,,assets/crownfall/material_variant/cargo/variant/eastern_mountains/stone.json,Shared cargo geometry; attachment transform and capacity display rules.
+cargo.variant.eastern_mountains.iron,eastern_mountains iron attachment setup,material_variant,eastern_mountains,P1,established_requirement,not_produced,,assets/crownfall/material_variant/cargo/variant/eastern_mountains/iron.json,Shared cargo geometry; attachment transform and capacity display rules.
+hero.iron_hills.king,iron_hills king,model,iron_hills,P2,established_requirement,not_produced,,assets/crownfall/model/hero/iron_hills/king.glb,
+hero.iron_hills.horse,iron_hills horse,model,iron_hills,P2,established_requirement,not_produced,,assets/crownfall/model/hero/iron_hills/horse.glb,
+hero.iron_hills.barding,iron_hills barding,model,iron_hills,P2,established_requirement,not_produced,,assets/crownfall/model/hero/iron_hills/barding.glb,
+hero.iron_hills.crown,iron_hills crown,model,iron_hills,P2,established_requirement,not_produced,,assets/crownfall/model/hero/iron_hills/crown.glb,
+hero.iron_hills.cape,iron_hills cape,model,iron_hills,P2,established_requirement,not_produced,,assets/crownfall/model/hero/iron_hills/cape.glb,
+bow.variant.iron_hills.tier_01,iron_hills bow tier 1,material_variant,iron_hills,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/iron_hills/tier_01.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+bow.variant.iron_hills.tier_02,iron_hills bow tier 2,material_variant,iron_hills,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/iron_hills/tier_02.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+bow.variant.iron_hills.tier_03,iron_hills bow tier 3,material_variant,iron_hills,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/iron_hills/tier_03.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+bow.variant.iron_hills.tier_04,iron_hills bow tier 4,material_variant,iron_hills,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/iron_hills/tier_04.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+bow.variant.iron_hills.tier_05,iron_hills bow tier 5,material_variant,iron_hills,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/iron_hills/tier_05.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+king_ui.iron_hills.banner,iron_hills banner,icon,iron_hills,P1,established_requirement,not_produced,,assets/crownfall/icon/king_ui/iron_hills/banner.png,
+king_ui.iron_hills.region_emblem,iron_hills region_emblem,icon,iron_hills,P1,established_requirement,not_produced,,assets/crownfall/icon/king_ui/iron_hills/region_emblem.png,
+king_ui.iron_hills.portrait,iron_hills portrait,icon,iron_hills,P1,established_requirement,not_produced,,assets/crownfall/icon/king_ui/iron_hills/portrait.png,
+king_ui.iron_hills.upgrade_portrait,iron_hills upgrade_portrait,icon,iron_hills,P1,established_requirement,not_produced,,assets/crownfall/icon/king_ui/iron_hills/upgrade_portrait.png,
+cargo.variant.iron_hills.coins,iron_hills coins attachment setup,material_variant,iron_hills,P1,established_requirement,not_produced,,assets/crownfall/material_variant/cargo/variant/iron_hills/coins.json,Shared cargo geometry; attachment transform and capacity display rules.
+cargo.variant.iron_hills.logs,iron_hills logs attachment setup,material_variant,iron_hills,P1,established_requirement,not_produced,,assets/crownfall/material_variant/cargo/variant/iron_hills/logs.json,Shared cargo geometry; attachment transform and capacity display rules.
+cargo.variant.iron_hills.stone,iron_hills stone attachment setup,material_variant,iron_hills,P1,established_requirement,not_produced,,assets/crownfall/material_variant/cargo/variant/iron_hills/stone.json,Shared cargo geometry; attachment transform and capacity display rules.
+cargo.variant.iron_hills.iron,iron_hills iron attachment setup,material_variant,iron_hills,P1,established_requirement,not_produced,,assets/crownfall/material_variant/cargo/variant/iron_hills/iron.json,Shared cargo geometry; attachment transform and capacity display rules.
+hero.sunscorch.king,sunscorch king,model,sunscorch,P2,established_requirement,not_produced,,assets/crownfall/model/hero/sunscorch/king.glb,
+hero.sunscorch.horse,sunscorch horse,model,sunscorch,P2,established_requirement,not_produced,,assets/crownfall/model/hero/sunscorch/horse.glb,
+hero.sunscorch.barding,sunscorch barding,model,sunscorch,P2,established_requirement,not_produced,,assets/crownfall/model/hero/sunscorch/barding.glb,
+hero.sunscorch.crown,sunscorch crown,model,sunscorch,P2,established_requirement,not_produced,,assets/crownfall/model/hero/sunscorch/crown.glb,
+hero.sunscorch.cape,sunscorch cape,model,sunscorch,P2,established_requirement,not_produced,,assets/crownfall/model/hero/sunscorch/cape.glb,
+bow.variant.sunscorch.tier_01,sunscorch bow tier 1,material_variant,sunscorch,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/sunscorch/tier_01.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+bow.variant.sunscorch.tier_02,sunscorch bow tier 2,material_variant,sunscorch,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/sunscorch/tier_02.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+bow.variant.sunscorch.tier_03,sunscorch bow tier 3,material_variant,sunscorch,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/sunscorch/tier_03.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+bow.variant.sunscorch.tier_04,sunscorch bow tier 4,material_variant,sunscorch,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/sunscorch/tier_04.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+bow.variant.sunscorch.tier_05,sunscorch bow tier 5,material_variant,sunscorch,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/sunscorch/tier_05.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+king_ui.sunscorch.banner,sunscorch banner,icon,sunscorch,P1,established_requirement,not_produced,,assets/crownfall/icon/king_ui/sunscorch/banner.png,
+king_ui.sunscorch.region_emblem,sunscorch region_emblem,icon,sunscorch,P1,established_requirement,not_produced,,assets/crownfall/icon/king_ui/sunscorch/region_emblem.png,
+king_ui.sunscorch.portrait,sunscorch portrait,icon,sunscorch,P1,established_requirement,not_produced,,assets/crownfall/icon/king_ui/sunscorch/portrait.png,
+king_ui.sunscorch.upgrade_portrait,sunscorch upgrade_portrait,icon,sunscorch,P1,established_requirement,not_produced,,assets/crownfall/icon/king_ui/sunscorch/upgrade_portrait.png,
+cargo.variant.sunscorch.coins,sunscorch coins attachment setup,material_variant,sunscorch,P1,established_requirement,not_produced,,assets/crownfall/material_variant/cargo/variant/sunscorch/coins.json,Shared cargo geometry; attachment transform and capacity display rules.
+cargo.variant.sunscorch.logs,sunscorch logs attachment setup,material_variant,sunscorch,P1,established_requirement,not_produced,,assets/crownfall/material_variant/cargo/variant/sunscorch/logs.json,Shared cargo geometry; attachment transform and capacity display rules.
+cargo.variant.sunscorch.stone,sunscorch stone attachment setup,material_variant,sunscorch,P1,established_requirement,not_produced,,assets/crownfall/material_variant/cargo/variant/sunscorch/stone.json,Shared cargo geometry; attachment transform and capacity display rules.
+cargo.variant.sunscorch.iron,sunscorch iron attachment setup,material_variant,sunscorch,P1,established_requirement,not_produced,,assets/crownfall/material_variant/cargo/variant/sunscorch/iron.json,Shared cargo geometry; attachment transform and capacity display rules.
+hero.frostmarch.king,frostmarch king,model,frostmarch,P2,established_requirement,not_produced,,assets/crownfall/model/hero/frostmarch/king.glb,
+hero.frostmarch.horse,frostmarch horse,model,frostmarch,P2,established_requirement,not_produced,,assets/crownfall/model/hero/frostmarch/horse.glb,
+hero.frostmarch.barding,frostmarch barding,model,frostmarch,P2,established_requirement,not_produced,,assets/crownfall/model/hero/frostmarch/barding.glb,
+hero.frostmarch.crown,frostmarch crown,model,frostmarch,P2,established_requirement,not_produced,,assets/crownfall/model/hero/frostmarch/crown.glb,
+hero.frostmarch.cape,frostmarch cape,model,frostmarch,P2,established_requirement,not_produced,,assets/crownfall/model/hero/frostmarch/cape.glb,
+bow.variant.frostmarch.tier_01,frostmarch bow tier 1,material_variant,frostmarch,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/frostmarch/tier_01.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+bow.variant.frostmarch.tier_02,frostmarch bow tier 2,material_variant,frostmarch,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/frostmarch/tier_02.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+bow.variant.frostmarch.tier_03,frostmarch bow tier 3,material_variant,frostmarch,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/frostmarch/tier_03.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+bow.variant.frostmarch.tier_04,frostmarch bow tier 4,material_variant,frostmarch,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/frostmarch/tier_04.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+bow.variant.frostmarch.tier_05,frostmarch bow tier 5,material_variant,frostmarch,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/variant/frostmarch/tier_05.json,Regional palette/attachments on shared tier geometry; not separate full rig.
+king_ui.frostmarch.banner,frostmarch banner,icon,frostmarch,P1,established_requirement,not_produced,,assets/crownfall/icon/king_ui/frostmarch/banner.png,
+king_ui.frostmarch.region_emblem,frostmarch region_emblem,icon,frostmarch,P1,established_requirement,not_produced,,assets/crownfall/icon/king_ui/frostmarch/region_emblem.png,
+king_ui.frostmarch.portrait,frostmarch portrait,icon,frostmarch,P1,established_requirement,not_produced,,assets/crownfall/icon/king_ui/frostmarch/portrait.png,
+king_ui.frostmarch.upgrade_portrait,frostmarch upgrade_portrait,icon,frostmarch,P1,established_requirement,not_produced,,assets/crownfall/icon/king_ui/frostmarch/upgrade_portrait.png,
+cargo.variant.frostmarch.coins,frostmarch coins attachment setup,material_variant,frostmarch,P1,established_requirement,not_produced,,assets/crownfall/material_variant/cargo/variant/frostmarch/coins.json,Shared cargo geometry; attachment transform and capacity display rules.
+cargo.variant.frostmarch.logs,frostmarch logs attachment setup,material_variant,frostmarch,P1,established_requirement,not_produced,,assets/crownfall/material_variant/cargo/variant/frostmarch/logs.json,Shared cargo geometry; attachment transform and capacity display rules.
+cargo.variant.frostmarch.stone,frostmarch stone attachment setup,material_variant,frostmarch,P1,established_requirement,not_produced,,assets/crownfall/material_variant/cargo/variant/frostmarch/stone.json,Shared cargo geometry; attachment transform and capacity display rules.
+cargo.variant.frostmarch.iron,frostmarch iron attachment setup,material_variant,frostmarch,P1,established_requirement,not_produced,,assets/crownfall/material_variant/cargo/variant/frostmarch/iron.json,Shared cargo geometry; attachment transform and capacity display rules.
+unit.ally.greenwood.guard,Crown Guard,model,greenwood,P0,pending_selection,not_produced,,assets/crownfall/model/unit/ally/greenwood/guard.glb,Final realm may reuse chosen regional coalition models.
+unit.ally.greenwood.archer,Greenhood Archer,model,greenwood,P0,pending_selection,not_produced,,assets/crownfall/model/unit/ally/greenwood/archer.glb,Final realm may reuse chosen regional coalition models.
+unit.ally.greenwood.raider,Royal Raider,model,greenwood,P0,pending_selection,not_produced,,assets/crownfall/model/unit/ally/greenwood/raider.glb,Final realm may reuse chosen regional coalition models.
+unit.enemy.greenwood.swordsman,Red Swordsman,model,greenwood,P0,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/greenwood/swordsman.glb,
+unit.enemy.greenwood.bowman,Road Bowman,model,greenwood,P0,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/greenwood/bowman.glb,
+unit.enemy.greenwood.brute,Gate Brute,model,greenwood,P0,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/greenwood/brute.glb,
+unit.enemy.greenwood.outrider,Outrider,model,greenwood,P0,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/greenwood/outrider.glb,
+mount.enemy.greenwood,greenwood enemy horse/barding,model,greenwood,P1,pending_selection,not_produced,,assets/crownfall/model/mount/enemy/greenwood.glb,
+unit.enemy.greenwood.hound,War Hound,model,greenwood,P0,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/greenwood/hound.glb,
+boss.greenwood,Bramble Captain / Thorn Knight,model,greenwood,P1,pending_selection,not_produced,,assets/crownfall/model/boss/greenwood.glb,"Stable boss ID; A/B alternative designs, not two mandatory bosses."
+troop_rank.greenwood.guard.recruit,greenwood guard recruit,material_variant,greenwood,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/greenwood/guard/recruit.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.greenwood.guard.veteran,greenwood guard veteran,material_variant,greenwood,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/greenwood/guard/veteran.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.greenwood.guard.elite,greenwood guard elite,material_variant,greenwood,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/greenwood/guard/elite.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.greenwood.archer.recruit,greenwood archer recruit,material_variant,greenwood,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/greenwood/archer/recruit.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.greenwood.archer.veteran,greenwood archer veteran,material_variant,greenwood,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/greenwood/archer/veteran.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.greenwood.archer.elite,greenwood archer elite,material_variant,greenwood,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/greenwood/archer/elite.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.greenwood.raider.recruit,greenwood raider recruit,material_variant,greenwood,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/greenwood/raider/recruit.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.greenwood.raider.veteran,greenwood raider veteran,material_variant,greenwood,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/greenwood/raider/veteran.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.greenwood.raider.elite,greenwood raider elite,material_variant,greenwood,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/greenwood/raider/elite.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+unit.ally.eastern_mountains.guard,Pass Guard,model,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/model/unit/ally/eastern_mountains/guard.glb,Final realm may reuse chosen regional coalition models.
+unit.ally.eastern_mountains.archer,Peak Archer,model,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/model/unit/ally/eastern_mountains/archer.glb,Final realm may reuse chosen regional coalition models.
+unit.ally.eastern_mountains.raider,Ridge Raider,model,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/model/unit/ally/eastern_mountains/raider.glb,Final realm may reuse chosen regional coalition models.
+unit.enemy.eastern_mountains.swordsman,Crag Swordsman,model,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/eastern_mountains/swordsman.glb,
+unit.enemy.eastern_mountains.bowman,Ledge Bowman,model,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/eastern_mountains/bowman.glb,
+unit.enemy.eastern_mountains.brute,Stone Brute,model,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/eastern_mountains/brute.glb,
+unit.enemy.eastern_mountains.outrider,Pass Outrider,model,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/eastern_mountains/outrider.glb,
+mount.enemy.eastern_mountains,eastern_mountains enemy horse/barding,model,eastern_mountains,P1,pending_selection,not_produced,,assets/crownfall/model/mount/enemy/eastern_mountains.glb,
+unit.enemy.eastern_mountains.hound,Ravine Hound,model,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/eastern_mountains/hound.glb,
+boss.eastern_mountains,Cliff Marshal / Avalanche Duke,model,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/model/boss/eastern_mountains.glb,"Stable boss ID; A/B alternative designs, not two mandatory bosses."
+troop_rank.eastern_mountains.guard.recruit,eastern_mountains guard recruit,material_variant,eastern_mountains,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/eastern_mountains/guard/recruit.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.eastern_mountains.guard.veteran,eastern_mountains guard veteran,material_variant,eastern_mountains,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/eastern_mountains/guard/veteran.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.eastern_mountains.guard.elite,eastern_mountains guard elite,material_variant,eastern_mountains,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/eastern_mountains/guard/elite.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.eastern_mountains.archer.recruit,eastern_mountains archer recruit,material_variant,eastern_mountains,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/eastern_mountains/archer/recruit.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.eastern_mountains.archer.veteran,eastern_mountains archer veteran,material_variant,eastern_mountains,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/eastern_mountains/archer/veteran.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.eastern_mountains.archer.elite,eastern_mountains archer elite,material_variant,eastern_mountains,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/eastern_mountains/archer/elite.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.eastern_mountains.raider.recruit,eastern_mountains raider recruit,material_variant,eastern_mountains,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/eastern_mountains/raider/recruit.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.eastern_mountains.raider.veteran,eastern_mountains raider veteran,material_variant,eastern_mountains,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/eastern_mountains/raider/veteran.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.eastern_mountains.raider.elite,eastern_mountains raider elite,material_variant,eastern_mountains,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/eastern_mountains/raider/elite.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+unit.ally.iron_hills.guard,Forge Guard,model,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/model/unit/ally/iron_hills/guard.glb,Final realm may reuse chosen regional coalition models.
+unit.ally.iron_hills.archer,Cinder Archer,model,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/model/unit/ally/iron_hills/archer.glb,Final realm may reuse chosen regional coalition models.
+unit.ally.iron_hills.raider,Anvil Raider,model,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/model/unit/ally/iron_hills/raider.glb,Final realm may reuse chosen regional coalition models.
+unit.enemy.iron_hills.swordsman,Slag Swordsman,model,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/iron_hills/swordsman.glb,
+unit.enemy.iron_hills.bowman,Ash Bowman,model,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/iron_hills/bowman.glb,
+unit.enemy.iron_hills.brute,Kiln Brute,model,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/iron_hills/brute.glb,
+unit.enemy.iron_hills.outrider,Furnace Outrider,model,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/iron_hills/outrider.glb,
+mount.enemy.iron_hills,iron_hills enemy horse/barding,model,iron_hills,P1,pending_selection,not_produced,,assets/crownfall/model/mount/enemy/iron_hills.glb,
+unit.enemy.iron_hills.hound,Ash Hound,model,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/iron_hills/hound.glb,
+boss.iron_hills,Forge Tyrant / Ember Judge,model,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/model/boss/iron_hills.glb,"Stable boss ID; A/B alternative designs, not two mandatory bosses."
+troop_rank.iron_hills.guard.recruit,iron_hills guard recruit,material_variant,iron_hills,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/iron_hills/guard/recruit.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.iron_hills.guard.veteran,iron_hills guard veteran,material_variant,iron_hills,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/iron_hills/guard/veteran.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.iron_hills.guard.elite,iron_hills guard elite,material_variant,iron_hills,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/iron_hills/guard/elite.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.iron_hills.archer.recruit,iron_hills archer recruit,material_variant,iron_hills,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/iron_hills/archer/recruit.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.iron_hills.archer.veteran,iron_hills archer veteran,material_variant,iron_hills,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/iron_hills/archer/veteran.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.iron_hills.archer.elite,iron_hills archer elite,material_variant,iron_hills,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/iron_hills/archer/elite.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.iron_hills.raider.recruit,iron_hills raider recruit,material_variant,iron_hills,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/iron_hills/raider/recruit.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.iron_hills.raider.veteran,iron_hills raider veteran,material_variant,iron_hills,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/iron_hills/raider/veteran.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.iron_hills.raider.elite,iron_hills raider elite,material_variant,iron_hills,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/iron_hills/raider/elite.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+unit.ally.sunscorch.guard,Oasis Guard,model,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/model/unit/ally/sunscorch/guard.glb,Final realm may reuse chosen regional coalition models.
+unit.ally.sunscorch.archer,Sun Archer,model,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/model/unit/ally/sunscorch/archer.glb,Final realm may reuse chosen regional coalition models.
+unit.ally.sunscorch.raider,Dune Raider,model,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/model/unit/ally/sunscorch/raider.glb,Final realm may reuse chosen regional coalition models.
+unit.enemy.sunscorch.swordsman,Dune Swordsman,model,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/sunscorch/swordsman.glb,
+unit.enemy.sunscorch.bowman,Sand Bowman,model,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/sunscorch/bowman.glb,
+unit.enemy.sunscorch.brute,Bastion Brute,model,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/sunscorch/brute.glb,
+unit.enemy.sunscorch.outrider,Dune Outrider,model,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/sunscorch/outrider.glb,
+mount.enemy.sunscorch,sunscorch enemy horse/barding,model,sunscorch,P1,pending_selection,not_produced,,assets/crownfall/model/mount/enemy/sunscorch.glb,
+unit.enemy.sunscorch.hound,Sand Hound,model,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/sunscorch/hound.glb,
+boss.sunscorch,Dune Conqueror / Scorpion Lord,model,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/model/boss/sunscorch.glb,"Stable boss ID; A/B alternative designs, not two mandatory bosses."
+troop_rank.sunscorch.guard.recruit,sunscorch guard recruit,material_variant,sunscorch,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/sunscorch/guard/recruit.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.sunscorch.guard.veteran,sunscorch guard veteran,material_variant,sunscorch,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/sunscorch/guard/veteran.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.sunscorch.guard.elite,sunscorch guard elite,material_variant,sunscorch,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/sunscorch/guard/elite.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.sunscorch.archer.recruit,sunscorch archer recruit,material_variant,sunscorch,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/sunscorch/archer/recruit.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.sunscorch.archer.veteran,sunscorch archer veteran,material_variant,sunscorch,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/sunscorch/archer/veteran.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.sunscorch.archer.elite,sunscorch archer elite,material_variant,sunscorch,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/sunscorch/archer/elite.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.sunscorch.raider.recruit,sunscorch raider recruit,material_variant,sunscorch,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/sunscorch/raider/recruit.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.sunscorch.raider.veteran,sunscorch raider veteran,material_variant,sunscorch,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/sunscorch/raider/veteran.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.sunscorch.raider.elite,sunscorch raider elite,material_variant,sunscorch,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/sunscorch/raider/elite.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+unit.ally.frostmarch.guard,Winter Guard,model,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/model/unit/ally/frostmarch/guard.glb,Final realm may reuse chosen regional coalition models.
+unit.ally.frostmarch.archer,Snow Archer,model,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/model/unit/ally/frostmarch/archer.glb,Final realm may reuse chosen regional coalition models.
+unit.ally.frostmarch.raider,Frost Raider,model,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/model/unit/ally/frostmarch/raider.glb,Final realm may reuse chosen regional coalition models.
+unit.enemy.frostmarch.swordsman,Rime Swordsman,model,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/frostmarch/swordsman.glb,
+unit.enemy.frostmarch.bowman,Blizzard Bowman,model,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/frostmarch/bowman.glb,
+unit.enemy.frostmarch.brute,Ice Brute,model,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/frostmarch/brute.glb,
+unit.enemy.frostmarch.outrider,Snow Outrider,model,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/frostmarch/outrider.glb,
+mount.enemy.frostmarch,frostmarch enemy horse/barding,model,frostmarch,P1,pending_selection,not_produced,,assets/crownfall/model/mount/enemy/frostmarch.glb,
+unit.enemy.frostmarch.hound,Winter Hound,model,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/frostmarch/hound.glb,
+boss.frostmarch,Rime Regent / Glacier Revenant,model,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/model/boss/frostmarch.glb,"Stable boss ID; A/B alternative designs, not two mandatory bosses."
+troop_rank.frostmarch.guard.recruit,frostmarch guard recruit,material_variant,frostmarch,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/frostmarch/guard/recruit.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.frostmarch.guard.veteran,frostmarch guard veteran,material_variant,frostmarch,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/frostmarch/guard/veteran.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.frostmarch.guard.elite,frostmarch guard elite,material_variant,frostmarch,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/frostmarch/guard/elite.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.frostmarch.archer.recruit,frostmarch archer recruit,material_variant,frostmarch,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/frostmarch/archer/recruit.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.frostmarch.archer.veteran,frostmarch archer veteran,material_variant,frostmarch,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/frostmarch/archer/veteran.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.frostmarch.archer.elite,frostmarch archer elite,material_variant,frostmarch,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/frostmarch/archer/elite.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.frostmarch.raider.recruit,frostmarch raider recruit,material_variant,frostmarch,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/frostmarch/raider/recruit.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.frostmarch.raider.veteran,frostmarch raider veteran,material_variant,frostmarch,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/frostmarch/raider/veteran.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.frostmarch.raider.elite,frostmarch raider elite,material_variant,frostmarch,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/frostmarch/raider/elite.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+unit.ally.warlord.guard,Alliance Guard,model,warlord,P2,pending_selection,not_produced,,assets/crownfall/model/unit/ally/warlord/guard.glb,Final realm may reuse chosen regional coalition models.
+unit.ally.warlord.archer,Alliance Archer,model,warlord,P2,pending_selection,not_produced,,assets/crownfall/model/unit/ally/warlord/archer.glb,Final realm may reuse chosen regional coalition models.
+unit.ally.warlord.raider,Alliance Raider,model,warlord,P2,pending_selection,not_produced,,assets/crownfall/model/unit/ally/warlord/raider.glb,Final realm may reuse chosen regional coalition models.
+unit.enemy.warlord.swordsman,Blackguard,model,warlord,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/warlord/swordsman.glb,
+unit.enemy.warlord.bowman,Dread Bowman,model,warlord,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/warlord/bowman.glb,
+unit.enemy.warlord.brute,Citadel Brute,model,warlord,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/warlord/brute.glb,
+unit.enemy.warlord.outrider,Dread Outrider,model,warlord,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/warlord/outrider.glb,
+mount.enemy.warlord,warlord enemy horse/barding,model,warlord,P1,pending_selection,not_produced,,assets/crownfall/model/mount/enemy/warlord.glb,
+unit.enemy.warlord.hound,Dread Hound,model,warlord,P2,pending_selection,not_produced,,assets/crownfall/model/unit/enemy/warlord/hound.glb,
+boss.warlord,The Warlord / Crownbreaker Warlord,model,warlord,P2,pending_selection,not_produced,,assets/crownfall/model/boss/warlord.glb,"Stable boss ID; A/B alternative designs, not two mandatory bosses."
+troop_rank.warlord.guard.recruit,warlord guard recruit,material_variant,warlord,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/warlord/guard/recruit.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.warlord.guard.veteran,warlord guard veteran,material_variant,warlord,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/warlord/guard/veteran.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.warlord.guard.elite,warlord guard elite,material_variant,warlord,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/warlord/guard/elite.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.warlord.archer.recruit,warlord archer recruit,material_variant,warlord,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/warlord/archer/recruit.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.warlord.archer.veteran,warlord archer veteran,material_variant,warlord,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/warlord/archer/veteran.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.warlord.archer.elite,warlord archer elite,material_variant,warlord,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/warlord/archer/elite.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.warlord.raider.recruit,warlord raider recruit,material_variant,warlord,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/warlord/raider/recruit.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.warlord.raider.veteran,warlord raider veteran,material_variant,warlord,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/warlord/raider/veteran.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+troop_rank.warlord.raider.elite,warlord raider elite,material_variant,warlord,P2,proposed_mechanic,not_produced,,assets/crownfall/material_variant/troop_rank/warlord/raider/elite.json,Optional visual attachment/material upgrade; existing upgrade mechanics require audit.
+boss.elder_treant,Elder Treant — wave 5,model,greenwood,P1,established_requirement,not_produced,,assets/crownfall/model/boss/elder_treant.glb,Original wave-5 boss; visual proposal supplied; runtime model not produced.
+worker.laborer,Laborer,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/worker/laborer.glb,
+worker.woodcutter,Woodcutter,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/worker/woodcutter.glb,
+worker.miner,Miner,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/worker/miner.glb,
+worker.farmer,Farmer,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/worker/farmer.glb,
+worker.courier,Courier,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/worker/courier.glb,
+worker.smith,Smith,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/worker/smith.glb,
+prop.resource.coins,coins,model,shared,P0,established_requirement,not_produced,,assets/crownfall/model/prop/resource/coins.glb,
+prop.resource.logs,logs,model,shared,P0,established_requirement,not_produced,,assets/crownfall/model/prop/resource/logs.glb,
+prop.resource.stone,stone,model,shared,P0,established_requirement,not_produced,,assets/crownfall/model/prop/resource/stone.glb,
+prop.resource.iron,iron,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/prop/resource/iron.glb,
+prop.resource.wheelbarrow,wheelbarrow,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/prop/resource/wheelbarrow.glb,
+prop.resource.gold_sack,gold_sack,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/prop/resource/gold_sack.glb,
+prop.resource.ore_cart,ore_cart,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/prop/resource/ore_cart.glb,
+weapon.bow.tier_01,Golden Longbow,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/weapon/bow/tier_01.glb,Base geometry shared across regional variants; bow/string socket contract.
+weapon.bow.tier_02,Gilded Recurve,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/weapon/bow/tier_02.glb,Base geometry shared across regional variants; bow/string socket contract.
+weapon.bow.tier_03,Sunforged Bow,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/weapon/bow/tier_03.glb,Base geometry shared across regional variants; bow/string socket contract.
+weapon.bow.tier_04,Dragonwing Bow,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/weapon/bow/tier_04.glb,Base geometry shared across regional variants; bow/string socket contract.
+weapon.bow.tier_05,Crown of Arrows,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/weapon/bow/tier_05.glb,Base geometry shared across regional variants; bow/string socket contract.
+weapon.crossbow,Crossbow,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/weapon/crossbow.glb,
+weapon.sword,Sword,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/weapon/sword.glb,
+weapon.spear,Spear,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/weapon/spear.glb,
+weapon.axe,Axe,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/weapon/axe.glb,
+weapon.pickaxe,Pickaxe,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/weapon/pickaxe.glb,
+weapon.arrow,Arrow,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/weapon/arrow.glb,
+weapon.fire_arrow,Fire Arrow,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/weapon/fire_arrow.glb,
+weapon.shield_round,Shield Round,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/weapon/shield_round.glb,
+weapon.shield_angular,Shield Angular,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/weapon/shield_angular.glb,
+weapon.brute_club,Brute Club,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/weapon/brute_club.glb,
+weapon.boss_hammer,Boss Hammer,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/weapon/boss_hammer.glb,
+weapon.boss_staff,Boss Staff,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/weapon/boss_staff.glb,
+weapon.boss_glaive,Boss Glaive,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/weapon/boss_glaive.glb,
+bow.custom.finish.royal_gold,Royal Gold,material_variant,shared,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/custom/finish/royal_gold.json,
+bow.custom.finish.moon_silver,Moon Silver,material_variant,shared,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/custom/finish/moon_silver.json,
+bow.custom.finish.crimson_lacquer,Crimson Lacquer,material_variant,shared,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/custom/finish/crimson_lacquer.json,
+bow.custom.finish.azure_enamel,Azure Enamel,material_variant,shared,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/custom/finish/azure_enamel.json,
+bow.custom.finish.obsidian,Obsidian,material_variant,shared,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/custom/finish/obsidian.json,
+bow.custom.finish.jade,Jade,material_variant,shared,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/custom/finish/jade.json,
+bow.custom.gem.ruby,Ruby,material_variant,shared,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/custom/gem/ruby.json,
+bow.custom.gem.sapphire,Sapphire,material_variant,shared,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/custom/gem/sapphire.json,
+bow.custom.gem.emerald,Emerald,material_variant,shared,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/custom/gem/emerald.json,
+bow.custom.gem.amethyst,Amethyst,material_variant,shared,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/custom/gem/amethyst.json,
+bow.custom.gem.sunstone,Sunstone,material_variant,shared,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/custom/gem/sunstone.json,
+bow.custom.string.linen,Linen,material_variant,shared,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/custom/string/linen.json,
+bow.custom.string.gold_thread,Gold Thread,material_variant,shared,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/custom/string/gold_thread.json,
+bow.custom.string.red_silk,Red Silk,material_variant,shared,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/custom/string/red_silk.json,
+bow.custom.string.shadow_cord,Shadow Cord,material_variant,shared,P1,established_requirement,not_produced,,assets/crownfall/material_variant/bow/custom/string/shadow_cord.json,
+bow.custom.trail.golden_sparks,Golden Sparks,vfx,shared,P1,established_requirement,not_produced,,assets/crownfall/vfx/bow/custom/trail/golden_sparks.json,
+bow.custom.trail.embers,Embers,vfx,shared,P1,established_requirement,not_produced,,assets/crownfall/vfx/bow/custom/trail/embers.json,
+bow.custom.trail.frost,Frost,vfx,shared,P1,established_requirement,not_produced,,assets/crownfall/vfx/bow/custom/trail/frost.json,
+bow.custom.trail.royal_violet,Royal Violet,vfx,shared,P1,established_requirement,not_produced,,assets/crownfall/vfx/bow/custom/trail/royal_violet.json,
+bow.custom.trail.forest_green,Forest Green,vfx,shared,P1,established_requirement,not_produced,,assets/crownfall/vfx/bow/custom/trail/forest_green.json,
+building.castle_1,Castle level 1,model,shared,P0,established_requirement,not_produced,,assets/crownfall/model/building/castle_1.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.castle_1,Castle level 1 icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/castle_1.png,
+building.castle_2,Castle level 2,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/castle_2.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.castle_2,Castle level 2 icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/castle_2.png,
+building.castle_3,Castle level 3,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/castle_3.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.castle_3,Castle level 3 icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/castle_3.png,
+building.castle_4,Castle level 4,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/castle_4.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.castle_4,Castle level 4 icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/castle_4.png,
+building.barracks_1,Barracks level 1,model,shared,P0,established_requirement,not_produced,,assets/crownfall/model/building/barracks_1.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.barracks_1,Barracks level 1 icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/barracks_1.png,
+building.barracks_2,Barracks level 2,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/barracks_2.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.barracks_2,Barracks level 2 icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/barracks_2.png,
+building.barracks_3,Barracks level 3,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/barracks_3.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.barracks_3,Barracks level 3 icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/barracks_3.png,
+building.tower_1,Archer Tower,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/tower_1.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.tower_1,Archer Tower icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/tower_1.png,
+building.tower_2,Sturdy Tower,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/tower_2.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.tower_2,Sturdy Tower icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/tower_2.png,
+building.tower_3,Timber Fort,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/tower_3.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.tower_3,Timber Fort icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/tower_3.png,
+building.tower_4,Stone Tower,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/tower_4.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.tower_4,Stone Tower icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/tower_4.png,
+building.tower_5,Ballista,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/tower_5.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.tower_5,Ballista icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/tower_5.png,
+building.siege_1,Catapult,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/siege_1.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.siege_1,Catapult icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/siege_1.png,
+building.siege_2,Heavy Catapult,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/siege_2.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.siege_2,Heavy Catapult icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/siege_2.png,
+building.siege_3,Trebuchet,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/siege_3.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.siege_3,Trebuchet icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/siege_3.png,
+building.house,House,model,shared,P0,established_requirement,not_produced,,assets/crownfall/model/building/house.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.house,House icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/house.png,
+building.farm,Farm,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/farm.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.farm,Farm icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/farm.png,
+building.warehouse,Warehouse,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/warehouse.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.warehouse,Warehouse icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/warehouse.png,
+building.blacksmith,Blacksmith,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/blacksmith.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.blacksmith,Blacksmith icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/blacksmith.png,
+building.lumber_camp,Lumber Camp,model,shared,P0,established_requirement,not_produced,,assets/crownfall/model/building/lumber_camp.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.lumber_camp,Lumber Camp icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/lumber_camp.png,
+building.quarry,Quarry,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/quarry.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.quarry,Quarry icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/quarry.png,
+building.gold_mine,Gold Mine,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/gold_mine.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.gold_mine,Gold Mine icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/gold_mine.png,
+building.iron_mine,Iron Mine,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/iron_mine.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.iron_mine,Iron Mine icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/iron_mine.png,
+building.outpost,Outpost,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/outpost.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.outpost,Outpost icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/outpost.png,
+building.wooden_bridge,Wooden Bridge,model,shared,P0,established_requirement,not_produced,,assets/crownfall/model/building/wooden_bridge.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.wooden_bridge,Wooden Bridge icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/wooden_bridge.png,
+building.wall_palisade_straight,palisade wall straight,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/wall_palisade_straight.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.wall_palisade_straight,palisade wall straight icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/wall_palisade_straight.png,
+building.wall_palisade_corner,palisade wall corner,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/wall_palisade_corner.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.wall_palisade_corner,palisade wall corner icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/wall_palisade_corner.png,
+building.wall_palisade_gate,palisade wall gate,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/wall_palisade_gate.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.wall_palisade_gate,palisade wall gate icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/wall_palisade_gate.png,
+building.wall_reinforced_straight,reinforced wall straight,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/wall_reinforced_straight.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.wall_reinforced_straight,reinforced wall straight icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/wall_reinforced_straight.png,
+building.wall_reinforced_corner,reinforced wall corner,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/wall_reinforced_corner.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.wall_reinforced_corner,reinforced wall corner icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/wall_reinforced_corner.png,
+building.wall_reinforced_gate,reinforced wall gate,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/wall_reinforced_gate.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.wall_reinforced_gate,reinforced wall gate icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/wall_reinforced_gate.png,
+building.wall_timber_straight,timber wall straight,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/wall_timber_straight.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.wall_timber_straight,timber wall straight icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/wall_timber_straight.png,
+building.wall_timber_corner,timber wall corner,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/wall_timber_corner.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.wall_timber_corner,timber wall corner icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/wall_timber_corner.png,
+building.wall_timber_gate,timber wall gate,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/wall_timber_gate.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.wall_timber_gate,timber wall gate icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/wall_timber_gate.png,
+building.wall_stone_straight,stone wall straight,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/wall_stone_straight.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.wall_stone_straight,stone wall straight icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/wall_stone_straight.png,
+building.wall_stone_corner,stone wall corner,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/wall_stone_corner.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.wall_stone_corner,stone wall corner icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/wall_stone_corner.png,
+building.wall_stone_gate,stone wall gate,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/wall_stone_gate.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.wall_stone_gate,stone wall gate icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/wall_stone_gate.png,
+building.wall_iron_straight,iron wall straight,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/wall_iron_straight.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.wall_iron_straight,iron wall straight icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/wall_iron_straight.png,
+building.wall_iron_corner,iron wall corner,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/wall_iron_corner.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.wall_iron_corner,iron wall corner icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/wall_iron_corner.png,
+building.wall_iron_gate,iron wall gate,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/building/wall_iron_gate.glb,Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.
+icon.building.wall_iron_gate,iron wall gate icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/icon/building/wall_iron_gate.png,
+architecture_kit.greenwood,greenwood architecture variants,material_variant,greenwood,P1,pending_selection,not_produced,,assets/crownfall/material_variant/architecture_kit/greenwood.json,"Shared footprints/functions; region roof, trim, wall and prop attachments."
+architecture_kit.eastern_mountains,eastern_mountains architecture variants,material_variant,eastern_mountains,P1,pending_selection,not_produced,,assets/crownfall/material_variant/architecture_kit/eastern_mountains.json,"Shared footprints/functions; region roof, trim, wall and prop attachments."
+architecture_kit.iron_hills,iron_hills architecture variants,material_variant,iron_hills,P1,pending_selection,not_produced,,assets/crownfall/material_variant/architecture_kit/iron_hills.json,"Shared footprints/functions; region roof, trim, wall and prop attachments."
+architecture_kit.sunscorch,sunscorch architecture variants,material_variant,sunscorch,P1,pending_selection,not_produced,,assets/crownfall/material_variant/architecture_kit/sunscorch.json,"Shared footprints/functions; region roof, trim, wall and prop attachments."
+architecture_kit.frostmarch,frostmarch architecture variants,material_variant,frostmarch,P1,pending_selection,not_produced,,assets/crownfall/material_variant/architecture_kit/frostmarch.json,"Shared footprints/functions; region roof, trim, wall and prop attachments."
+landmark.mountain_fort,Mountain Fort,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/landmark/mountain_fort.glb,Landmark geometry + cheap distant LOD; statue is proposed optional landmark.
+landmark.enemy_stronghold,Enemy Stronghold,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/landmark/enemy_stronghold.glb,Landmark geometry + cheap distant LOD; statue is proposed optional landmark.
+landmark.old_stone_bridge,Old Stone Bridge,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/landmark/old_stone_bridge.glb,Landmark geometry + cheap distant LOD; statue is proposed optional landmark.
+landmark.ancient_king_statue,Ancient King Statue,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/landmark/ancient_king_statue.glb,Landmark geometry + cheap distant LOD; statue is proposed optional landmark.
+landmark.desert_aqueduct,Desert Aqueduct,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/landmark/desert_aqueduct.glb,Landmark geometry + cheap distant LOD; statue is proposed optional landmark.
+landmark.frost_citadel,Frost Citadel,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/landmark/frost_citadel.glb,Landmark geometry + cheap distant LOD; statue is proposed optional landmark.
+landmark.foundry_landmark,Foundry Landmark,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/landmark/foundry_landmark.glb,Landmark geometry + cheap distant LOD; statue is proposed optional landmark.
+enemy_camp.greenwood,greenwood enemy camp kit,material_variant,greenwood,P2,established_requirement,not_produced,,assets/crownfall/material_variant/enemy_camp/greenwood.json,"Region kit with hostile banners, spawn and gate sockets."
+enemy_camp.eastern_mountains,eastern_mountains enemy camp kit,material_variant,eastern_mountains,P2,established_requirement,not_produced,,assets/crownfall/material_variant/enemy_camp/eastern_mountains.json,"Region kit with hostile banners, spawn and gate sockets."
+enemy_camp.iron_hills,iron_hills enemy camp kit,material_variant,iron_hills,P2,established_requirement,not_produced,,assets/crownfall/material_variant/enemy_camp/iron_hills.json,"Region kit with hostile banners, spawn and gate sockets."
+enemy_camp.sunscorch,sunscorch enemy camp kit,material_variant,sunscorch,P2,established_requirement,not_produced,,assets/crownfall/material_variant/enemy_camp/sunscorch.json,"Region kit with hostile banners, spawn and gate sockets."
+enemy_camp.frostmarch,frostmarch enemy camp kit,material_variant,frostmarch,P2,established_requirement,not_produced,,assets/crownfall/material_variant/enemy_camp/frostmarch.json,"Region kit with hostile banners, spawn and gate sockets."
+enemy_camp.warlord,warlord enemy camp kit,material_variant,warlord,P2,established_requirement,not_produced,,assets/crownfall/material_variant/enemy_camp/warlord.json,"Region kit with hostile banners, spawn and gate sockets."
+terrain.shared.hill,Hill,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/terrain/shared/hill.glb,"Terrain-layout component; exact height/collision integration to author, not image crop."
+terrain.shared.valley,Valley,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/terrain/shared/valley.glb,"Terrain-layout component; exact height/collision integration to author, not image crop."
+terrain.shared.cliff_straight,Cliff Straight,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/terrain/shared/cliff_straight.glb,"Terrain-layout component; exact height/collision integration to author, not image crop."
+terrain.shared.cliff_corner,Cliff Corner,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/terrain/shared/cliff_corner.glb,"Terrain-layout component; exact height/collision integration to author, not image crop."
+terrain.shared.riverbank,Riverbank,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/terrain/shared/riverbank.glb,"Terrain-layout component; exact height/collision integration to author, not image crop."
+terrain.shared.river_surface,River Surface,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/terrain/shared/river_surface.glb,"Terrain-layout component; exact height/collision integration to author, not image crop."
+terrain.shared.waterfall,Waterfall,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/terrain/shared/waterfall.glb,"Terrain-layout component; exact height/collision integration to author, not image crop."
+terrain.shared.ravine,Ravine,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/terrain/shared/ravine.glb,"Terrain-layout component; exact height/collision integration to author, not image crop."
+terrain.shared.road_straight,Road Straight,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/terrain/shared/road_straight.glb,"Terrain-layout component; exact height/collision integration to author, not image crop."
+terrain.shared.road_curve,Road Curve,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/terrain/shared/road_curve.glb,"Terrain-layout component; exact height/collision integration to author, not image crop."
+terrain.shared.road_fork,Road Fork,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/terrain/shared/road_fork.glb,"Terrain-layout component; exact height/collision integration to author, not image crop."
+terrain.shared.road_slope,Road Slope,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/terrain/shared/road_slope.glb,"Terrain-layout component; exact height/collision integration to author, not image crop."
+terrain.shared.cave_mouth,Cave Mouth,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/terrain/shared/cave_mouth.glb,"Terrain-layout component; exact height/collision integration to author, not image crop."
+terrain.shared.region_gate,Region Gate,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/terrain/shared/region_gate.glb,"Terrain-layout component; exact height/collision integration to author, not image crop."
+environment.greenwood.pine,greenwood pine,model,greenwood,P1,pending_selection,not_produced,,assets/crownfall/model/environment/greenwood/pine.glb,
+environment.greenwood.oak,greenwood oak,model,greenwood,P1,pending_selection,not_produced,,assets/crownfall/model/environment/greenwood/oak.glb,
+environment.greenwood.shrub,greenwood shrub,model,greenwood,P1,pending_selection,not_produced,,assets/crownfall/model/environment/greenwood/shrub.glb,
+environment.greenwood.grass,greenwood grass,model,greenwood,P1,pending_selection,not_produced,,assets/crownfall/model/environment/greenwood/grass.glb,
+environment.greenwood.stump,greenwood stump,model,greenwood,P1,pending_selection,not_produced,,assets/crownfall/model/environment/greenwood/stump.glb,
+environment.greenwood.ruin_stone,greenwood ruin_stone,model,greenwood,P1,pending_selection,not_produced,,assets/crownfall/model/environment/greenwood/ruin_stone.glb,
+environment.greenwood.fence,greenwood fence,model,greenwood,P1,pending_selection,not_produced,,assets/crownfall/model/environment/greenwood/fence.glb,
+environment.greenwood.well,greenwood well,model,greenwood,P1,pending_selection,not_produced,,assets/crownfall/model/environment/greenwood/well.glb,
+environment.greenwood.hay,greenwood hay,model,greenwood,P1,pending_selection,not_produced,,assets/crownfall/model/environment/greenwood/hay.glb,
+environment.greenwood.cart,greenwood cart,model,greenwood,P1,pending_selection,not_produced,,assets/crownfall/model/environment/greenwood/cart.glb,
+environment.greenwood.laundry,greenwood laundry,model,greenwood,P1,pending_selection,not_produced,,assets/crownfall/model/environment/greenwood/laundry.glb,
+environment.greenwood.crop_rows,greenwood crop_rows,model,greenwood,P1,pending_selection,not_produced,,assets/crownfall/model/environment/greenwood/crop_rows.glb,
+environment.eastern_mountains.crag,eastern_mountains crag,model,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/model/environment/eastern_mountains/crag.glb,
+environment.eastern_mountains.boulder,eastern_mountains boulder,model,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/model/environment/eastern_mountains/boulder.glb,
+environment.eastern_mountains.alpine_pine,eastern_mountains alpine_pine,model,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/model/environment/eastern_mountains/alpine_pine.glb,
+environment.eastern_mountains.snowcap,eastern_mountains snowcap,model,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/model/environment/eastern_mountains/snowcap.glb,
+environment.eastern_mountains.talus,eastern_mountains talus,model,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/model/environment/eastern_mountains/talus.glb,
+environment.eastern_mountains.mine_entry,eastern_mountains mine_entry,model,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/model/environment/eastern_mountains/mine_entry.glb,
+environment.eastern_mountains.ledge,eastern_mountains ledge,model,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/model/environment/eastern_mountains/ledge.glb,
+environment.eastern_mountains.rope_bridge,eastern_mountains rope_bridge,model,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/model/environment/eastern_mountains/rope_bridge.glb,
+environment.iron_hills.rust_rock,iron_hills rust_rock,model,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/model/environment/iron_hills/rust_rock.glb,
+environment.iron_hills.iron_seam,iron_hills iron_seam,model,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/model/environment/iron_hills/iron_seam.glb,
+environment.iron_hills.slag,iron_hills slag,model,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/model/environment/iron_hills/slag.glb,
+environment.iron_hills.forge_vent,iron_hills forge_vent,model,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/model/environment/iron_hills/forge_vent.glb,
+environment.iron_hills.ash_tree,iron_hills ash_tree,model,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/model/environment/iron_hills/ash_tree.glb,
+environment.iron_hills.foundry_frame,iron_hills foundry_frame,model,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/model/environment/iron_hills/foundry_frame.glb,
+environment.iron_hills.dark_earth,iron_hills dark_earth,model,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/model/environment/iron_hills/dark_earth.glb,
+environment.sunscorch.sandstone,sunscorch sandstone,model,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/model/environment/sunscorch/sandstone.glb,
+environment.sunscorch.palm,sunscorch palm,model,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/model/environment/sunscorch/palm.glb,
+environment.sunscorch.cactus,sunscorch cactus,model,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/model/environment/sunscorch/cactus.glb,
+environment.sunscorch.dry_shrub,sunscorch dry_shrub,model,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/model/environment/sunscorch/dry_shrub.glb,
+environment.sunscorch.oasis_bank,sunscorch oasis_bank,model,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/model/environment/sunscorch/oasis_bank.glb,
+environment.sunscorch.column,sunscorch column,model,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/model/environment/sunscorch/column.glb,
+environment.sunscorch.awning,sunscorch awning,model,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/model/environment/sunscorch/awning.glb,
+environment.sunscorch.sand_patch,sunscorch sand_patch,model,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/model/environment/sunscorch/sand_patch.glb,
+environment.frostmarch.snowy_pine,frostmarch snowy_pine,model,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/model/environment/frostmarch/snowy_pine.glb,
+environment.frostmarch.ice_rock,frostmarch ice_rock,model,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/model/environment/frostmarch/ice_rock.glb,
+environment.frostmarch.frozen_river,frostmarch frozen_river,model,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/model/environment/frostmarch/frozen_river.glb,
+environment.frostmarch.ice_cave,frostmarch ice_cave,model,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/model/environment/frostmarch/ice_cave.glb,
+environment.frostmarch.snowdrift,frostmarch snowdrift,model,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/model/environment/frostmarch/snowdrift.glb,
+environment.frostmarch.winter_fence,frostmarch winter_fence,model,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/model/environment/frostmarch/winter_fence.glb,
+environment.frostmarch.snow_ground,frostmarch snow_ground,model,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/model/environment/frostmarch/snow_ground.glb,
+environment.warlord.dead_tree,warlord dead_tree,model,warlord,P2,pending_selection,not_produced,,assets/crownfall/model/environment/warlord/dead_tree.glb,
+environment.warlord.black_rock,warlord black_rock,model,warlord,P2,pending_selection,not_produced,,assets/crownfall/model/environment/warlord/black_rock.glb,
+environment.warlord.cracked_earth,warlord cracked_earth,model,warlord,P2,pending_selection,not_produced,,assets/crownfall/model/environment/warlord/cracked_earth.glb,
+environment.warlord.spike,warlord spike,model,warlord,P2,pending_selection,not_produced,,assets/crownfall/model/environment/warlord/spike.glb,
+environment.warlord.broken_siege_cart,warlord broken_siege_cart,model,warlord,P2,pending_selection,not_produced,,assets/crownfall/model/environment/warlord/broken_siege_cart.glb,
+environment.warlord.red_banner,warlord red_banner,model,warlord,P2,pending_selection,not_produced,,assets/crownfall/model/environment/warlord/red_banner.glb,
+environment.warlord.barricade,warlord barricade,model,warlord,P2,pending_selection,not_produced,,assets/crownfall/model/environment/warlord/barricade.glb,
+resource_node.gold.intact,gold intact,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/resource_node/gold/intact.glb,Stable persistent node identity; depletion does not duplicate rewards.
+resource_node.gold.depleted,gold depleted,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/resource_node/gold/depleted.glb,Stable persistent node identity; depletion does not duplicate rewards.
+resource_node.wood.intact,wood intact,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/resource_node/wood/intact.glb,Stable persistent node identity; depletion does not duplicate rewards.
+resource_node.wood.depleted,wood depleted,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/resource_node/wood/depleted.glb,Stable persistent node identity; depletion does not duplicate rewards.
+resource_node.stone.intact,stone intact,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/resource_node/stone/intact.glb,Stable persistent node identity; depletion does not duplicate rewards.
+resource_node.stone.depleted,stone depleted,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/resource_node/stone/depleted.glb,Stable persistent node identity; depletion does not duplicate rewards.
+resource_node.iron.intact,iron intact,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/resource_node/iron/intact.glb,Stable persistent node identity; depletion does not duplicate rewards.
+resource_node.iron.depleted,iron depleted,model,shared,P1,established_requirement,not_produced,,assets/crownfall/model/resource_node/iron/depleted.glb,Stable persistent node identity; depletion does not duplicate rewards.
+vfx.coin_burst,Coin Burst,vfx,shared,P1,established_requirement,not_produced,,assets/crownfall/vfx/vfx/coin_burst.json,Pooled/capped; tell dimensions correspond to authoritative gameplay collision.
+vfx.coin_fountain,Coin Fountain,vfx,shared,P1,established_requirement,not_produced,,assets/crownfall/vfx/vfx/coin_fountain.json,Pooled/capped; tell dimensions correspond to authoritative gameplay collision.
+vfx.wood_chips,Wood Chips,vfx,shared,P1,established_requirement,not_produced,,assets/crownfall/vfx/vfx/wood_chips.json,Pooled/capped; tell dimensions correspond to authoritative gameplay collision.
+vfx.stone_chips,Stone Chips,vfx,shared,P1,established_requirement,not_produced,,assets/crownfall/vfx/vfx/stone_chips.json,Pooled/capped; tell dimensions correspond to authoritative gameplay collision.
+vfx.resource_hit_highlight,Resource Hit Highlight,vfx,shared,P1,established_requirement,not_produced,,assets/crownfall/vfx/vfx/resource_hit_highlight.json,Pooled/capped; tell dimensions correspond to authoritative gameplay collision.
+vfx.boulder_dust_ring,Boulder Dust Ring,vfx,shared,P1,established_requirement,not_produced,,assets/crownfall/vfx/vfx/boulder_dust_ring.json,Pooled/capped; tell dimensions correspond to authoritative gameplay collision.
+vfx.fire_arrow,Fire Arrow,vfx,shared,P1,established_requirement,not_produced,,assets/crownfall/vfx/vfx/fire_arrow.json,Pooled/capped; tell dimensions correspond to authoritative gameplay collision.
+vfx.chain_lightning,Chain Lightning,vfx,shared,P1,established_requirement,not_produced,,assets/crownfall/vfx/vfx/chain_lightning.json,Pooled/capped; tell dimensions correspond to authoritative gameplay collision.
+vfx.forged_burst,Forged Burst,vfx,shared,P1,established_requirement,not_produced,,assets/crownfall/vfx/vfx/forged_burst.json,Pooled/capped; tell dimensions correspond to authoritative gameplay collision.
+vfx.wave_arrow,Wave Arrow,vfx,shared,P1,established_requirement,not_produced,,assets/crownfall/vfx/vfx/wave_arrow.json,Pooled/capped; tell dimensions correspond to authoritative gameplay collision.
+vfx.incoming_red_chevrons,Incoming Red Chevrons,vfx,shared,P1,established_requirement,not_produced,,assets/crownfall/vfx/vfx/incoming_red_chevrons.json,Pooled/capped; tell dimensions correspond to authoritative gameplay collision.
+vfx.hit_flash,Hit Flash,vfx,shared,P1,proposed,not_produced,,assets/crownfall/vfx/vfx/hit_flash.json,Pooled/capped; tell dimensions correspond to authoritative gameplay collision.
+vfx.claim_burst,Claim Burst,vfx,shared,P1,proposed,not_produced,,assets/crownfall/vfx/vfx/claim_burst.json,Pooled/capped; tell dimensions correspond to authoritative gameplay collision.
+vfx.king_unlock,King Unlock,vfx,shared,P1,proposed,not_produced,,assets/crownfall/vfx/vfx/king_unlock.json,Pooled/capped; tell dimensions correspond to authoritative gameplay collision.
+vfx.boss_lane_tell,Boss Lane Tell,vfx,shared,P1,proposed,not_produced,,assets/crownfall/vfx/vfx/boss_lane_tell.json,Pooled/capped; tell dimensions correspond to authoritative gameplay collision.
+vfx.boss_circle_tell,Boss Circle Tell,vfx,shared,P1,proposed,not_produced,,assets/crownfall/vfx/vfx/boss_circle_tell.json,Pooled/capped; tell dimensions correspond to authoritative gameplay collision.
+vfx.boss_arc_tell,Boss Arc Tell,vfx,shared,P1,proposed,not_produced,,assets/crownfall/vfx/vfx/boss_arc_tell.json,Pooled/capped; tell dimensions correspond to authoritative gameplay collision.
+vfx.frost_line,Frost Line,vfx,shared,P1,proposed,not_produced,,assets/crownfall/vfx/vfx/frost_line.json,Pooled/capped; tell dimensions correspond to authoritative gameplay collision.
+vfx.heat_strip,Heat Strip,vfx,shared,P1,proposed,not_produced,,assets/crownfall/vfx/vfx/heat_strip.json,Pooled/capped; tell dimensions correspond to authoritative gameplay collision.
+vfx.final_victory,Final Victory,vfx,shared,P1,proposed,not_produced,,assets/crownfall/vfx/vfx/final_victory.json,Pooled/capped; tell dimensions correspond to authoritative gameplay collision.
+icon.ui.gold,Gold,icon,shared,P1,pending_selection,not_produced,,assets/crownfall/icon/icon/ui/gold.png,
+icon.ui.wood,Wood,icon,shared,P1,pending_selection,not_produced,,assets/crownfall/icon/icon/ui/wood.png,
+icon.ui.stone,Stone,icon,shared,P1,pending_selection,not_produced,,assets/crownfall/icon/icon/ui/stone.png,
+icon.ui.iron,Iron,icon,shared,P1,pending_selection,not_produced,,assets/crownfall/icon/icon/ui/iron.png,
+icon.ui.people,People,icon,shared,P1,pending_selection,not_produced,,assets/crownfall/icon/icon/ui/people.png,
+icon.ui.banked_gold,Banked Gold,icon,shared,P1,pending_selection,not_produced,,assets/crownfall/icon/icon/ui/banked_gold.png,
+icon.ui.bow,Bow,icon,shared,P1,pending_selection,not_produced,,assets/crownfall/icon/icon/ui/bow.png,
+icon.ui.crossbow,Crossbow,icon,shared,P1,pending_selection,not_produced,,assets/crownfall/icon/icon/ui/crossbow.png,
+icon.ui.fire_arrows,Fire Arrows,icon,shared,P1,pending_selection,not_produced,,assets/crownfall/icon/icon/ui/fire_arrows.png,
+icon.ui.multishot,Multishot,icon,shared,P1,pending_selection,not_produced,,assets/crownfall/icon/icon/ui/multishot.png,
+icon.ui.storm_bow,Storm Bow,icon,shared,P1,pending_selection,not_produced,,assets/crownfall/icon/icon/ui/storm_bow.png,
+icon.ui.axe,Axe,icon,shared,P1,pending_selection,not_produced,,assets/crownfall/icon/icon/ui/axe.png,
+icon.ui.pickaxe,Pickaxe,icon,shared,P1,pending_selection,not_produced,,assets/crownfall/icon/icon/ui/pickaxe.png,
+icon.ui.build,Build,icon,shared,P1,pending_selection,not_produced,,assets/crownfall/icon/icon/ui/build.png,
+icon.ui.king,King,icon,shared,P1,pending_selection,not_produced,,assets/crownfall/icon/icon/ui/king.png,
+icon.ui.orders,Orders,icon,shared,P1,pending_selection,not_produced,,assets/crownfall/icon/icon/ui/orders.png,
+icon.ui.rally,Rally,icon,shared,P1,pending_selection,not_produced,,assets/crownfall/icon/icon/ui/rally.png,
+icon.ui.defend,Defend,icon,shared,P1,pending_selection,not_produced,,assets/crownfall/icon/icon/ui/defend.png,
+icon.ui.retreat,Retreat,icon,shared,P1,pending_selection,not_produced,,assets/crownfall/icon/icon/ui/retreat.png,
+icon.ui.start_wave,Start Wave,icon,shared,P1,pending_selection,not_produced,,assets/crownfall/icon/icon/ui/start_wave.png,
+icon.ui.attack,Attack,icon,shared,P1,pending_selection,not_produced,,assets/crownfall/icon/icon/ui/attack.png,
+icon.ui.ability,Ability,icon,shared,P1,pending_selection,not_produced,,assets/crownfall/icon/icon/ui/ability.png,
+icon.ui.dodge,Dodge,icon,shared,P1,pending_selection,not_produced,,assets/crownfall/icon/icon/ui/dodge.png,
+ui.resource_pills,Resource Pills,ui,shared,P1,pending_selection,not_produced,,assets/crownfall/ui/ui/resource_pills.json,
+ui.start_wave,Start Wave,ui,shared,P1,pending_selection,not_produced,,assets/crownfall/ui/ui/start_wave.json,
+ui.build_button,Build Button,ui,shared,P1,pending_selection,not_produced,,assets/crownfall/ui/ui/build_button.json,
+ui.king_button,King Button,ui,shared,P1,pending_selection,not_produced,,assets/crownfall/ui/ui/king_button.json,
+ui.orders_button,Orders Button,ui,shared,P1,pending_selection,not_produced,,assets/crownfall/ui/ui/orders_button.json,
+ui.cream_bottom_sheet,Cream Bottom Sheet,ui,shared,P1,pending_selection,not_produced,,assets/crownfall/ui/ui/cream_bottom_sheet.json,
+ui.upgrade_card,Upgrade Card,ui,shared,P1,pending_selection,not_produced,,assets/crownfall/ui/ui/upgrade_card.json,
+ui.king_selection,King Selection,ui,shared,P1,pending_selection,not_produced,,assets/crownfall/ui/ui/king_selection.json,
+ui.weapon_customizer,Weapon Customizer,ui,shared,P1,pending_selection,not_produced,,assets/crownfall/ui/ui/weapon_customizer.json,
+ui.army_orders,Army Orders,ui,shared,P1,pending_selection,not_produced,,assets/crownfall/ui/ui/army_orders.json,
+ui.boss_health,Boss Health,ui,shared,P1,pending_selection,not_produced,,assets/crownfall/ui/ui/boss_health.json,
+ui.context_interact,Context Interact,ui,shared,P1,pending_selection,not_produced,,assets/crownfall/ui/ui/context_interact.json,
+ui.movement_joystick,Movement Joystick,ui,shared,P1,pending_selection,not_produced,,assets/crownfall/ui/ui/movement_joystick.json,
+ui.aim_area,Aim Area,ui,shared,P1,pending_selection,not_produced,,assets/crownfall/ui/ui/aim_area.json,
+ui.combat_action_buttons,Combat Action Buttons,ui,shared,P1,pending_selection,not_produced,,assets/crownfall/ui/ui/combat_action_buttons.json,
+world.region_bounds,Region Bounds,world_data,shared,P0,established_requirement,not_produced,,assets/crownfall/world_data/world/region_bounds.json,"Requires actual engine scale audit; concept gives relative composition, no exact coordinates."
+world.route_graph,Route Graph,world_data,shared,P0,established_requirement,not_produced,,assets/crownfall/world_data/world/route_graph.json,"Requires actual engine scale audit; concept gives relative composition, no exact coordinates."
+world.poi_catalog,Poi Catalog,world_data,shared,P0,established_requirement,not_produced,,assets/crownfall/world_data/world/poi_catalog.json,"Requires actual engine scale audit; concept gives relative composition, no exact coordinates."
+world.chunk_layout,Chunk Layout,world_data,shared,P0,established_requirement,not_produced,,assets/crownfall/world_data/world/chunk_layout.json,"Requires actual engine scale audit; concept gives relative composition, no exact coordinates."
+world.spawn_rules,Spawn Rules,world_data,shared,P0,established_requirement,not_produced,,assets/crownfall/world_data/world/spawn_rules.json,"Requires actual engine scale audit; concept gives relative composition, no exact coordinates."
+world.build_zones,Build Zones,world_data,shared,P0,established_requirement,not_produced,,assets/crownfall/world_data/world/build_zones.json,"Requires actual engine scale audit; concept gives relative composition, no exact coordinates."
+world.wall_expansion_6_levels,Wall Expansion 6 Levels,world_data,shared,P0,established_requirement,not_produced,,assets/crownfall/world_data/world/wall_expansion_6_levels.json,"Requires actual engine scale audit; concept gives relative composition, no exact coordinates."
+world.landmark_sightlines,Landmark Sightlines,world_data,shared,P0,established_requirement,not_produced,,assets/crownfall/world_data/world/landmark_sightlines.json,"Requires actual engine scale audit; concept gives relative composition, no exact coordinates."
+icon.unit.ally.greenwood.guard,Crown Guard icon,icon,greenwood,P0,pending_selection,not_produced,,assets/crownfall/icon/unit/ally/greenwood/guard.png,Final realm may reuse chosen regional coalition models.
+icon.unit.ally.greenwood.archer,Greenhood Archer icon,icon,greenwood,P0,pending_selection,not_produced,,assets/crownfall/icon/unit/ally/greenwood/archer.png,Final realm may reuse chosen regional coalition models.
+icon.unit.ally.greenwood.raider,Royal Raider icon,icon,greenwood,P0,pending_selection,not_produced,,assets/crownfall/icon/unit/ally/greenwood/raider.png,Final realm may reuse chosen regional coalition models.
+icon.unit.enemy.greenwood.swordsman,Red Swordsman icon,icon,greenwood,P0,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/greenwood/swordsman.png,
+icon.unit.enemy.greenwood.bowman,Road Bowman icon,icon,greenwood,P0,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/greenwood/bowman.png,
+icon.unit.enemy.greenwood.brute,Gate Brute icon,icon,greenwood,P0,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/greenwood/brute.png,
+icon.unit.enemy.greenwood.outrider,Outrider icon,icon,greenwood,P0,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/greenwood/outrider.png,
+icon.unit.enemy.greenwood.hound,War Hound icon,icon,greenwood,P0,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/greenwood/hound.png,
+icon.boss.greenwood,Bramble Captain / Thorn Knight icon,icon,greenwood,P1,pending_selection,not_produced,,assets/crownfall/icon/boss/greenwood.png,"Stable boss ID; A/B alternative designs, not two mandatory bosses."
+icon.unit.ally.eastern_mountains.guard,Pass Guard icon,icon,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/ally/eastern_mountains/guard.png,Final realm may reuse chosen regional coalition models.
+icon.unit.ally.eastern_mountains.archer,Peak Archer icon,icon,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/ally/eastern_mountains/archer.png,Final realm may reuse chosen regional coalition models.
+icon.unit.ally.eastern_mountains.raider,Ridge Raider icon,icon,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/ally/eastern_mountains/raider.png,Final realm may reuse chosen regional coalition models.
+icon.unit.enemy.eastern_mountains.swordsman,Crag Swordsman icon,icon,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/eastern_mountains/swordsman.png,
+icon.unit.enemy.eastern_mountains.bowman,Ledge Bowman icon,icon,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/eastern_mountains/bowman.png,
+icon.unit.enemy.eastern_mountains.brute,Stone Brute icon,icon,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/eastern_mountains/brute.png,
+icon.unit.enemy.eastern_mountains.outrider,Pass Outrider icon,icon,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/eastern_mountains/outrider.png,
+icon.unit.enemy.eastern_mountains.hound,Ravine Hound icon,icon,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/eastern_mountains/hound.png,
+icon.boss.eastern_mountains,Cliff Marshal / Avalanche Duke icon,icon,eastern_mountains,P2,pending_selection,not_produced,,assets/crownfall/icon/boss/eastern_mountains.png,"Stable boss ID; A/B alternative designs, not two mandatory bosses."
+icon.unit.ally.iron_hills.guard,Forge Guard icon,icon,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/ally/iron_hills/guard.png,Final realm may reuse chosen regional coalition models.
+icon.unit.ally.iron_hills.archer,Cinder Archer icon,icon,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/ally/iron_hills/archer.png,Final realm may reuse chosen regional coalition models.
+icon.unit.ally.iron_hills.raider,Anvil Raider icon,icon,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/ally/iron_hills/raider.png,Final realm may reuse chosen regional coalition models.
+icon.unit.enemy.iron_hills.swordsman,Slag Swordsman icon,icon,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/iron_hills/swordsman.png,
+icon.unit.enemy.iron_hills.bowman,Ash Bowman icon,icon,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/iron_hills/bowman.png,
+icon.unit.enemy.iron_hills.brute,Kiln Brute icon,icon,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/iron_hills/brute.png,
+icon.unit.enemy.iron_hills.outrider,Furnace Outrider icon,icon,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/iron_hills/outrider.png,
+icon.unit.enemy.iron_hills.hound,Ash Hound icon,icon,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/iron_hills/hound.png,
+icon.boss.iron_hills,Forge Tyrant / Ember Judge icon,icon,iron_hills,P2,pending_selection,not_produced,,assets/crownfall/icon/boss/iron_hills.png,"Stable boss ID; A/B alternative designs, not two mandatory bosses."
+icon.unit.ally.sunscorch.guard,Oasis Guard icon,icon,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/ally/sunscorch/guard.png,Final realm may reuse chosen regional coalition models.
+icon.unit.ally.sunscorch.archer,Sun Archer icon,icon,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/ally/sunscorch/archer.png,Final realm may reuse chosen regional coalition models.
+icon.unit.ally.sunscorch.raider,Dune Raider icon,icon,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/ally/sunscorch/raider.png,Final realm may reuse chosen regional coalition models.
+icon.unit.enemy.sunscorch.swordsman,Dune Swordsman icon,icon,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/sunscorch/swordsman.png,
+icon.unit.enemy.sunscorch.bowman,Sand Bowman icon,icon,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/sunscorch/bowman.png,
+icon.unit.enemy.sunscorch.brute,Bastion Brute icon,icon,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/sunscorch/brute.png,
+icon.unit.enemy.sunscorch.outrider,Dune Outrider icon,icon,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/sunscorch/outrider.png,
+icon.unit.enemy.sunscorch.hound,Sand Hound icon,icon,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/sunscorch/hound.png,
+icon.boss.sunscorch,Dune Conqueror / Scorpion Lord icon,icon,sunscorch,P2,pending_selection,not_produced,,assets/crownfall/icon/boss/sunscorch.png,"Stable boss ID; A/B alternative designs, not two mandatory bosses."
+icon.unit.ally.frostmarch.guard,Winter Guard icon,icon,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/ally/frostmarch/guard.png,Final realm may reuse chosen regional coalition models.
+icon.unit.ally.frostmarch.archer,Snow Archer icon,icon,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/ally/frostmarch/archer.png,Final realm may reuse chosen regional coalition models.
+icon.unit.ally.frostmarch.raider,Frost Raider icon,icon,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/ally/frostmarch/raider.png,Final realm may reuse chosen regional coalition models.
+icon.unit.enemy.frostmarch.swordsman,Rime Swordsman icon,icon,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/frostmarch/swordsman.png,
+icon.unit.enemy.frostmarch.bowman,Blizzard Bowman icon,icon,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/frostmarch/bowman.png,
+icon.unit.enemy.frostmarch.brute,Ice Brute icon,icon,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/frostmarch/brute.png,
+icon.unit.enemy.frostmarch.outrider,Snow Outrider icon,icon,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/frostmarch/outrider.png,
+icon.unit.enemy.frostmarch.hound,Winter Hound icon,icon,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/frostmarch/hound.png,
+icon.boss.frostmarch,Rime Regent / Glacier Revenant icon,icon,frostmarch,P2,pending_selection,not_produced,,assets/crownfall/icon/boss/frostmarch.png,"Stable boss ID; A/B alternative designs, not two mandatory bosses."
+icon.unit.ally.warlord.guard,Alliance Guard icon,icon,warlord,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/ally/warlord/guard.png,Final realm may reuse chosen regional coalition models.
+icon.unit.ally.warlord.archer,Alliance Archer icon,icon,warlord,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/ally/warlord/archer.png,Final realm may reuse chosen regional coalition models.
+icon.unit.ally.warlord.raider,Alliance Raider icon,icon,warlord,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/ally/warlord/raider.png,Final realm may reuse chosen regional coalition models.
+icon.unit.enemy.warlord.swordsman,Blackguard icon,icon,warlord,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/warlord/swordsman.png,
+icon.unit.enemy.warlord.bowman,Dread Bowman icon,icon,warlord,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/warlord/bowman.png,
+icon.unit.enemy.warlord.brute,Citadel Brute icon,icon,warlord,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/warlord/brute.png,
+icon.unit.enemy.warlord.outrider,Dread Outrider icon,icon,warlord,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/warlord/outrider.png,
+icon.unit.enemy.warlord.hound,Dread Hound icon,icon,warlord,P2,pending_selection,not_produced,,assets/crownfall/icon/unit/enemy/warlord/hound.png,
+icon.boss.warlord,The Warlord / Crownbreaker Warlord icon,icon,warlord,P2,pending_selection,not_produced,,assets/crownfall/icon/boss/warlord.png,"Stable boss ID; A/B alternative designs, not two mandatory bosses."
+icon.boss.elder_treant,Elder Treant — wave 5 icon,icon,greenwood,P1,established_requirement,not_produced,,assets/crownfall/icon/boss/elder_treant.png,Original boss retained separately from regional commander. Clean visual sheet still to produce.
+icon.worker.laborer,Laborer icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/worker/laborer.png,
+icon.worker.woodcutter,Woodcutter icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/worker/woodcutter.png,
+icon.worker.miner,Miner icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/worker/miner.png,
+icon.worker.farmer,Farmer icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/worker/farmer.png,
+icon.worker.courier,Courier icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/worker/courier.png,
+icon.worker.smith,Smith icon,icon,shared,P1,established_requirement,not_produced,,assets/crownfall/icon/worker/smith.png,

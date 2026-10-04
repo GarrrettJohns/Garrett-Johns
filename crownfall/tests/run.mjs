@@ -291,5 +291,33 @@ test('saves from before the journey load with it at the start', () => {
   assert(ENCOUNTERS.every((e) => w2.enc[e.id] === 'locked'), JSON.stringify(w2.enc));
 });
 
+console.log('the five kings');
+const { KINGS, KING_ORDER } = await import('../js/config.js');
+const { RIGS } = await import('../js/models.js');
+test('every regional king has a complete colour kit and builds a mounted rig within budget', () => {
+  const keys = Object.keys(KINGS.greenwood);
+  assert(KING_ORDER.length === 5 && KING_ORDER.every((k) => KINGS[k]), 'five kings');
+  for (const id of KING_ORDER) {
+    for (const k of keys) assert(KINGS[id][k] !== undefined, `${id} lacks ${k}`);
+    const r = RIGS.hero(KINGS[id]);
+    let tris = 0;
+    for (const p of r.parts) { assert(p.geo.attributes.position.count > 0, `${id} empty part`); tris += p.geo.attributes.position.count / 3; }
+    assert(tris < 8000, `${id} rig ${tris} triangles`);   // well inside the 8-15k king+horse budget
+  }
+});
+test('the chosen king is saved, carried to the next land, and old saves ride as the Greenwood king', () => {
+  const w = new World();
+  assert(w.hero.kit === 'greenwood', w.hero.kit);
+  w.hero.kit = 'frostmarch';
+  const w2 = new World(JSON.parse(JSON.stringify(w.snapshot())));
+  assert(w2.hero.kit === 'frostmarch', 'kit lost on reload');
+  const w3 = new World(null, { level: 2, carry: w2.carryOver() });
+  assert(w3.hero.kit === 'frostmarch', 'kit lost between lands');
+  const snap = JSON.parse(JSON.stringify(w.snapshot())); delete snap.hero.kit;
+  assert(new World(snap).hero.kit === 'greenwood', 'legacy save');
+  snap.hero.kit = 'nonsense';
+  assert(new World(snap).hero.kit === 'greenwood', 'bad kit accepted');
+});
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

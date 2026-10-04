@@ -1,0 +1,420 @@
+{
+  "version": 2,
+  "regional_names_are_proposals": true,
+  "regions": [
+    {
+      "region_id": "greenwood",
+      "display_name": "Greenwood",
+      "palette_status": "proposed_exact_hex_matching_reference_direction",
+      "palette": {
+        "primary": "#2f6fdc",
+        "gold": "#f2c33a",
+        "cape": "#c8332c",
+        "neutral": "#eee7d8"
+      },
+      "king_id": "king.greenwood",
+      "ally_roster": [
+        {
+          "id": "unit.ally.greenwood.guard",
+          "name": "Crown Guard",
+          "role": "guard"
+        },
+        {
+          "id": "unit.ally.greenwood.archer",
+          "name": "Greenhood Archer",
+          "role": "archer"
+        },
+        {
+          "id": "unit.ally.greenwood.raider",
+          "name": "Royal Raider",
+          "role": "raider"
+        }
+      ],
+      "enemy_roster": [
+        {
+          "id": "unit.enemy.greenwood.swordsman",
+          "name": "Red Swordsman",
+          "role": "swordsman"
+        },
+        {
+          "id": "unit.enemy.greenwood.bowman",
+          "name": "Road Bowman",
+          "role": "bowman"
+        },
+        {
+          "id": "unit.enemy.greenwood.brute",
+          "name": "Gate Brute",
+          "role": "brute"
+        },
+        {
+          "id": "unit.enemy.greenwood.outrider",
+          "name": "Outrider",
+          "role": "outrider"
+        },
+        {
+          "id": "unit.enemy.greenwood.hound",
+          "name": "War Hound",
+          "role": "hound"
+        }
+      ],
+      "boss": {
+        "id": "boss.greenwood",
+        "option_a": "Bramble Captain",
+        "option_b": "Thorn Knight",
+        "selection": null,
+        "design_status": "pending_selection"
+      },
+      "team_identification": {
+        "ally": "rounded shields, royal accents, blue alliance badge/sash, friendly marker",
+        "enemy": "angular equipment, red identification cloth, hostile marker"
+      },
+      "reference_sheet": "visuals/greenwood_armies.png",
+      "royal_troop_style": null
+    },
+    {
+      "region_id": "eastern_mountains",
+      "display_name": "Eastern Mountains",
+      "palette_status": "proposed_exact_hex_matching_reference_direction",
+      "palette": {
+        "primary": "#8eccec",
+        "gold": "#e6c66b",
+        "cape": "#f0f3f6",
+        "neutral": "#9caaba"
+      },
+      "king_id": "king.eastern_mountains",
+      "ally_roster": [
+        {
+          "id": "unit.ally.eastern_mountains.guard",
+          "name": "Pass Guard",
+          "role": "guard"
+        },
+        {
+          "id": "unit.ally.eastern_mountains.archer",
+          "name": "Peak Archer",
+          "role": "archer"
+        },
+        {
+          "id": "unit.ally.eastern_mountains.raider",
+          "name": "Ridge Raider",
+          "role": "raider"
+        }
+      ],
+      "enemy_roster": [
+        {
+          "id": "unit.enemy.eastern_mountains.swordsman",
+          "name": "Crag Swordsman",
+          "role": "swordsman"
+        },
+        {
+          "id": "unit.enemy.eastern_mountains.bowman",
+          "name": "Ledge Bowman",
+          "role": "bowman"
+        },
+        {
+          "id": "unit.enemy.eastern_mountains.brute",
+          "name": "Stone Brute",
+          "role": "brute"
+        },
+        {
+          "id": "unit.enemy.eastern_mountains.outrider",
+          "name": "Pass Outrider",
+          "role": "outrider"
+        },
+        {
+          "id": "unit.enemy.eastern_mountains.hound",
+          "name": "Ravine Hound",
+          "role": "hound"
+        }
+      ],
+      "boss": {
+        "id": "boss.eastern_mountains",
+        "option_a": "Cliff Marshal",
+        "option_b": "Avalanche Duke",
+        "selection": null,
+        "design_status": "pending_selection"
+      },
+      "team_identification": {
+        "ally": "rounded shields, royal accents, blue alliance badge/sash, friendly marker",
+        "enemy": "angular equipment, red identification cloth, hostile marker"
+      },
+      "reference_sheet": "visuals/eastern_mountains_armies.png",
+      "royal_troop_style": null
+    },
+    {
+      "region_id": "iron_hills",
+      "display_name": "Iron Hills",
+      "palette_status": "proposed_exact_hex_matching_reference_direction",
+      "palette": {
+        "primary": "#332d2c",
+        "gold": "#c28b3c",
+        "cape": "#8e2825",
+        "neutral": "#655e58"
+      },
+      "king_id": "king.iron_hills",
+      "ally_roster": [
+        {
+          "id": "unit.ally.iron_hills.guard",
+          "name": "Forge Guard",
+          "role": "guard"
+        },
+        {
+          "id": "unit.ally.iron_hills.archer",
+          "name": "Cinder Archer",
+          "role": "archer"
+        },
+        {
+          "id": "unit.ally.iron_hills.raider",
+          "name": "Anvil Raider",
+          "role": "raider"
+        }
+      ],
+      "enemy_roster": [
+        {
+          "id": "unit.enemy.iron_hills.swordsman",
+          "name": "Slag Swordsman",
+          "role": "swordsman"
+        },
+        {
+          "id": "unit.enemy.iron_hills.bowman",
+          "name": "Ash Bowman",
+          "role": "bowman"
+        },
+        {
+          "id": "unit.enemy.iron_hills.brute",
+          "name": "Kiln Brute",
+          "role": "brute"
+        },
+        {
+          "id": "unit.enemy.iron_hills.outrider",
+          "name": "Furnace Outrider",
+          "role": "outrider"
+        },
+        {
+          "id": "unit.enemy.iron_hills.hound",
+          "name": "Ash Hound",
+          "role": "hound"
+        }
+      ],
+      "boss": {
+        "id": "boss.iron_hills",
+        "option_a": "Forge Tyrant",
+        "option_b": "Ember Judge",
+        "selection": null,
+        "design_status": "pending_selection"
+      },
+      "team_identification": {
+        "ally": "rounded shields, royal accents, blue alliance badge/sash, friendly marker",
+        "enemy": "angular equipment, red identification cloth, hostile marker"
+      },
+      "reference_sheet": "visuals/iron_hills_armies.png",
+      "royal_troop_style": null
+    },
+    {
+      "region_id": "sunscorch",
+      "display_name": "Sunscorch",
+      "palette_status": "proposed_exact_hex_matching_reference_direction",
+      "palette": {
+        "primary": "#4b783c",
+        "gold": "#e7b949",
+        "cape": "#567c3c",
+        "neutral": "#f1dfb5"
+      },
+      "king_id": "king.sunscorch",
+      "ally_roster": [
+        {
+          "id": "unit.ally.sunscorch.guard",
+          "name": "Oasis Guard",
+          "role": "guard"
+        },
+        {
+          "id": "unit.ally.sunscorch.archer",
+          "name": "Sun Archer",
+          "role": "archer"
+        },
+        {
+          "id": "unit.ally.sunscorch.raider",
+          "name": "Dune Raider",
+          "role": "raider"
+        }
+      ],
+      "enemy_roster": [
+        {
+          "id": "unit.enemy.sunscorch.swordsman",
+          "name": "Dune Swordsman",
+          "role": "swordsman"
+        },
+        {
+          "id": "unit.enemy.sunscorch.bowman",
+          "name": "Sand Bowman",
+          "role": "bowman"
+        },
+        {
+          "id": "unit.enemy.sunscorch.brute",
+          "name": "Bastion Brute",
+          "role": "brute"
+        },
+        {
+          "id": "unit.enemy.sunscorch.outrider",
+          "name": "Dune Outrider",
+          "role": "outrider"
+        },
+        {
+          "id": "unit.enemy.sunscorch.hound",
+          "name": "Sand Hound",
+          "role": "hound"
+        }
+      ],
+      "boss": {
+        "id": "boss.sunscorch",
+        "option_a": "Dune Conqueror",
+        "option_b": "Scorpion Lord",
+        "selection": null,
+        "design_status": "pending_selection"
+      },
+      "team_identification": {
+        "ally": "rounded shields, royal accents, blue alliance badge/sash, friendly marker",
+        "enemy": "angular equipment, red identification cloth, hostile marker"
+      },
+      "reference_sheet": "visuals/sunscorch_armies.png",
+      "royal_troop_style": null
+    },
+    {
+      "region_id": "frostmarch",
+      "display_name": "Frostmarch",
+      "palette_status": "proposed_exact_hex_matching_reference_direction",
+      "palette": {
+        "primary": "#743eaa",
+        "gold": "#c8cdd9",
+        "cape": "#ececf1",
+        "neutral": "#38323f"
+      },
+      "king_id": "king.frostmarch",
+      "ally_roster": [
+        {
+          "id": "unit.ally.frostmarch.guard",
+          "name": "Winter Guard",
+          "role": "guard"
+        },
+        {
+          "id": "unit.ally.frostmarch.archer",
+          "name": "Snow Archer",
+          "role": "archer"
+        },
+        {
+          "id": "unit.ally.frostmarch.raider",
+          "name": "Frost Raider",
+          "role": "raider"
+        }
+      ],
+      "enemy_roster": [
+        {
+          "id": "unit.enemy.frostmarch.swordsman",
+          "name": "Rime Swordsman",
+          "role": "swordsman"
+        },
+        {
+          "id": "unit.enemy.frostmarch.bowman",
+          "name": "Blizzard Bowman",
+          "role": "bowman"
+        },
+        {
+          "id": "unit.enemy.frostmarch.brute",
+          "name": "Ice Brute",
+          "role": "brute"
+        },
+        {
+          "id": "unit.enemy.frostmarch.outrider",
+          "name": "Snow Outrider",
+          "role": "outrider"
+        },
+        {
+          "id": "unit.enemy.frostmarch.hound",
+          "name": "Winter Hound",
+          "role": "hound"
+        }
+      ],
+      "boss": {
+        "id": "boss.frostmarch",
+        "option_a": "Rime Regent",
+        "option_b": "Glacier Revenant",
+        "selection": null,
+        "design_status": "pending_selection"
+      },
+      "team_identification": {
+        "ally": "rounded shields, royal accents, blue alliance badge/sash, friendly marker",
+        "enemy": "angular equipment, red identification cloth, hostile marker"
+      },
+      "reference_sheet": "visuals/frostmarch_armies.png",
+      "royal_troop_style": null
+    },
+    {
+      "region_id": "warlord",
+      "display_name": "Warlord",
+      "palette_status": "proposed_exact_hex_matching_reference_direction",
+      "palette": {
+        "primary": "#24232a",
+        "gold": "#ba903a",
+        "cape": "#a12529",
+        "neutral": "#716669"
+      },
+      "king_id": null,
+      "ally_roster": [
+        {
+          "id": "unit.ally.warlord.guard",
+          "name": "Alliance Guard",
+          "role": "guard"
+        },
+        {
+          "id": "unit.ally.warlord.archer",
+          "name": "Alliance Archer",
+          "role": "archer"
+        },
+        {
+          "id": "unit.ally.warlord.raider",
+          "name": "Alliance Raider",
+          "role": "raider"
+        }
+      ],
+      "enemy_roster": [
+        {
+          "id": "unit.enemy.warlord.swordsman",
+          "name": "Blackguard",
+          "role": "swordsman"
+        },
+        {
+          "id": "unit.enemy.warlord.bowman",
+          "name": "Dread Bowman",
+          "role": "bowman"
+        },
+        {
+          "id": "unit.enemy.warlord.brute",
+          "name": "Citadel Brute",
+          "role": "brute"
+        },
+        {
+          "id": "unit.enemy.warlord.outrider",
+          "name": "Dread Outrider",
+          "role": "outrider"
+        },
+        {
+          "id": "unit.enemy.warlord.hound",
+          "name": "Dread Hound",
+          "role": "hound"
+        }
+      ],
+      "boss": {
+        "id": "boss.warlord",
+        "option_a": "The Warlord",
+        "option_b": "Crownbreaker Warlord",
+        "selection": null,
+        "design_status": "pending_selection"
+      },
+      "team_identification": {
+        "ally": "rounded shields, royal accents, blue alliance badge/sash, friendly marker",
+        "enemy": "angular equipment, red identification cloth, hostile marker"
+      },
+      "reference_sheet": "visuals/warlord_armies.png",
+      "royal_troop_style": null
+    }
+  ]
+}

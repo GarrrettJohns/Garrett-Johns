@@ -3,12 +3,74 @@
 ## Resume note (read this first)
 
 - **Branch:** `main` (every Crownfall change is pushed to `main`; GitHub Pages deploys it).
-- **Milestone:** Phase 2 (Greenwood vertical slice) implemented: milestone 2 below. Phase 0 and Phase 1 are done (milestone 1). Next: a real-iPhone pass with the checklist below, then Phase 3 (render streaming). See `implementation-plan.md`.
+- **Milestone:** milestone 3 (graphics pass from the asset workup) below. The Phase 2 slice is milestone 2; Phases 0–1 are milestone 1. Next: the user's design selections (soldiers, villains, buildings, UI, icons), a real-iPhone pass, then Phase 3 (render streaming). See `implementation-plan.md`.
 - **Run the checks:** `node crownfall/tests/run.mjs` (no dependencies). Module syntax check: `node --input-type=module --check < crownfall/js/<file>.js`. A plain `node --check` misses ES module errors.
 - **Perf overlay:** open the game with `?perf`.
 - **Release rule:** bump `CACHE` in `crownfall/sw.js` on every release. Add any new JS file to its asset list.
-- **Blockers:** the five king concept images and the macro map concept are not in the pack (R05). Both handoff uploads so far were the same package (same checksum). The procedural king stays a labelled placeholder.
+- **Source art:** `docs/crownfall/asset-workup/` (checksums verified). Approved: `references/approved/` (five kings, mounted hero, world and cameras). Everything in `visuals/` is a proposal awaiting the user's selection (`data/design-selections.json`, all pending). Do not treat a proposal as approved.
+- **Blockers:** soldier, villain, building, UI and icon selections; the unlock rule for the four non-Greenwood kings; real GLB production.
 - **Not verified:** anything on a real iPhone (see the device checklist below).
+
+## Milestone 3: graphics pass from the asset workup (2026-10-04)
+
+Requirement IDs: R05, R08, R23, R24, R30, R39, R40.
+
+### What changed
+- **The five regional kings** come from the approved sheet (`asset-workup/references/approved/03_five_regional_kings.jpeg`, reconciled by spec 06). They share one rebuilt mounted rig with five colour kits (`KINGS` in `js/config.js`):
+  - **Greenwood:** brown hair and beard, blue armour with gold trim, a red gold-hemmed cape with a white fur collar, a gold crown with a blue gem, and a white horse in blue and gold barding with the crown emblem.
+  - **Mountains:** white hair and beard, blue and silver, pale-blue barding with the peak emblem.
+  - **Iron Hills:** black hair and beard, black and bronze, a dark red cape, a dark brown horse in red barding with the crossed hammers.
+  - **Sunscorch:** green, cream and gold, with the sun emblem.
+  - **Frostmarch:** purple and silver with a silver crown and the snowflake emblem.
+  - Each rig has legs in stirrups, pauldrons, a belt, reins, a breastplate and a face plate. That's about 3.3k triangles including all five bow tiers, well inside the 8–15k king and horse budget.
+- **Which king you ride** is `hero.kit`. It is saved and carried to the next land, and older saves ride as the Greenwood king. For now the other four are a **developer-tools preview** (Pause → Developer tools → Ride as a regional king), because how they unlock is not decided.
+- **The world, toward the approved world concept** (`04_world_and_cameras.jpeg`):
+  - layered, grass-topped rock cliffs replace the grey boxes around the map;
+  - round broadleaf oaks mix with the pines in the meadows;
+  - the castle's turrets get tall blue spires with gold pennants, plus a tallest central spire with the royal banner from castle level 3;
+  - falls pour off a rock cliff where the river rises at the foot of the mountains, with a scrolling water sheet, a foam pool and mist;
+  - a sky gradient fades to the horizon;
+  - the **Old Stone Bridge** (`landmark.old_stone_bridge`) stands west of the wooden bridge: a broken arched ruin and a discoverable landmark. It can't be crossed, so the forest still opens with the wooden bridge.
+- **Asset manifest:** `crownfall/assets/manifest.json` now uses the workup's 552 stable IDs. 25 hero rows are built procedurally from the approved sheet, 126 rows have an older procedural stand-in, and 401 are not in the game. `production_status` stays `not_produced` everywhere: there are no GLB files.
+
+### Not done, waiting on selections (`asset-workup/data/design-selections.json`, all still pending)
+Soldier kit A or B per region; villain A or B per region (Bramble Captain or Thorn Knight, and so on); enemy soldiers; the regional building kits; the environment travel views; UI density; and the icon style. Until these are chosen the troops, enemies, houses and barracks keep their current placeholder looks. The Elder Treant stays the wave-5 boss, and the Warlord stays the final boss.
+
+### Reference conflicts resolved (spec 06)
+- The Greenwood king has a blue gem, not the early portrait's red.
+- The Mountain King is white-haired.
+- The Iron King is a playable ally, despite his red and black.
+- The Desert King is bearded and green.
+- The Frost King is dark-haired, in purple and silver, on a light horse.
+- The crown is always five-pointed; engraving and gem detail are simplified for the phone.
+
+### Checks run
+| Check | Result |
+|---|---|
+| `node crownfall/tests/run.mjs` | **30 passed, 0 failed**. New: every king kit is complete and builds a rig under 8k triangles; the chosen king is saved, carried to the next land and defaults safely |
+| Module syntax check of every JS file | clean |
+| Workup checksums (`data/package-checksums.json`) | all match |
+| Economy sim | unchanged (wave 1 pays 99, wave 2 pays 111) |
+| Siege sim (60 troops ×3) | won 3 of 3 in 74–78 s |
+| Browser run (SwiftShader, 390×844 at DPR 2) | no page errors |
+
+### Measurements (headless, same method)
+| Scene | Draw calls | Triangles |
+|---|---|---|
+| Idle capital | 100 | 325k |
+| By the falls, Adventure view | 86 | 309k |
+| Wave 9 fight, Combat view | 123 | 331k |
+
+About 75k more triangles than milestone 2, mostly the layered cliffs (306 × 96 triangles, counted again for the shadow map) and the oaks. That's still unverified on a phone. If an older iPhone struggles, the first things to cut are cliff shadows and the far rim cliffs.
+
+### Evidence (`docs/crownfall/evidence/`)
+`m3-five-kings.png` (all five kings, side and rear three-quarter views), `m3-world-birdseye.png`, `m3-castle-spires.png`, `m3-falls.png`, `m3-old-stone-bridge.png`, `m3-king-adventure-cliffs.png`.
+
+### Known limitations
+- The kings are a procedural approximation of the concept art, not sculpted models. Faces, fur and armour detail are blocky, and they show no expressions.
+- The other four kings have no unlock path yet.
+- The east rim beyond the mountains reads as a large snow slab from very high views.
+- Regional bow variants (25 looks) are not separate yet. The existing finish, gem, string and trail styles still apply.
 
 ## Milestone 2: the Greenwood journey (2026-10-04)
 

@@ -1,0 +1,124 @@
+{
+  "version": 2,
+  "established_references": [
+    "references/approved/03_five_regional_kings.jpeg",
+    "references/approved/02_mounted_hero_and_weapons.jpeg",
+    "references/approved/04_world_and_cameras.jpeg"
+  ],
+  "king_conflicts_resolved_by": "specs/06_REFERENCE_RECONCILIATION.md",
+  "soldiers": {
+    "greenwood": {
+      "selection": null,
+      "options": [
+        "A_royal_legions",
+        "B_frontier_retinue"
+      ],
+      "status": "pending_user_selection"
+    },
+    "eastern_mountains": {
+      "selection": null,
+      "options": [
+        "A_royal_legions",
+        "B_frontier_retinue"
+      ],
+      "status": "pending_user_selection"
+    },
+    "iron_hills": {
+      "selection": null,
+      "options": [
+        "A_royal_legions",
+        "B_frontier_retinue"
+      ],
+      "status": "pending_user_selection"
+    },
+    "sunscorch": {
+      "selection": null,
+      "options": [
+        "A_royal_legions",
+        "B_frontier_retinue"
+      ],
+      "status": "pending_user_selection"
+    },
+    "frostmarch": {
+      "selection": null,
+      "options": [
+        "A_royal_legions",
+        "B_frontier_retinue"
+      ],
+      "status": "pending_user_selection"
+    }
+  },
+  "villains": {
+    "greenwood": {
+      "selection": null,
+      "options": [
+        "A",
+        "B"
+      ],
+      "status": "pending_user_selection"
+    },
+    "eastern_mountains": {
+      "selection": null,
+      "options": [
+        "A",
+        "B"
+      ],
+      "status": "pending_user_selection"
+    },
+    "iron_hills": {
+      "selection": null,
+      "options": [
+        "A",
+        "B"
+      ],
+      "status": "pending_user_selection"
+    },
+    "sunscorch": {
+      "selection": null,
+      "options": [
+        "A",
+        "B"
+      ],
+      "status": "pending_user_selection"
+    },
+    "frostmarch": {
+      "selection": null,
+      "options": [
+        "A",
+        "B"
+      ],
+      "status": "pending_user_selection"
+    },
+    "warlord": {
+      "selection": null,
+      "options": [
+        "A",
+        "B"
+      ],
+      "status": "pending_user_selection"
+    }
+  },
+  "sections": {
+    "enemy_soldiers": {
+      "selection": null,
+      "status": "proposal_pending_review"
+    },
+    "buildings": {
+      "selection": null,
+      "status": "proposal_pending_review"
+    },
+    "environments": {
+      "selection": null,
+      "status": "proposal_pending_review"
+    },
+    "ui": {
+      "selection": null,
+      "status": "proposal_pending_review"
+    },
+    "icons": {
+      "selection": null,
+      "status": "proposal_pending_review"
+    }
+  },
+  "note": "No newly proposed design has been approved by default. User may mix choices by region/section."
+}

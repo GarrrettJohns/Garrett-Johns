@@ -5,7 +5,7 @@
 
 import {
   BUILDINGS, HERO, HERO_UPGRADES, WEAPONS, WALLS, UNITS, ENEMIES, VILLAGER, SMITH, ROYAL_BOW, STYLES,
-  ARMOR_UPGRADE, waveSpec, levelInfo, levelMul,
+  ARMOR_UPGRADE, waveSpec, levelInfo, levelMul, KINGS,
 } from './config.js';
 import {
   LANES, LANE, lanePoint, laneCrossing, laneAtZ, FIXED_PADS, START, BRIDGE, RIVER_Z,
@@ -311,7 +311,7 @@ export class World {
     const h = this.hero;
     return {
       up: { ...h.up }, weapons: { ...h.weapons }, weapon: h.weapon, armor: this.armor,
-      bow: h.bow, style: { ...h.style }, styles: { ...h.styles },
+      bow: h.bow, style: { ...h.style }, styles: { ...h.styles }, kit: h.kit,
       army: [...this.allies.map((a) => a.kind), ...this.list('tower').flatMap((t) => Array(t.garrison).fill('archer'))],
       coins: Math.min(h.coins, 150),
     };
@@ -324,6 +324,7 @@ export class World {
     if (c.bow) h.bow = c.bow;
     if (c.style) h.style = { ...DEFAULT_STYLE, ...c.style };
     if (c.styles) h.styles = { ...c.styles };
+    if (c.kit) h.kit = c.kit;
     h.weapon = c.weapon;
     h.hp = this.heroMaxHp;
     h.coins = c.coins || 0;
@@ -359,7 +360,7 @@ export class World {
       coins: 0, moving: false, fundT: 0, fundAcc: 0, fundId: null,
       up: { damage: 0, rate: 0, range: 0, speed: 0, hp: 0, carry: 0, magnet: 0 },
       weapons: { bow: true }, weapon: 'bow', anim: 0, shootT: 0, flash: 0, needShown: false,
-      bow: 0, style: { ...DEFAULT_STYLE }, styles: {},
+      bow: 0, style: { ...DEFAULT_STYLE }, styles: {}, kit: 'greenwood',
       load: { res: null, n: 0 }, tool: null, gatherT: 0, warned: null,
     };
 
@@ -2753,7 +2754,7 @@ export class World {
       stats: { ...this.stats },
       walls: { ...this.walls },
       armor: this.armor,
-      hero: { x: h.x, z: h.z, coins: h.coins, up: { ...h.up }, weapons: { ...h.weapons }, weapon: h.weapon, load: { ...h.load }, bow: h.bow, style: { ...h.style }, styles: { ...h.styles } },
+      hero: { x: h.x, z: h.z, coins: h.coins, up: { ...h.up }, weapons: { ...h.weapons }, weapon: h.weapon, load: { ...h.load }, bow: h.bow, style: { ...h.style }, styles: { ...h.styles }, kit: h.kit },
       buildings: Object.values(this.b).map((b) => ({ id: b.id, type: b.type, x: b.x, z: b.z, state: b.state, level: b.level, fixed: b.fixed, lane: b.lane, garrison: b.garrison, pile: b.pile, assigned: b.assigned, stock: b.stock || 0 })),
       villagers: this.villagers.length,
       allies: this.allies.map((a) => a.kind),
@@ -2789,6 +2790,7 @@ export class World {
     h.bow = s.hero.bow || 0;
     h.style = { ...DEFAULT_STYLE, ...(s.hero.style || {}) };
     h.styles = { ...(s.hero.styles || {}) };
+    h.kit = KINGS[s.hero.kit] ? s.hero.kit : 'greenwood';
     h.hp = this.heroMaxHp;
     this.b = {};
     const fixed = Object.fromEntries(FIXED_PADS.map((p) => [p.id, p]));

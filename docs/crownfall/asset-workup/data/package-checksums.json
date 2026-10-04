@@ -1,0 +1,207 @@
+[
+  {
+    "path": "CLAUDE_START_HERE.md",
+    "bytes": 3418,
+    "sha256": "32243f2cbaed337328fbea1368a650bde411738a71101ac5959a5fb114d6e12b"
+  },
+  {
+    "path": "README.md",
+    "bytes": 3151,
+    "sha256": "4c094989388f95acd0685282596d3186ca3980e2b33b95beeb6ddd45752d83db"
+  },
+  {
+    "path": "REVIEW_GUIDE.md",
+    "bytes": 2955,
+    "sha256": "ebbef4eb6c10b564366ec003ff4b21ca6d1a98ac550b4da3b33c675e5fdbdcea"
+  },
+  {
+    "path": "data/animation-contract.json",
+    "bytes": 1946,
+    "sha256": "ae3c3d62623eb3aa883c9b018069a47f2adeca73935b5b9e25c83f78c5b26bf3"
+  },
+  {
+    "path": "data/asset-manifest.csv",
+    "bytes": 108885,
+    "sha256": "15d460fea057ffe62515852d5a3e151c753caebfcccfcbbb336544939ed3572d"
+  },
+  {
+    "path": "data/asset-manifest.json",
+    "bytes": 334674,
+    "sha256": "b9e86ce51faa75d9fde844c52716411807fe5e7a16417bdf1bae33af8ae2bb36"
+  },
+  {
+    "path": "data/design-selections.json",
+    "bytes": 2690,
+    "sha256": "fde5453d8fdcbdf284220071c102f68d1eb05e95e9f19a93dabd118f4bb0fa5e"
+  },
+  {
+    "path": "data/factions.json",
+    "bytes": 11762,
+    "sha256": "e6bb1c71361fe1f889a1cc9903fad8edbf8805d38397e187e23ad0cf8b0d0768"
+  },
+  {
+    "path": "data/generation-prompts.json",
+    "bytes": 29898,
+    "sha256": "467d6d8ae568d6ade2aa834ecb72e558f9b9e7f4fde592a0b516440d19c3f9b3"
+  },
+  {
+    "path": "data/visual-index.json",
+    "bytes": 4126,
+    "sha256": "7e566f665b89a6ba0745f3ccd0b6320f5003d946bd3e09cac41798d3aab9b6e8"
+  },
+  {
+    "path": "index.html",
+    "bytes": 14851,
+    "sha256": "6c4cbd35ac0a80056e5858aeb083edbf64ec8995edd4430096727656b6f6ba37"
+  },
+  {
+    "path": "references/approved/01_early_king_exploration.jpeg",
+    "bytes": 669854,
+    "sha256": "ae97be9db4f5d8b608bceec39a1bd0cf54b16dfbd27ef3654597f0c4789dad45"
+  },
+  {
+    "path": "references/approved/02_mounted_hero_and_weapons.jpeg",
+    "bytes": 673362,
+    "sha256": "9b1bd4a11335d7523531a7c65d7294aca8846f67994c7382ca32bd92cf6fda15"
+  },
+  {
+    "path": "references/approved/03_five_regional_kings.jpeg",
+    "bytes": 846981,
+    "sha256": "0e6af4b925c939af63b032ceb197e9939be990796e865e36e037373b77546c0e"
+  },
+  {
+    "path": "references/approved/04_world_and_cameras.jpeg",
+    "bytes": 993623,
+    "sha256": "7099cabcb1716ec0d79f0f9fdf27eeac353e96fe355ab4268f35b0347e0dfea0"
+  },
+  {
+    "path": "specs/01_VISION_AND_REQUIREMENTS.md",
+    "bytes": 6170,
+    "sha256": "e7bec613fe07b6b6382b7363ae8984184d5cb60ab023d599506a789d3d085dcd"
+  },
+  {
+    "path": "specs/02_WORLD_AND_GAMEPLAY.md",
+    "bytes": 7508,
+    "sha256": "17689558d13707ecfceada6f68833df25fb26e62d688b94db8e8613469710ffb"
+  },
+  {
+    "path": "specs/03_ART_AND_ASSETS.md",
+    "bytes": 6830,
+    "sha256": "f809af0c1f01e382c466fc6f51e7509405fdcaa0766833571badd8d3594a8c4f"
+  },
+  {
+    "path": "specs/04_IMPLEMENTATION_AND_VALIDATION.md",
+    "bytes": 7529,
+    "sha256": "8bc5af6afaea6e0efabca6649d65540e909dc4b65a94483e8902bea0c9266572"
+  },
+  {
+    "path": "specs/05_TRACEABILITY_AND_DECISIONS.md",
+    "bytes": 5830,
+    "sha256": "a765fa433b29bdb70d7317cc78fc2bcaeea6b298a76a8ea07a1516e1b3d34608"
+  },
+  {
+    "path": "specs/06_REFERENCE_RECONCILIATION.md",
+    "bytes": 3493,
+    "sha256": "12c483a26a7c0654e05a0c3670c5241a6c6f27cf2e5639c043757f898d1741a4"
+  },
+  {
+    "path": "specs/07_FACTIONS_AND_BOSSES.md",
+    "bytes": 8591,
+    "sha256": "31de45d49d700461b420126cb68e3dd63a5b78953828941373d4484dfd491fcf"
+  },
+  {
+    "path": "specs/08_ASSET_PRODUCTION.md",
+    "bytes": 8745,
+    "sha256": "3cf944f46f5bfcb031c57d33fd4c4c38443ddd51a4a69aa18ccee8c9144e1203"
+  },
+  {
+    "path": "specs/09_GRAPHICS_AND_WORLD_TASKS.md",
+    "bytes": 3285,
+    "sha256": "e0584a863bd1bf840e0c8509c48feda87e55caeef22989c45b1f09fee97a46b7"
+  },
+  {
+    "path": "specs/10_VISUAL_QA_AND_SELECTION_NOTES.md",
+    "bytes": 3517,
+    "sha256": "98b0114c72090e415904bd1e2a2732b68a3748c17f840ebbd80e90c7e0f35aa9"
+  },
+  {
+    "path": "specs/CLAUDE_START_HERE.md",
+    "bytes": 172,
+    "sha256": "b1575e9cc518e4529ac97cf8dd631328f485c07f7ed9eb7a1cf4ebed63c62fb0"
+  },
+  {
+    "path": "specs/README.md",
+    "bytes": 289,
+    "sha256": "639d2148d5a318eb5eedf2f697c20384bf25fe05d977f1a574344fef6ae42cc7"
+  },
+  {
+    "path": "visuals/building_progression.png",
+    "bytes": 2049478,
+    "sha256": "3ccaca8f7417e0db5f9c9416be0e2ed5765218a9de9aaea98cadaf9a796bc374"
+  },
+  {
+    "path": "visuals/eastern_mountains_armies.png",
+    "bytes": 1948519,
+    "sha256": "108d0d255dc6b2e626a7d70829c98a61b6b436ce891f3cea583340efccea1a22"
+  },
+  {
+    "path": "visuals/elder_treant.png",
+    "bytes": 2394177,
+    "sha256": "df017840cd859530d9c705d2bd9e60501451498a1a23b632a9e333eb95b5b9ce"
+  },
+  {
+    "path": "visuals/frostmarch_armies.png",
+    "bytes": 2064778,
+    "sha256": "22721c675cd26df45c3ee711b4063b4373a0ab9a86fbb59fe3aaf6d1105a7c9e"
+  },
+  {
+    "path": "visuals/greenwood_armies.png",
+    "bytes": 2175946,
+    "sha256": "8afac90d2c6281ebcd15f82b40f65821e72913b25110262132dd64ede66dda93"
+  },
+  {
+    "path": "visuals/iron_hills_armies.png",
+    "bytes": 2145022,
+    "sha256": "c4b9bafc64bad999e2f1b2f830134fedc9f0630c5ff1fbde0d1310d04b1e8156"
+  },
+  {
+    "path": "visuals/portrait_ui.png",
+    "bytes": 2672914,
+    "sha256": "6d8f335fbde88a20af980622ae991564b640d727a91ebb281406db0fe705c5ca"
+  },
+  {
+    "path": "visuals/regional_buildings.png",
+    "bytes": 2336432,
+    "sha256": "9c0e27513bdd97a39b2ebb4b34699d12419664754de585d6d945226f38a5d989"
+  },
+  {
+    "path": "visuals/regional_environments.png",
+    "bytes": 2770539,
+    "sha256": "107b38e86535fbaa297d42143c6c7e491c100801eb877ef9af4d4b2c03fff1be"
+  },
+  {
+    "path": "visuals/resource_and_ui_icons.png",
+    "bytes": 1789969,
+    "sha256": "9f21c956e0a58dfd06822a479f6b368960f5f352d0e72792f13ee1281721faac"
+  },
+  {
+    "path": "visuals/soldier_options.png",
+    "bytes": 1801498,
+    "sha256": "014e93bf6f79c559282d9ce500eba7836d3b365dbf28f57c2fe4e66a464f4ec0"
+  },
+  {
+    "path": "visuals/sunscorch_armies.png",
+    "bytes": 2031232,
+    "sha256": "34c66cdf9469ecdc66e7c13f516f7a133af782ba8f19c7b78bce60d2d8c490f1"
+  },
+  {
+    "path": "visuals/villain_options_b.png",
+    "bytes": 2085166,
+    "sha256": "e2f9b1e5027611ceb55bfdf4741b83aa206090fa93d3532cc359bc75956e388a"
+  },
+  {
+    "path": "visuals/warlord_armies.png",
+    "bytes": 2117074,
+    "sha256": "5708918c8d12824eb85899545b0d5059a910bf81ce75b32afb572dd561ec4a83"
+  }
+]

@@ -10,13 +10,13 @@ import {
   strongholdWallsGeo, strongholdGateGeo, strongholdTowerGeo, strongholdKeepGeo, warehouseGeo, stumpGeo,
   fortWallsGeo, fortGateGeo, fortTowerGeo, ironmineGeo, blacksmithGeo, catapultBaseGeo, catapultFrameGeo, catapultArmGeo,
   fieldGeo, barnGeo, hayGeo, scarecrowGeo, cartGeo, cottageGeo, wellGeo, gardenGeo, laundryGeo, tentGeo, campfireGeo,
-  columnGeo, archGeo, chestGeo, watchtowerGeo, cairnGeo, mergePlaced,
+  columnGeo, archGeo, chestGeo, watchtowerGeo, cairnGeo, mergePlaced, stoneBridgeRuinGeo,
 } from './models.js';
 import {
   LANES, lanePoint, BRIDGE, RIVER_Z, RIVER_HALF, FOREST_Z, PATH_HALF, CASTLE_R, scenery, HIGHLAND, HIGHLAND_TRAILS, BOUNDS, STRONGHOLD,
-  FORT, RIVER_X1, SITES, SITE_PROPS,
+  FORT, RIVER_X1, SITES, SITE_PROPS, FALLS,
 } from './map.js';
-import { BUILDINGS, HERO, STYLES } from './config.js';
+import { BUILDINGS, HERO, STYLES, KINGS } from './config.js';
 import { groundH as G, standH, setBridge, footing, TERRAIN } from './terrain.js';
 import { CAM } from './camera.js';
 import { KING_SWING } from './world.js';
@@ -28,7 +28,7 @@ const TOWER_TOP = [3.15, 3.15, 3.15, 3.55, 3.95];   // platform height per tower
 const BIOMES = {
   grass: {
     sky: 0x9ad6f5, ground: C.grass, light: 0x7fcb5c, dark: C.grassDark, forest: C.forest, bank: 0x4f8f45, sand: C.sandDark,
-    road: C.sand, edge: 0xc7a573, water: C.water, highland: 0xa49c86, cliff: 0x7b7f86, cliffTop: 0x6fae4f, trees: ['pine', 'pine'],
+    road: C.sand, edge: 0xc7a573, water: C.water, highland: 0xa49c86, cliff: 0x8a8580, cliffTop: 0x6fae4f, trees: ['pine', 'oak'],
   },
   desert: {
     sky: 0xf6dfb0, ground: 0xe3c48a, light: 0xedd5a2, dark: 0xd0aa6c, forest: 0xb7a768, bank: 0xa89a5a, sand: 0xd9b678,
@@ -328,7 +328,7 @@ export class Renderer {
     const sc = scenery();
     const kinds = [treeGeo(B.trees[0]), treeGeo(B.trees[1])];
     const lists = [[], []];
-    sc.trees.forEach((t, i) => lists[t.forest ? 0 : i % 3 === 0 ? 1 : 0].push(t));
+    sc.trees.forEach((t, i) => lists[t.forest ? 0 : i % 2 === 0 ? 1 : 0].push(t));
     // Each tree's instance, so felled trees can be hidden and regrown.
     this.treeInst = new Map();
     this.treeGeo = kinds[0];
@@ -400,6 +400,9 @@ export class Renderer {
 
     // The places along the Greenwood journey.
     this.buildSites(scene);
+    // Falls where the river rises, and a sky that fades to the horizon.
+    this.buildFalls(scene, B);
+    this.buildSky(scene, B);
 
     // Fog over land the king hasn't claimed yet.
     const fc = document.createElement('canvas');
@@ -973,6 +976,7 @@ export class Renderer {
     setBridge(world.built('bridge'));
     this.syncFog(world, dt);
     this.syncSites(world, dt);
+    this.updateEnv(dt);
     this.ready = true;
 
     // ---- units
@@ -992,6 +996,7 @@ export class Renderer {
       const sty = hero.style || {};
       const tint = (cat) => STYLE_C[cat][sty[cat]] || null;
       const cape = 0.12 + 0.85 * gallop + Math.sin(t * 9) * 0.14 * gallop + Math.sin(t * 1.7) * 0.05 + shot * 0.2;
+      if (this.heroKit !== (hero.kit || 'greenwood')) this.setKing(hero.kit || 'greenwood');
       this.rigs.hero.add(hero.x, bob + shot * 0.14, hero.z, hero.yaw, HERO_S, {
         walk: gallop, anim: hero.anim * 2.2, swing: hero.tool ? 0 : shot * 1.7, sweep, smash, flash: hero.flash, load: hero.tool,
         legK: 1.35, cape, tier: hero.bow || 0, stowed: !hero.tool && world.t - (hero.lastShot ?? -99) > 1.1, gemTier: sty.gem && sty.gem !== 'none' ? hero.bow || 0 : -1,
@@ -1402,7 +1407,7 @@ export class Renderer {
   buildSites(scene) {
     const one = {
       field: fieldGeo, barn: barnGeo, hay: hayGeo, scarecrow: scarecrowGeo, cart: cartGeo, well: wellGeo, garden: gardenGeo,
-      laundry: laundryGeo, tent: tentGeo, campfire: campfireGeo, column: columnGeo, arch: archGeo,
+      laundry: laundryGeo, tent: tentGeo, campfire: campfireGeo, column: columnGeo, arch: archGeo, bridgeRuin: stoneBridgeRuinGeo,
     };
     const two = {   // [before, after]
       cottage: [() => cottageGeo(true), () => cottageGeo(false)], chest: [() => chestGeo(false), () => chestGeo(true)],
@@ -1476,6 +1481,93 @@ export class Renderer {
         this.spark(p.x, 0.7, p.z, Math.random() < 0.3 ? 0xff9a3a : 0x6a625c, 1, 0.34, 0.45, 2.2, -0.4);
       }
     }
+  }
+
+  // ------------------------------------------------------- falls and sky
+  // The river rises in falls off a rock cliff at the foot of the mountains:
+  // two water sheets with a scrolling streak texture, a foam pool and mist.
+  buildFalls(scene, B) {
+    const F = FALLS;
+    const base = TERRAIN.water;
+    const rock = new THREE.Mesh(cliffGeo(B.cliff, B.cliffTop), vcMat);
+    rock.position.set(F.x + 4.5, G(F.x + 4.5, F.z) - 0.8, F.z);
+    rock.scale.set(9, 9.5, 11);
+    rock.castShadow = rock.receiveShadow = true;
+    scene.add(rock);
+    const cv = document.createElement('canvas');
+    cv.width = 32; cv.height = 128;
+    const g = cv.getContext('2d');
+    g.fillStyle = '#7cc8ec'; g.fillRect(0, 0, 32, 128);
+    for (let i = 0; i < 40; i++) {
+      g.fillStyle = Math.random() < 0.5 ? 'rgba(255,255,255,0.75)' : 'rgba(190,232,250,0.8)';
+      g.fillRect(Math.floor(Math.random() * 32), Math.floor(Math.random() * 128), 2 + Math.floor(Math.random() * 3), 10 + Math.floor(Math.random() * 30));
+    }
+    const tex = new THREE.CanvasTexture(cv);
+    tex.wrapS = tex.wrapT = 1000;   // RepeatWrapping
+    tex.repeat.set(2, 2);
+    this.fallsTex = tex;
+    const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0.92 });
+    const top = rock.position.y + 9.5 * 0.97;
+    const sheet = (w, y0, y1, x, lean) => {
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(w, y1 - y0), mat);
+      m.position.set(x, (y0 + y1) / 2, F.z);
+      m.rotation.set(0, -Math.PI / 2, 0);
+      m.rotateX(lean);
+      scene.add(m);
+    };
+    sheet(3.2, top * 0.55, top + 0.2, F.x - 0.1, -0.12);
+    sheet(4.2, base, top * 0.6, F.x - 0.8, -0.18);
+    const foam = new THREE.Mesh(new THREE.RingGeometry(0.01, 3.2, 14), new THREE.MeshBasicMaterial({ color: 0xf0fbff, transparent: true, opacity: 0.8 }));
+    foam.rotation.x = -Math.PI / 2;
+    foam.position.set(F.x - 2.2, base + 0.04, F.z);
+    scene.add(foam);
+    // A pool where the falls land, joining the river.
+    const pool = new THREE.Mesh(new THREE.PlaneGeometry(6, 7), new THREE.MeshLambertMaterial({ color: B.water, transparent: true, opacity: 0.92 }));
+    pool.rotation.x = -Math.PI / 2;
+    pool.position.set(F.x - 2, base, F.z);
+    scene.add(pool);
+    this.fallsMistT = 0;
+  }
+
+  // A sky dome that fades from the horizon colour to a deeper blue overhead.
+  buildSky(scene, B) {
+    const geo = new THREE.IcosahedronGeometry(380, 2);
+    const pos = geo.attributes.position;
+    const col = new Float32Array(pos.count * 3);
+    const hz = new THREE.Color(B.sky).lerp(new THREE.Color(0xffffff), 0.25), top = new THREE.Color(B.sky).multiplyScalar(0.72);
+    const c = new THREE.Color();
+    for (let i = 0; i < pos.count; i++) {
+      const k = Math.max(0, Math.min(1, pos.getY(i) / 380));
+      c.copy(hz).lerp(top, Math.pow(k, 0.6));
+      col.set([c.r, c.g, c.b], i * 3);
+    }
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    const sky = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, side: 1 /* BackSide */, fog: false, depthWrite: false }));
+    sky.renderOrder = -1;
+    sky.frustumCulled = false;
+    scene.add(sky);
+    this.sky = sky;
+  }
+
+  updateEnv(dt) {
+    if (this.fallsTex) this.fallsTex.offset.y += dt * 1.4;
+    if (this.sky) this.sky.position.copy(this.camera.position);
+    this.fallsMistT = (this.fallsMistT || 0) - dt;
+    if (this.fallsMistT <= 0 && this.camera.position.distanceTo(_v.set(FALLS.x, 0, FALLS.z)) < 110) {
+      this.fallsMistT = 0.12;
+      this.spark(FALLS.x - 2 + (Math.random() - 0.5) * 2, 0.2, FALLS.z + (Math.random() - 0.5) * 3, 0xffffff, 1, 0.42, 1.2, 1.2, -0.6);
+    }
+  }
+
+  // Ride as one of the five regional kings: rebuild the hero rig in that
+  // king's colours (config.js KINGS).
+  setKing(id) {
+    const K = KINGS[id] || KINGS.greenwood;
+    const old = this.rigs.hero;
+    for (const pt of old.parts) { this.scene.remove(pt.m); pt.m.geometry.dispose(); pt.m.dispose(); }
+    this.rigs.hero = new RigMesh(this.scene, RIGS.hero(K), 1);
+    this.rigs.hero.begin();
+    this.heroKit = id;
   }
 
   // Short landmark reveal (skippable; never takes away control).

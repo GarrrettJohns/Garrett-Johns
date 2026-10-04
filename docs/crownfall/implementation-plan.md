@@ -52,6 +52,7 @@ ability buttons, authored exploration encounters, settlement dressing.
 6. Tests: encounter state survives save/reload; no duplicate spawns; the wave schedule is unaffected.
 
 ### Next (in order)
+0. Get the user's design selections (soldiers, villains, buildings, UI, icons) and record them in `asset-workup/data/design-selections.json`, then build the selected Greenwood soldiers and villain first.
 1. Run the iPhone checklist in `implementation-status.md` on real devices and record results.
 2. Tune the combat camera and encounter strength from that playtest.
 3. Phase 3 below.
@@ -84,6 +85,9 @@ on a larger map only after measuring the slice on a phone.
 | 2026-10-04 | Encounter state | — | `enc` (locked/open/done) + `encLeft` saved, still `v: 1`; rewards once | No duplicate loot or spawns across reloads (tested) | R29, R07 |
 | 2026-10-04 | Fort reveal | discovered within 52 m (so from inside the walls) | within 16 m, or from the overlook encounter | The reveal belongs at the end of the slice | R24 |
 | 2026-10-04 | Combat camera | dist 10, height 5.6 | dist 12.5, height 7.4, shoulder 1.9 | The king and followers blocked targets in portrait | R03, R27 |
+| 2026-10-04 | Regional kings | one placeholder king | `KINGS` colour kits on one rig, `hero.kit` saved (default greenwood), dev preview only | Approved sheet supplied; unlock design undecided | R05 |
+| 2026-10-04 | Old Stone Bridge | — | a broken ruin landmark, not crossable | Keeps the wooden bridge as the forest unlock | R24 |
+| 2026-10-04 | Asset manifest | own IDs | the workup's 552 IDs + runtime_status | Spec: use manifest asset IDs | R30 |
 | 2026-10-04 | Scout joins | — | the scout becomes a raider in the army; field soldiers get `follow` | "Troops join" without changing the standing order | R20 |
 
 ## Ambiguities recorded

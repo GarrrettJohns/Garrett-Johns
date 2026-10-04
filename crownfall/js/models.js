@@ -4,7 +4,7 @@
 
 import * as THREE from './vendor/three.js';
 import { STRONGHOLD } from './map.js';
-import { ROYAL_BOW } from './config.js';
+import { ROYAL_BOW, KINGS } from './config.js';
 
 export const C = {
   grass: 0x6cbf4f, grassDark: 0x5aa843, forest: 0x3f8c3a, sand: 0xe6c99a, sandDark: 0xd2b07a,
@@ -105,10 +105,26 @@ export function rockGeo() {
   return b.build();
 }
 
+// A layered rock cliff (unit footprint, unit height): faceted tiers stepping
+// in towards a grassy top, like the cliffs in the approved world concept.
+const shade = (c, k) => new THREE.Color(c).multiplyScalar(k).getHex();
 export function cliffGeo(color = 0x7b7f86, top = 0x6fae4f) {
   const b = new Builder();
-  b.box(1, 1, 1, color);
-  b.box(0.8, 0.12, 0.8, top, { y: 1 });
+  b.cyl(0.5, 0.56, 0.42, 6, shade(color, 0.8), { ry: 0.2 });
+  b.cyl(0.44, 0.51, 0.36, 6, color, { y: 0.4, ry: 0.75 });
+  b.cyl(0.36, 0.44, 0.22, 6, shade(color, 1.12), { y: 0.74, ry: 1.3 });
+  b.cyl(0.38, 0.37, 0.06, 6, top, { y: 0.95, ry: 1.3 });
+  return b.build();
+}
+
+// A broadleaf tree (oak) for the meadows, round clumps of leaves.
+export function oakGeo() {
+  const b = new Builder();
+  b.cyl(0.2, 0.28, 1.3, 6, C.trunk);
+  b.add(new THREE.IcosahedronGeometry(1.1, 0), 0x4fa046, { y: 2.0 });
+  b.add(new THREE.IcosahedronGeometry(0.78, 0), 0x5db552, { x: 0.55, y: 2.5, z: 0.2 });
+  b.add(new THREE.IcosahedronGeometry(0.72, 0), 0x43913d, { x: -0.5, y: 2.35, z: -0.3 });
+  b.add(new THREE.IcosahedronGeometry(0.6, 0), 0x68c25c, { y: 2.95, z: 0.1 });
   return b.build();
 }
 
@@ -159,7 +175,7 @@ export function snowPineGeo() {
 }
 
 export function treeGeo(kind) {
-  return { pine: pineGeo, palm: palmGeo, cactus: cactusGeo, snowpine: snowPineGeo }[kind]();
+  return { pine: pineGeo, oak: oakGeo, palm: palmGeo, cactus: cactusGeo, snowpine: snowPineGeo }[kind]();
 }
 
 // ----------------------------------------------------------------- walls
@@ -248,14 +264,19 @@ export function castleGeo(level) {
     const th = 3.6 + level * 0.7;
     b.cyl(0.85, 0.95, th, 8, C.stone, { x, y: 0.3, z });
     b.cyl(1.05, 1.05, 0.35, 8, C.stoneDark, { x, y: 0.3 + th, z });
-    b.cone(1.1, 1.8, 8, C.roofBlue, { x, y: 0.65 + th, z });
-    if (level >= 2) b.box(0.05, 0.9, 0.05, C.ironDark, { x, y: 2.45 + th, z });
-    if (level >= 2) b.box(0.6, 0.35, 0.04, C.red, { x: x + 0.3, y: 3.0 + th, z });
+    // Tall blue spires with gold pennants (approved world concept).
+    const sh = 2.4 + level * 0.35;
+    b.cone(1.1, sh, 8, C.roofBlue, { x, y: 0.65 + th, z });
+    b.box(0.05, 0.9, 0.05, C.ironDark, { x, y: 0.6 + th + sh, z });
+    b.box(0.62, 0.34, 0.04, C.gold, { x: x + 0.33, y: 1.1 + th + sh, z });
   }
   if (level >= 2) {
-    // A rear tower.
+    // A rear tower with the tallest spire.
     b.box(2.4, kh + 2.2, 2.2, C.stone, { y: 0.3, z: -2.4 });
-    b.cone(1.9, 2.4, 4, C.roofBlueDark, { y: 2.5 + kh, z: -2.4, ry: Math.PI / 4 });
+    b.cyl(1.35, 1.35, 0.3, 8, C.stoneDark, { y: 2.5 + kh, z: -2.4 });
+    b.cone(1.45, 3.6 + level * 0.3, 8, C.roofBlue, { y: 2.8 + kh, z: -2.4 });
+    b.box(0.05, 1.0, 0.05, C.ironDark, { y: 6.4 + kh + level * 0.3, z: -2.4 });
+    b.box(0.8, 0.42, 0.04, C.blue, { x: 0.42, y: 6.95 + kh + level * 0.3, z: -2.4 });
   }
   if (level >= 3) {
     b.box(5.2, 0.3, 0.3, C.gold, { y: 0.3 + kh, z: 2.15 });
@@ -662,51 +683,135 @@ const bow = (b, y) => {
 };
 
 export const RIGS = {
-  hero() {
+  // The mounted king, drawn from the approved regional king sheet: one rig,
+  // five colour kits (config.js KINGS). Chunky, friendly proportions.
+  hero(K = KINGS.greenwood) {
     const parts = [];
-    // Horse.
+    // Emblem on the barding and cape: crown, peak, crossed hammers, sun or snowflake.
+    const emblem = (b, x, y, z, s, color, ry = 0) => {
+      // Drawn flat in the XY plane, then turned to face along ry.
+      const m = new THREE.Matrix4().makeTranslation(x, y, z).multiply(new THREE.Matrix4().makeRotationY(ry));
+      const o = (dx, dy, extra = {}) => ({ x: dx * s, y: dy * s, m, ...extra });
+      if (K.emblem === 'crown') {
+        b.box(0.5 * s, 0.16 * s, 0.03, color, o(0, -0.08));
+        for (const dx of [-0.2, 0, 0.2]) b.cone(0.07 * s, 0.22 * s, 4, color, o(dx, 0.02));
+      } else if (K.emblem === 'peak') {
+        b.cone(0.26 * s, 0.42 * s, 3, color, o(0, -0.2, { sz: 0.15 }));
+      } else if (K.emblem === 'hammers') {
+        for (const r of [0.7, -0.7]) { b.box(0.06 * s, 0.5 * s, 0.03, color, o(0, -0.22, { rz: r })); b.box(0.24 * s, 0.1 * s, 0.03, color, o(r > 0 ? -0.15 : 0.15, 0.12, { rz: r })); }
+      } else if (K.emblem === 'sun') {
+        b.cyl(0.13 * s, 0.13 * s, 0.03, 8, color, o(0, 0, { rx: Math.PI / 2 }));
+        for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2; b.box(0.05 * s, 0.12 * s, 0.03, color, o(Math.cos(a) * 0.2, Math.sin(a) * 0.2 - 0.06, { rz: a - Math.PI / 2 })); }
+      } else {
+        for (let i = 0; i < 3; i++) b.box(0.05 * s, 0.5 * s, 0.03, color, o(0, -0.25, { rz: (i / 3) * Math.PI }));
+      }
+    };
+    // Horse: body, chest, neck and head, with a cloth barding over the flanks,
+    // a breastplate with the kingdom's emblem and a face plate.
     parts.push(part((b) => {
-      b.box(0.85, 0.8, 1.9, C.white, { y: 1.0 });
-      b.box(0.9, 0.12, 0.9, C.blue, { y: 1.78, z: -0.05 });
-      b.box(0.95, 0.5, 0.7, C.blueDark, { y: 1.35, z: -0.05 });
-      b.box(0.42, 0.95, 0.5, C.white, { y: 1.45, z: 0.95, rx: -0.5 });
-      b.box(0.38, 0.38, 0.75, C.white, { y: 2.15, z: 1.35 });
-      b.box(0.3, 0.3, 0.2, 0xd9cfc0, { y: 2.12, z: 1.78 });
-      b.box(0.12, 0.62, 0.5, C.hair, { y: 1.75, z: 0.9, rx: -0.5 });
-      b.cone(0.07, 0.2, 4, C.white, { x: 0.12, y: 2.5, z: 1.25 });
-      b.cone(0.07, 0.2, 4, C.white, { x: -0.12, y: 2.5, z: 1.25 });
-      b.box(0.14, 0.7, 0.14, C.hair, { y: 1.0, z: -1.05, rx: 0.4 });
+      b.box(0.86, 0.8, 1.9, K.horse, { y: 1.0 });
+      b.ball(0.46, K.horse, { y: 1.42, z: 0.78, sx: 0.95, sy: 0.9 });
+      b.ball(0.44, K.horse, { y: 1.42, z: -0.8, sx: 0.98, sy: 0.9 });
+      // Barding: blanket over the back and flanks, gold hem, saddle on top.
+      b.box(0.96, 0.62, 1.08, K.barding, { y: 1.12, z: -0.06 });
+      b.box(0.98, 0.07, 1.1, K.bardingTrim, { y: 1.1, z: -0.06 });
+      b.box(0.98, 0.06, 1.1, K.bardingTrim, { y: 1.72, z: -0.06 });
+      emblem(b, 0.495, 1.42, -0.06, 0.62, K.bardingTrim, Math.PI / 2);
+      emblem(b, -0.495, 1.42, -0.06, 0.62, K.bardingTrim, -Math.PI / 2);
+      b.box(0.62, 0.16, 0.78, 0x6a4428, { y: 1.8, z: -0.06 });
+      b.box(0.64, 0.05, 0.8, K.bardingTrim, { y: 1.95, z: -0.06 });
+      b.box(0.52, 0.3, 0.12, 0x5a3a24, { y: 1.9, z: 0.34 });   // pommel
+      // Breastplate.
+      b.box(0.82, 0.62, 0.14, K.barding, { y: 1.05, z: 1.12 });
+      b.box(0.84, 0.07, 0.16, K.bardingTrim, { y: 1.03, z: 1.12 });
+      emblem(b, 0, 1.38, 1.2, 0.85, K.bardingTrim, 0);
+      // Neck, head, mane, ears, face plate.
+      b.box(0.44, 1.0, 0.52, K.horse, { y: 1.45, z: 0.98, rx: -0.5 });
+      b.box(0.4, 0.42, 0.78, K.horse, { y: 2.12, z: 1.38 });
+      b.box(0.32, 0.3, 0.24, 0xd9cfc0, { y: 2.1, z: 1.82 });
+      b.box(0.06, 0.06, 0.06, 0x2a2420, { x: 0.21, y: 2.38, z: 1.5 });
+      b.box(0.06, 0.06, 0.06, 0x2a2420, { x: -0.21, y: 2.38, z: 1.5 });
+      b.box(0.36, 0.07, 0.66, K.barding, { y: 2.52, z: 1.42 });
+      b.box(0.09, 0.08, 0.68, K.bardingTrim, { y: 2.53, z: 1.42 });
+      b.box(0.42, 0.24, 0.06, K.barding, { y: 2.3, z: 1.0 });
+      b.cone(0.08, 0.22, 4, K.horse, { x: 0.13, y: 2.52, z: 1.22 });
+      b.cone(0.08, 0.22, 4, K.horse, { x: -0.13, y: 2.52, z: 1.22 });
+      b.box(0.14, 0.72, 0.56, K.mane, { y: 1.8, z: 0.86, rx: -0.5 });
+      b.box(0.12, 0.2, 0.36, K.mane, { y: 2.55, z: 1.2 });
+      // Reins to the king's hands.
+      b.box(0.04, 0.04, 0.9, 0x4a2f1e, { x: 0.18, y: 2.15, z: 1.15, rx: 0.32 });
+      b.box(0.04, 0.04, 0.9, 0x4a2f1e, { x: -0.18, y: 2.15, z: 1.15, rx: 0.32 });
+      // Tail.
+      b.box(0.18, 0.8, 0.18, K.mane, { y: 0.95, z: -1.1, rx: 0.4 });
+      b.box(0.22, 0.4, 0.2, K.mane, { y: 0.65, z: -1.26, rx: 0.2 });
     }));
     const legs = [[-0.28, 0.72, 'legA'], [0.28, 0.72, 'legB'], [-0.28, -0.72, 'legB'], [0.28, -0.72, 'legA']];
     for (const [x, z, anim] of legs) {
       parts.push(part((b) => {
-        b.box(0.2, 0.9, 0.22, C.white, { x, y: 0.15, z });
-        b.box(0.22, 0.16, 0.24, 0x8a7a6a, { x, y: 0.0, z });
+        b.box(0.22, 0.92, 0.24, K.horse, { x, y: 0.15, z });
+        b.box(0.25, 0.12, 0.27, K.barding, { x, y: 0.66, z });
+        b.box(0.26, 0.05, 0.28, K.bardingTrim, { x, y: 0.62, z });
+        b.box(0.25, 0.18, 0.27, K.hoof, { x, y: 0.0, z });
       }, { pivot: [x, 1.05, z], anim }));
     }
-    // King.
+    // King: legs in the stirrups, armoured tunic, belt, pauldrons, fur collar,
+    // a big friendly head with hair, beard and the five-point crown.
     parts.push(part((b) => {
-      b.box(0.62, 0.75, 0.45, C.blue, { y: 1.85 });
-      b.box(0.66, 0.14, 0.5, C.gold, { y: 2.1 });
-      b.box(0.3, 0.5, 0.2, C.white, { x: 0.38, y: 1.6, z: 0.15 });
-      b.box(0.3, 0.5, 0.2, C.white, { x: -0.38, y: 1.6, z: 0.15 });
-      b.ball(0.3, C.skin, { y: 2.85 }, 1);
-      b.box(0.42, 0.3, 0.2, 0xd8d0c4, { y: 2.62, z: 0.18 });
-      b.cyl(0.3, 0.27, 0.2, 8, C.gold, { y: 3.05 });
-      for (let i = 0; i < 5; i++) {
-        const a = (i / 5) * Math.PI * 2;
-        b.cone(0.07, 0.2, 4, C.gold, { x: Math.cos(a) * 0.25, y: 3.25, z: Math.sin(a) * 0.25 });
+      for (const s of [-1, 1]) {
+        b.box(0.24, 0.26, 0.5, K.armorDark, { x: s * 0.4, y: 1.82, z: 0.12 });
+        b.box(0.22, 0.55, 0.26, K.boot, { x: s * 0.5, y: 1.3, z: 0.3 });
+        b.box(0.24, 0.08, 0.3, K.trim, { x: s * 0.5, y: 1.82, z: 0.3 });
       }
-      b.ball(0.06, C.blue, { y: 3.12, z: 0.29 });
+      b.box(0.78, 0.26, 0.6, K.armor, { y: 1.74 });
+      b.box(0.8, 0.05, 0.62, K.trim, { y: 1.74 });
+      b.box(0.66, 0.66, 0.46, K.armor, { y: 1.95 });
+      b.box(0.1, 0.62, 0.04, K.trim, { y: 1.97, z: 0.235 });
+      b.box(0.58, 0.18, 0.04, K.armorDark, { y: 2.32, z: 0.235 });
+      b.box(0.7, 0.12, 0.5, 0x4a2f1e, { y: 2.02 });
+      b.box(0.16, 0.14, 0.04, K.trim, { y: 2.01, z: 0.26 });
+      for (const s of [-1, 1]) {
+        b.ball(0.2, K.armor, { x: s * 0.4, y: 2.55, sy: 0.75 });
+        b.cyl(0.21, 0.21, 0.05, 8, K.trim, { x: s * 0.4, y: 2.46 });
+      }
+      // Rein arm.
+      b.box(0.17, 0.42, 0.17, K.armor, { x: -0.43, y: 2.1, z: 0.12, rx: -0.6 });
+      b.box(0.17, 0.16, 0.17, K.glove, { x: -0.36, y: 2.0, z: 0.42 });
+      // Fur collar.
+      for (let i = 0; i < 7; i++) { const a = (i / 7) * Math.PI * 2; b.ball(0.15, K.fur, { x: Math.cos(a) * 0.3, y: 2.62, z: Math.sin(a) * 0.24 - 0.02 }); }
+      // Head.
+      b.ball(0.34, K.skin, { y: 2.98 }, 1);
+      b.ball(0.35, K.hair, { y: 3.04, z: -0.07, sy: 0.92 }, 1);
+      b.box(0.5, 0.36, 0.26, K.beard, { y: 2.7, z: 0.15 });
+      b.box(0.36, 0.16, 0.18, K.beard, { y: 2.6, z: 0.18 });
+      b.box(0.34, 0.07, 0.08, K.beard, { y: 2.9, z: 0.32 });
+      b.box(0.1, 0.12, 0.1, K.skin, { y: 2.98, z: 0.34 });
+      for (const s of [-1, 1]) {
+        b.box(0.06, 0.07, 0.04, 0x2a2420, { x: s * 0.12, y: 3.06, z: 0.31 });
+        b.box(0.13, 0.04, 0.04, K.hair, { x: s * 0.12, y: 3.14, z: 0.31, rz: s * -0.15 });
+      }
+      // Crown: a band, five points and the kingdom's gem.
+      b.cyl(0.33, 0.31, 0.18, 10, K.crown, { y: 3.2 });
+      for (let i = 0; i < 5; i++) {
+        const a = Math.PI / 2 + (i / 5) * Math.PI * 2;
+        b.cone(0.08, 0.24, 4, K.crown, { x: Math.cos(a) * 0.28, y: 3.37, z: Math.sin(a) * 0.28 });
+        b.ball(0.035, K.crown, { x: Math.cos(a) * 0.28, y: 3.63, z: Math.sin(a) * 0.28 });
+      }
+      b.ball(0.075, K.gem, { y: 3.29, z: 0.32 });
     }));
-    // A royal cape that streams out behind him at a gallop.
+    // A royal cape that streams out behind him at a gallop, gold-hemmed with
+    // the kingdom's emblem.
     parts.push(part((b) => {
-      b.box(0.8, 1.0, 0.08, C.red, { y: 1.72, z: -0.3 });
-      b.box(0.82, 0.12, 0.1, C.gold, { y: 1.24, z: -0.3 });
-      b.box(0.86, 0.14, 0.16, 0xf4efe4, { y: 2.2, z: -0.27 });
-    }, { pivot: [0, 2.22, -0.3], anim: 'cape' }));
+      b.box(0.92, 1.25, 0.09, K.cape, { y: 1.38, z: -0.32 });
+      b.box(0.94, 0.1, 0.11, K.capeTrim, { y: 1.36, z: -0.32 });
+      for (const s of [-1, 1]) b.box(0.06, 1.2, 0.11, K.capeTrim, { x: s * 0.45, y: 1.4, z: -0.32 });
+      emblem(b, 0, 1.75, -0.38, 0.7, K.capeTrim, Math.PI);
+      b.box(0.9, 0.18, 0.2, K.fur, { y: 2.56, z: -0.27 });
+    }, { pivot: [0, 2.6, -0.3], anim: 'cape' }));
     // Bow arm.
-    parts.push(part((b) => b.box(0.16, 0.5, 0.16, C.blue, { x: 0.42, y: 2.0 }), { pivot: [0.42, 2.3, 0], anim: 'aim', hide: ['axe', 'pick'] }));
+    parts.push(part((b) => {
+      b.box(0.17, 0.5, 0.17, K.armor, { x: 0.43, y: 2.0 });
+      b.box(0.18, 0.16, 0.18, K.glove, { x: 0.43, y: 1.96 });
+    }, { pivot: [0.42, 2.3, 0], anim: 'aim', hide: ['axe', 'pick'] }));
     // The Royal Bow, one set of parts per tier: limbs, string and gem are
     // recoloured by the king's chosen style; the grip stays leather.
     const BOW = { pivot: [0.42, 2.3, 0], anim: 'aim', hide: ['axe', 'pick'], stow: true };
@@ -748,13 +853,13 @@ export const RIGS = {
     // The king's tools: an axe in the forest, a pickaxe in the highland.
     for (const tool of ['axe', 'pick']) {
       parts.push(part((b) => {
-        b.box(0.16, 0.5, 0.16, C.blue, { x: 0.42, y: 2.0 });
+        b.box(0.17, 0.5, 0.17, K.armor, { x: 0.42, y: 2.0 });
         b.box(0.08, 0.08, 1.15, C.woodLight, { x: 0.5, y: 2.05, z: 0.6 });
         if (tool === 'axe') b.box(0.06, 0.42, 0.34, C.iron, { x: 0.5, y: 1.9, z: 1.05 });
         else { b.box(0.06, 0.12, 0.7, C.iron, { x: 0.5, y: 2.05, z: 1.15, rx: Math.PI / 2 }); b.cone(0.06, 0.25, 4, C.iron, { x: 0.5, y: 1.62, z: 1.15, rx: Math.PI }); }
       }, { pivot: [0.42, 2.3, 0], anim: tool === 'axe' ? 'sweep' : 'smash', show: tool }));
     }
-    return { parts, height: 3.6 };
+    return { parts, height: 3.8 };
   },
   knight() {
     return {
@@ -1407,4 +1512,29 @@ export function mergePlaced(list) {
   out.computeVertexNormals();
   out.computeBoundingSphere();
   return out;
+}
+
+
+// The Old Stone Bridge: a grand arched bridge, long broken in the middle.
+// Built across z (north-south), base at the river bed (y = 0).
+export function stoneBridgeRuinGeo() {
+  const b = new Builder();
+  const st = C.stone, dk = C.stoneDark, moss = 0x6fa84a;
+  for (const side of [-1, 1]) {
+    // A pier standing in the shallows, an arch to the bank, a ramp down to
+    // the road, and a deck that ends in a ragged break over the river.
+    b.box(3.4, 3.2, 1.3, dk, { z: side * 2.1 });
+    b.add(new THREE.TorusGeometry(1.75, 0.42, 4, 12, Math.PI), st, { y: 1.3, z: side * 4.5, ry: Math.PI / 2, sz: 8.2 });
+    b.box(3.4, 1.0, 3.8, st, { y: 2.6, z: side * 4.5 });
+    b.box(3.6, 0.4, 5.6, dk, { y: 3.4, z: side * 4.6 });
+    b.box(3.6, 0.4, 3.4, st, { y: 2.4, z: side * 8.4, rx: side * 0.32 });
+    b.box(3.4, 2.2, 2.2, dk, { z: side * 8.2 });
+    for (const x of [-1.7, 1.7]) b.box(0.35, 0.6, 5.2, st, { x, y: 3.8, z: side * 4.8 });
+    for (let i = 0; i < 4; i++) b.box(0.5, 0.35 + (i % 2) * 0.3, 0.5, st, { x: -1.4 + i * 0.95, y: 3.75, z: side * (2.0 + (i % 2) * 0.4) });
+    b.box(3.7, 0.08, 2.0, moss, { y: 3.8, z: side * 6.2 });
+    // Fallen blocks in the river.
+    b.box(1.2, 0.8, 1.0, st, { x: side * 0.7, z: side * 0.5, ry: 0.5 * side, rz: 0.25 });
+    b.box(0.9, 0.6, 0.8, dk, { x: -side * 1.0, z: side * 0.9, ry: 0.9 });
+  }
+  return b.build();
 }

@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "status": "production_contract_not_exported_clips",
+  "rigs": {
+    "mounted_hero_v1": [
+      "mounted_idle",
+      "mounted_walk",
+      "mounted_gallop",
+      "bow_fire",
+      "multishot",
+      "special_attack",
+      "axe_chop_left",
+      "axe_chop_right",
+      "pickaxe_slam",
+      "hit_react",
+      "victory",
+      "ko"
+    ],
+    "humanoid_v1": [
+      "idle",
+      "walk",
+      "run",
+      "attack_windup",
+      "attack",
+      "recovery",
+      "hit_react",
+      "ko",
+      "rally"
+    ],
+    "horse_v1": [
+      "idle",
+      "walk",
+      "gallop",
+      "turn",
+      "hit_react",
+      "ko"
+    ],
+    "hound_v1": [
+      "idle",
+      "walk",
+      "run",
+      "bite_windup",
+      "bite",
+      "hit_react",
+      "ko"
+    ],
+    "boss_v1": [
+      "idle",
+      "walk",
+      "attack_windup",
+      "attack",
+      "recovery",
+      "hit_react",
+      "stagger",
+      "rally",
+      "phase_change",
+      "ko"
+    ]
+  },
+  "events": {
+    "bow_fire": [
+      "draw_start",
+      "arrow_release",
+      "recover_end"
+    ],
+    "multishot": [
+      "draw_start",
+      "three_arrow_release",
+      "recover_end"
+    ],
+    "axe_chop_left": [
+      "windup",
+      "resource_contact",
+      "recover_end"
+    ],
+    "axe_chop_right": [
+      "windup",
+      "resource_contact",
+      "recover_end"
+    ],
+    "pickaxe_slam": [
+      "windup",
+      "resource_contact",
+      "recover_end"
+    ],
+    "attack": [
+      "telegraph_start",
+      "damage_window_open",
+      "damage_window_close",
+      "recover_end"
+    ],
+    "ko": [
+      "disable_attack",
+      "settle",
+      "loot_once"
+    ]
+  },
+  "rules": [
+    "gameplay events fire once per attack instance, independent of render rate",
+    "blending/LOD/chunk reload must not duplicate hit or loot",
+    "mounted locomotion driven by real movement speed",
+    "no runtime animation marked ready until validated in actual renderer"
+  ]
+}

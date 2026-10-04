@@ -26,6 +26,10 @@ It then launches full screen and works offline.
   Mountain Fort. The first time the king sees a landmark (the forest, the
   Fort, Riverford, the Iron Hills, Stonehill or the Stronghold), the camera
   rises for a short look. Tap to skip it.
+- **The look:** the king and his horse follow the approved regional king
+  sheet in `docs/crownfall/asset-workup/`. The world is moving toward the
+  approved world concept: layered cliffs, oaks and pines, a spired castle,
+  falls where the river rises, and the broken Old Stone Bridge.
 - **The Greenwood journey:** after the first waves a light beam and an arrow
   lead the king out on a short adventure. He visits King's Farmland in the
   west and frees the Fallen Village from raiders, and it rebuilds and three
@@ -197,6 +201,8 @@ there you can:
 - Hand out gold, wood and stone, max out the king, add soldiers, claim every
   outpost, or upgrade the castle and walls.
 - Win the level or lose the current wave on the spot.
+- Ride as any of the five regional kings (a preview: how the other four
+  kings are unlocked isn't decided yet).
 
 Add `?perf` to the URL for a frame-time overlay (fps, p95/p99, draw calls,
 triangles, entities, camera mode).

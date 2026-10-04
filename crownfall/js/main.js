@@ -6,7 +6,7 @@ import { Input } from './input.js';
 import { UI } from './ui.js';
 import { audio } from './audio.js';
 import { save } from './save.js';
-import { BUILDINGS, HERO_UPGRADES, WALLS, levelInfo } from './config.js';
+import { BUILDINGS, HERO_UPGRADES, WALLS, levelInfo, KINGS, KING_ORDER } from './config.js';
 import { CASTLE_R, FOREST_Z, FORT, inHighland } from './map.js';
 import { rand } from './util.js';
 import { initialCam, stepCam, cycleOverride, stickToWorld } from './camera.js';
@@ -441,6 +441,12 @@ function devBuild(stage) {
 const WAVE_STAGE = (n) => (n >= 15 ? 'siege' : n >= 10 ? 'w10' : n >= 8 ? 'w8' : n >= 5 ? 'w5' : n >= 4 ? 'w4' : 'start');
 
 const DEV = {
+  // Preview a regional king (how the other four are unlocked is not decided yet).
+  king(i) {
+    const id = KING_ORDER[i] || 'greenwood';
+    world.hero.kit = id;
+    return `Riding as ${KINGS[id].name} (preview: unlocking the other kings isn't designed yet)`;
+  },
   level(n) {
     world = new World(null, { level: n, carry: devCarry(n) });
     renderer.reset();
@@ -527,6 +533,7 @@ function devRun(cmd) {
   dirty = true;
   devStatus(msg || 'Done');
   for (const b of document.querySelectorAll('#dev-levels .chip')) b.classList.toggle('on', b.dataset.dev === `level:${world.level}`);
+  for (const b of document.querySelectorAll('#dev-kings .chip')) b.classList.toggle('on', b.dataset.dev === `king:${KING_ORDER.indexOf(world.hero.kit)}`);
 }
 function devStatus(msg) {
   const el = $('dev-status');
@@ -534,6 +541,7 @@ function devStatus(msg) {
   el.innerHTML = `<b>${msg}</b><span>L${w.level} · wave ${w.wave + 1} · ${w.soldiers} soldiers · ${w.pop}/${w.beds} people · castle Lv ${w.b.castle.level + 1} · 🪙 ${w.gold} 🪵 ${w.res.wood} 🪨 ${w.res.stone} ⚙️ ${w.res.iron}</span>`;
 }
 
+$('dev-kings').innerHTML = KING_ORDER.map((k, i) => `<button class="chip" data-dev="king:${i}">${KINGS[k].region}</button>`).join('');
 $('dev-levels').innerHTML = Array.from({ length: MAX_LEVELS }, (_, i) => `<button class="chip" data-dev="level:${i + 1}">${i + 1} · ${levelInfo(i + 1).name}</button>`).join('');
 $('btn-dev').addEventListener('click', () => {
   audio.tap();

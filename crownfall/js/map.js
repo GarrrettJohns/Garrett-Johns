@@ -70,16 +70,21 @@ export const LANDMARKS = [
   { id: 'riverford', name: 'Riverford', sub: 'The first camp on the road south', x: spread(1), z: spread(58), sight: 40 },
   { id: 'iron', name: 'The Iron Hills', sub: 'Rust-streaked rock, full of ore', x: spread(40), z: spread(64), sight: 34 },
   { id: 'stonehill', name: 'Stonehill', sub: 'Halfway to the enemy', x: spread(-12), z: spread(106), sight: 40 },
+  { id: 'stonebridge', name: 'The Old Stone Bridge', sub: 'Broken long ago. The new road crosses upstream', x: -46, z: spread(-29), sight: 20 },
   { id: 'stronghold', name: 'The Enemy Stronghold', sub: 'The Warlord waits behind its walls', x: 0, z: spread(179), sight: 75 },
 ];
 // The Greenwood journey: authored places along the opening route (working
 // names). Each is a site with props; slice.js says what happens there.
+// Where the river rises: falls from the eastern mountains.
+export const FALLS = { x: HIGHLAND.x0 + 1, z: RIVER_Z };
 export const SITES = {
   farmland: { x: -64, z: 30, r: 13, name: "King's Farmland" },
   village: { x: -63, z: -30, r: 11, name: 'The Fallen Village' },
   ruin: { x: -36, z: -70, r: 6, name: 'The Old Ruin' },
   ridge: { x: 51, z: -37, r: 7, name: 'The East Ridge' },
   overlook: { x: 54, z: -28, r: 4, name: 'The Foothill Overlook' },
+  // A landmark, not an encounter: the broken arches of an older crossing.
+  stonebridge: { x: -46, z: RIVER_Z, r: 6, name: 'The Old Stone Bridge' },
 };
 // Props at each site, offsets from its centre. `r` > 0 makes it solid to the
 // king (a circle). The renderer builds the same list.
@@ -97,6 +102,7 @@ export const SITE_PROPS = [
   prop('ruin', 'column', -2.4, -1.8, 0.6), prop('ruin', 'arch', 0.9, -2.9, 0.9, 1.2), prop('ruin', 'chest', 0, 0),
   prop('ridge', 'watchtower', 2.5, -2, 1.4), prop('ridge', 'tent', -3, -3, 0, 0.5), prop('ridge', 'tent', -2.5, 3, 0, -0.3), prop('ridge', 'campfire', 0, 0.5),
   prop('overlook', 'cairn', 0, 0, 0.8),
+  prop('stonebridge', 'bridgeRuin', 0, 0),
 ];
 const inSite = (x, z, pad) => Object.values(SITES).some((S) => Math.hypot(x - S.x, z - S.z) < S.r + pad);
 
@@ -420,6 +426,7 @@ export function scenery() {
   };
   for (let z = H.z0; z <= H.z1; z += 2.6) {
     if (Math.abs(z - H.gorgeZ) < 9) continue;   // the fort's walls fill the gap
+    if (Math.abs(z - RIVER_Z) < 3.4) continue;   // the falls where the river rises
     crag(H.x0 - 0.3 - rnd() * 0.8, z, 1, 3 + rnd() * 3);
   }
   for (let x = H.x0; x <= H.x1 + 4; x += 2.6) crag(x, H.z1 + 0.6 + rnd() * 0.8, 1, 3 + rnd() * 3);
