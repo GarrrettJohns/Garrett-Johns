@@ -14,6 +14,18 @@ It then launches full screen and works offline.
 ## How it plays
 
 - **Ride:** drag anywhere to steer. The king shoots the nearest enemy on his own.
+  When he isn't shooting, his bow hangs across his back.
+- **Three views:** at home the camera looks down on the kingdom from high
+  up. Ride out and it drops behind the king (Adventure). Get close to enemies
+  and it comes in tight behind him (Combat). Opening a build menu always goes
+  back to the kingdom view. In the two riding views the stick steers relative
+  to the camera, and a drag on the right side of the screen turns it. The
+  camera button beside pause cycles Auto → Kingdom → Adventure → Combat.
+- **The land:** the castle stands on a hill. The river runs through a valley
+  with the forest hills beyond, and the eastern mountains climb past the
+  Mountain Fort. The first time the king sees a landmark (the forest, the
+  Fort, Riverford, the Iron Hills, Stonehill or the Stronghold), the camera
+  rises for a short look. Tap to skip it.
 - **Look:** drag with two fingers to move the camera on its own, and pinch to
   zoom. Tap 👑 to snap back to the king. On a desktop, right-drag pans.
 - **The castle:** tap it. Its **King** tab upgrades the bow, horse and weapons,
@@ -179,11 +191,27 @@ there you can:
   outpost, or upgrade the castle and walls.
 - Win the level or lose the current wave on the spot.
 
+Add `?perf` to the URL for a frame-time overlay (fps, p95/p99, draw calls,
+triangles, entities, camera mode).
+
+## Tests
+
+```sh
+node crownfall/tests/run.mjs
+```
+
+Headless checks of the terrain (roads walkable, slopes gentle, build areas
+level, the bridge deck), the camera rules, and save compatibility. The design
+handoff, plan and status live in `docs/crownfall/`; start with
+`implementation-status.md`.
+
 ## Files
 
 | File | What it holds |
 | --- | --- |
 | `js/config.js` | All balance data: buildings, upgrades, units, enemies, wave generation |
+| `js/terrain.js` | The shape of the land: one height function, levelled build areas, the bridge deck |
+| `js/camera.js` | Camera views (kingdom / adventure / combat) and when they change |
 | `js/map.js` | Layout: enemy roads, the road to the stronghold, outposts and frontiers, river, square walls, fixed pads, scenery |
 | `js/world.js` | The simulation: king, economy, villagers, army, enemies, waves, saving |
 | `js/models.js` | Every 3D model, built from primitives in code |
@@ -195,6 +223,8 @@ there you can:
 | `js/save.js` | Local persistence |
 | `js/vendor/three.js` | The parts of three.js the game uses, bundled into one file |
 | `sw.js` | Offline cache. Bump `CACHE` whenever an asset changes |
+| `tests/run.mjs` | Headless tests |
+| `assets/manifest.json` | Every model the game needs, and whether it is a placeholder or missing |
 
 `world.js` never touches three.js or the DOM. That means the whole simulation
 can run in Node, which is how the balance was tuned: a scripted player rides,

@@ -9,6 +9,7 @@ import { save } from './save.js';
 import { BUILDINGS, HERO_UPGRADES, WALLS, levelInfo } from './config.js';
 import { CASTLE_R, FOREST_Z, FORT, inHighland } from './map.js';
 import { rand } from './util.js';
+import { initialCam, stepCam, cycleOverride, stickToWorld } from './camera.js';
 
 const $ = (id) => document.getElementById(id);
 const stage = $('stage');
@@ -262,6 +263,12 @@ $('btn-new').addEventListener('click', () => {
 $('btn-confirm-yes').addEventListener('click', () => { audio.tap(); newGame(); });
 $('btn-confirm-no').addEventListener('click', () => { audio.tap(); refreshTitle(); show('screen-title'); });
 let howtoBack = 'screen-title';
+let camState = initialCam();
+$('btn-cam').addEventListener('click', () => {
+  audio.tap();
+  camState = cycleOverride(camState);
+  ui.toast({ auto: '🎥 Camera: automatic', kingdom: '🎥 Camera: kingdom view', adventure: '🎥 Camera: riding view', combat: '🎥 Camera: battle view' }[camState.override]);
+});
 $('btn-howto').addEventListener('click', () => { audio.unlock(); audio.tap(); howtoBack = 'screen-title'; show('screen-howto'); });
 $('btn-howto2').addEventListener('click', () => { audio.tap(); howtoBack = 'screen-pause'; show('screen-howto'); });
 $('btn-howto-back').addEventListener('click', () => { audio.tap(); show(howtoBack); });
@@ -583,6 +590,7 @@ input.onDrag = (x, y) => {
 };
 input.onTap = (x, y) => {
   if (state !== 'play' || placing) return;
+  if (renderer.cine) { renderer.skipCinematic(); return; }
   const b = renderer.pick(x, y, world);
   if (b) { audio.tap(); ui.openMenu(b.id); }
   else ui.closeMenu();
@@ -638,6 +646,15 @@ function handle(ev, events = []) {
     case 'forged': audio.buy(); ui.banner('⚒️ Forged!', ev.title.replace(/^Forge the /, ''), 1.6); break;
     case 'column': if (ev.n === 1 || ev.n % 3 === 0) ui.toast(`⚔️ A column of ${ev.size} marches out of the stronghold!`, true); break;
     case 'wrecked': audio.crash(); ui.toast(`🔥 ${ev.name} ${ev.outpost ? 'has fallen' : 'was wrecked'}!`, true); break;
+    case 'discovered': {
+      // Reveal it, unless a fight is right on top of the king.
+      const h = world.hero;
+      const busy = world.enemies.some((e) => e.hp > 0 && !e.static && Math.hypot(e.x - h.x, e.z - h.z) < 18);
+      if (!busy) renderer.cinematic(ev.x, ev.z);
+      ui.banner(`🗺️ ${ev.name}`, ev.sub, 2.6);
+      audio.horn();
+      break;
+    }
     case 'deposit': audio.spend(); ui.float(at(ev.x, 2.6, ev.z), `🏦 +${ev.n} banked`, '#ffe28a'); break;
     case 'rally': ui.toast({ follow: '🚩 Your troops ride with you', posts: '🏰 Troops head back to their posts', march: '⚔️ Your troops march on the stronghold. They muster at the furthest outpost and storm it in the siege.' }[ev.order || (ev.on ? 'follow' : 'posts')]); break;
     case 'toast': ui.toast(ev.text); break;
@@ -748,7 +765,28 @@ window.addEventListener('orientationchange', () => setTimeout(resize, 200));
 resize();
 
 let last = performance.now();
+// ?perf in the URL shows a small performance readout (for device testing):
+// FPS, p95/p99 frame time over the last ~2 s, draw calls, triangles and
+// active entities. See docs/crownfall/implementation-status.md.
+const PERF = new URLSearchParams(location.search).has('perf');
+const perfEl = PERF ? Object.assign(document.createElement('div'), { id: 'perf' }) : null;
+if (perfEl) document.body.appendChild(perfEl);
+const perfT = [];
+let perfShow = 0;
+function perfTick(now, raw) {
+  perfT.push(raw);
+  if (perfT.length > 120) perfT.shift();
+  if (now - perfShow < 500) return;
+  perfShow = now;
+  const sorted = [...perfT].sort((a, b) => a - b);
+  const q = (f) => sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * f))].toFixed(1);
+  const avg = perfT.reduce((a, b) => a + b, 0) / perfT.length;
+  const info = renderer.renderer.info.render;
+  perfEl.textContent = `${(1000 / avg).toFixed(0)} fps · p95 ${q(0.95)} · p99 ${q(0.99)} ms | ${info.calls} calls · ${(info.triangles / 1000).toFixed(0)}k tris | ${world.enemies.length} foes · ${world.allies.length} troops · ${world.villagers.length} folk | ${renderer.camMode || 'kingdom'} · dpr ${renderer.renderer.getPixelRatio()}`;
+}
+
 function frame(now) {
+  if (PERF && last) perfTick(now, now - last);
   const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
   pickT -= dt;
@@ -767,7 +805,25 @@ function frame(now) {
   if (state === 'play') {
     if (placing && world.phase !== 'build') placing = null;
     input.dragMode = !!placing;
-    world.update(dt, placing ? { x: 0, z: 0 } : input.read());
+    // Steer relative to the way the camera faces.
+    const raw = placing ? { x: 0, z: 0 } : input.read();
+    renderer.stick = raw;
+    const stick = stickToWorld(raw, renderer.viewYaw ?? Math.PI);
+    world.update(dt, stick);
+    // Camera mode: tactical at home and when building, trailing out on the
+    // road, close behind the king in a fight.
+    {
+      const h0 = world.hero;
+      let near = Infinity;
+      for (const e of world.enemies) if (e.hp > 0 && !e.static) near = Math.min(near, Math.hypot(e.x - h0.x, e.z - h0.z));
+      const atHome = world.buildZones().some((zn) => Math.abs(h0.x - zn.x) <= zn.h + 2 && Math.abs(h0.z - zn.z) <= zn.h + 2);
+      camState = stepCam(camState, { uiBusy: !!placing || ui.sheetOpen, nearEnemy: near, atHome, alive: h0.alive }, dt);
+      renderer.camMode = camState.mode;
+      input.turnMode = camState.mode !== 'kingdom';
+      const turn = input.takeTurn();
+      if (turn) renderer.turnBy(turn);
+      ui.setCamLabel(camState);
+    }
     if (placing) {
       const chk = world.canPlace(placing.type, placing.x, placing.z);
       placing.ok = chk.ok;

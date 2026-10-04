@@ -1,0 +1,17 @@
+# Paste this into Claude Code
+
+You are evolving my existing Crownfall browser game into a bigger kingdom-building/action-adventure hybrid. Read every numbered document and `references/INDEX.md` under `docs/crownfall/`, and inspect the referenced screenshots before changing the game. Treat the documents as the durable source of truth. Follow existing repository instructions as well.
+
+Preserve the functioning economy, harvesting, collection, building/upgrading, recruitment, army orders, wave defense, outposts and siege progression wherever present. Audit which actually exist; screenshots do not prove implementation. Preserve saves with versioned migration or a compatible legacy mode. Do not replace the project with a disconnected visual demo.
+
+The final game must play in portrait in an iPhone browser. Build a much larger exploration world with rolling terrain, natural boundaries, distant landmarks, dense settlements, streamed gameplay and three camera modes: Kingdom, Adventure, Combat; add brief cinematic reveals. Combat brings the camera behind the mounted king. Keep touch controls simple and automatic bow fire available. Retain the bright, chunky, clean low-poly art style. Preserve five regional kings, white-horse/blue-barding/red-cape main king, royal bow progression/customization, army and enemy types, all building tiers, resources, VFX, UI and final Warlord siege from the inventory.
+
+First inspect and report the actual renderer, terrain, movement, collision, combat, economy, AI, saves, asset loading, mobile input and performance measurement facilities. Create `implementation-plan.md`, populate the requirement mapping in `05_TRACEABILITY_AND_DECISIONS.md`, and record ambiguities. Do not invent missing visual references, claim screenshot observations as code facts, or silently mark a feature complete.
+
+Then implement a connected Greenwood vertical slice: castle hill → farms → woodland → raid → river/bridge → mountain overlook. It must exercise the real economy, building, troops, mounted combat, camera changes, terrain traversal, streaming, persistence and mobile UI. Prefer the existing stack unless evidence warrants a documented migration. Use explicit placeholders when real assets are missing and list them in an asset manifest. A concept PNG is not a rigged GLB.
+
+Implement in phases from `04_IMPLEMENTATION_AND_VALIDATION.md`. For each phase, record code paths, requirement IDs, checks run, results, device/browser, known limitations and next tasks. Run relevant repository tests and actual gameplay checks. Add meaningful tests around state/save migrations, chunk lifecycle and camera/input transitions where appropriate. Profile the representative encounter and extended travel on real supported iPhones; do not claim mobile performance from desktop alone. Where real-device access is unavailable, label it unverified and preserve an exact device test checklist.
+
+Do not shrink the vision to one flat arena or drop features to make a prettier scene. Do not ship all six regions before the slice proves playability and performance. Keep large battles visually impressive using lower simulation detail at distance without creating fake targetable enemies. Record changes to agreed scope; choose and document reversible technical defaults autonomously. Continue until the current milestone's acceptance checks pass or a concrete blocker requires my input.
+
+Begin with the repository audit and traceability mapping, then proceed with implementation of the first milestone using the evidence available.

@@ -1,0 +1,3548 @@
+{
+  "version": 1,
+  "updated": "2026-10-04",
+  "note": "Every model in the game today is procedural geometry (status placeholder). No GLB exists in the repository; nothing is marked ready unless the file exists. Paths are relative to crownfall/.",
+  "counts": {
+    "placeholder": 53,
+    "missing": 95,
+    "ready": 1
+  },
+  "assets": [
+    {
+      "id": "greenwood.king",
+      "region": "greenwood",
+      "kind": "king",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": "not measured separately"
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": "procedural part rig (InstancedMesh per part, js/render.js RigMesh)",
+      "clips": [
+        "procedural: ride, shoot, chop, mine, hurt, KO poses — not named clips"
+      ],
+      "sockets": [
+        "bow (stowable diagonally on back)",
+        "axe",
+        "pickaxe",
+        "cargo stack"
+      ],
+      "hooks": [
+        "world.hero"
+      ],
+      "note": "Placeholder until the Greenwood king concept arrives. White horse, blue barding, red cape, gold crown."
+    },
+    {
+      "id": "greenwood.horse",
+      "region": "greenwood",
+      "kind": "horse",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "world.hero"
+      ]
+    },
+    {
+      "id": "greenwood.king.glb",
+      "region": "greenwood",
+      "kind": "king",
+      "path": "assets/kings/greenwood/king.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [
+        "mounted_idle",
+        "mounted_walk",
+        "mounted_gallop",
+        "bow_fire",
+        "multishot",
+        "special_attack",
+        "axe_chop_left",
+        "axe_chop_right",
+        "pickaxe_slam",
+        "hit_react",
+        "victory",
+        "ko"
+      ],
+      "sockets": [
+        "saddle_rider_root",
+        "bow_grip",
+        "bow_string",
+        "quiver",
+        "axe",
+        "pickaxe",
+        "cape_root",
+        "cargo"
+      ],
+      "hooks": [],
+      "blocker": "R05: original king concept image not supplied"
+    },
+    {
+      "id": "greenwood.horse.glb",
+      "region": "greenwood",
+      "kind": "horse",
+      "path": "assets/kings/greenwood/horse.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [
+        "mounted_idle",
+        "mounted_walk",
+        "mounted_gallop"
+      ],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "greenwood.barding",
+      "region": "greenwood",
+      "kind": "barding",
+      "path": "assets/kings/greenwood/barding.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "greenwood.crown",
+      "region": "greenwood",
+      "kind": "crown",
+      "path": "assets/kings/greenwood/crown.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "greenwood.cape",
+      "region": "greenwood",
+      "kind": "cape",
+      "path": "assets/kings/greenwood/cape.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "greenwood.emblem",
+      "region": "greenwood",
+      "kind": "emblem",
+      "path": "assets/kings/greenwood/emblem.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "greenwood.banner",
+      "region": "greenwood",
+      "kind": "banner",
+      "path": "assets/kings/greenwood/banner.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "greenwood.bow.tier_01",
+      "region": "greenwood",
+      "kind": "bow",
+      "path": "assets/kings/greenwood/bows/tier_01.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "greenwood.bow.tier_02",
+      "region": "greenwood",
+      "kind": "bow",
+      "path": "assets/kings/greenwood/bows/tier_02.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "greenwood.bow.tier_03",
+      "region": "greenwood",
+      "kind": "bow",
+      "path": "assets/kings/greenwood/bows/tier_03.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "greenwood.bow.tier_04",
+      "region": "greenwood",
+      "kind": "bow",
+      "path": "assets/kings/greenwood/bows/tier_04.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "greenwood.bow.tier_05",
+      "region": "greenwood",
+      "kind": "bow",
+      "path": "assets/kings/greenwood/bows/tier_05.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "greenwood.projectiles",
+      "region": "greenwood",
+      "kind": "projectile",
+      "path": "assets/kings/greenwood/projectiles.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "greenwood.vfx",
+      "region": "greenwood",
+      "kind": "vfx",
+      "path": null,
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [],
+      "note": "regional effect set"
+    },
+    {
+      "id": "greenwood.portrait",
+      "region": "greenwood",
+      "kind": "icon",
+      "path": "assets/kings/greenwood/icons/portrait.png",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "greenwood.portrait_upgraded",
+      "region": "greenwood",
+      "kind": "icon",
+      "path": "assets/kings/greenwood/icons/portrait_upgraded.png",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "greenwood.cargo",
+      "region": "greenwood",
+      "kind": "cargo",
+      "path": null,
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [],
+      "note": "coins, logs, stone, iron attachment variants"
+    },
+    {
+      "id": "eastern_mountains.king.glb",
+      "region": "eastern_mountains",
+      "kind": "king",
+      "path": "assets/kings/eastern_mountains/king.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [
+        "mounted_idle",
+        "mounted_walk",
+        "mounted_gallop",
+        "bow_fire",
+        "multishot",
+        "special_attack",
+        "axe_chop_left",
+        "axe_chop_right",
+        "pickaxe_slam",
+        "hit_react",
+        "victory",
+        "ko"
+      ],
+      "sockets": [
+        "saddle_rider_root",
+        "bow_grip",
+        "bow_string",
+        "quiver",
+        "axe",
+        "pickaxe",
+        "cape_root",
+        "cargo"
+      ],
+      "hooks": [],
+      "blocker": "R05: original king concept image not supplied"
+    },
+    {
+      "id": "eastern_mountains.horse.glb",
+      "region": "eastern_mountains",
+      "kind": "horse",
+      "path": "assets/kings/eastern_mountains/horse.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [
+        "mounted_idle",
+        "mounted_walk",
+        "mounted_gallop"
+      ],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "eastern_mountains.barding",
+      "region": "eastern_mountains",
+      "kind": "barding",
+      "path": "assets/kings/eastern_mountains/barding.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "eastern_mountains.crown",
+      "region": "eastern_mountains",
+      "kind": "crown",
+      "path": "assets/kings/eastern_mountains/crown.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "eastern_mountains.cape",
+      "region": "eastern_mountains",
+      "kind": "cape",
+      "path": "assets/kings/eastern_mountains/cape.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "eastern_mountains.emblem",
+      "region": "eastern_mountains",
+      "kind": "emblem",
+      "path": "assets/kings/eastern_mountains/emblem.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "eastern_mountains.banner",
+      "region": "eastern_mountains",
+      "kind": "banner",
+      "path": "assets/kings/eastern_mountains/banner.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "eastern_mountains.bow.tier_01",
+      "region": "eastern_mountains",
+      "kind": "bow",
+      "path": "assets/kings/eastern_mountains/bows/tier_01.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "eastern_mountains.bow.tier_02",
+      "region": "eastern_mountains",
+      "kind": "bow",
+      "path": "assets/kings/eastern_mountains/bows/tier_02.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "eastern_mountains.bow.tier_03",
+      "region": "eastern_mountains",
+      "kind": "bow",
+      "path": "assets/kings/eastern_mountains/bows/tier_03.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "eastern_mountains.bow.tier_04",
+      "region": "eastern_mountains",
+      "kind": "bow",
+      "path": "assets/kings/eastern_mountains/bows/tier_04.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "eastern_mountains.bow.tier_05",
+      "region": "eastern_mountains",
+      "kind": "bow",
+      "path": "assets/kings/eastern_mountains/bows/tier_05.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "eastern_mountains.projectiles",
+      "region": "eastern_mountains",
+      "kind": "projectile",
+      "path": "assets/kings/eastern_mountains/projectiles.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "eastern_mountains.vfx",
+      "region": "eastern_mountains",
+      "kind": "vfx",
+      "path": null,
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [],
+      "note": "regional effect set"
+    },
+    {
+      "id": "eastern_mountains.portrait",
+      "region": "eastern_mountains",
+      "kind": "icon",
+      "path": "assets/kings/eastern_mountains/icons/portrait.png",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "eastern_mountains.portrait_upgraded",
+      "region": "eastern_mountains",
+      "kind": "icon",
+      "path": "assets/kings/eastern_mountains/icons/portrait_upgraded.png",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "eastern_mountains.cargo",
+      "region": "eastern_mountains",
+      "kind": "cargo",
+      "path": null,
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [],
+      "note": "coins, logs, stone, iron attachment variants"
+    },
+    {
+      "id": "iron_hills.king.glb",
+      "region": "iron_hills",
+      "kind": "king",
+      "path": "assets/kings/iron_hills/king.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [
+        "mounted_idle",
+        "mounted_walk",
+        "mounted_gallop",
+        "bow_fire",
+        "multishot",
+        "special_attack",
+        "axe_chop_left",
+        "axe_chop_right",
+        "pickaxe_slam",
+        "hit_react",
+        "victory",
+        "ko"
+      ],
+      "sockets": [
+        "saddle_rider_root",
+        "bow_grip",
+        "bow_string",
+        "quiver",
+        "axe",
+        "pickaxe",
+        "cape_root",
+        "cargo"
+      ],
+      "hooks": [],
+      "blocker": "R05: original king concept image not supplied"
+    },
+    {
+      "id": "iron_hills.horse.glb",
+      "region": "iron_hills",
+      "kind": "horse",
+      "path": "assets/kings/iron_hills/horse.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [
+        "mounted_idle",
+        "mounted_walk",
+        "mounted_gallop"
+      ],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "iron_hills.barding",
+      "region": "iron_hills",
+      "kind": "barding",
+      "path": "assets/kings/iron_hills/barding.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "iron_hills.crown",
+      "region": "iron_hills",
+      "kind": "crown",
+      "path": "assets/kings/iron_hills/crown.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "iron_hills.cape",
+      "region": "iron_hills",
+      "kind": "cape",
+      "path": "assets/kings/iron_hills/cape.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "iron_hills.emblem",
+      "region": "iron_hills",
+      "kind": "emblem",
+      "path": "assets/kings/iron_hills/emblem.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "iron_hills.banner",
+      "region": "iron_hills",
+      "kind": "banner",
+      "path": "assets/kings/iron_hills/banner.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "iron_hills.bow.tier_01",
+      "region": "iron_hills",
+      "kind": "bow",
+      "path": "assets/kings/iron_hills/bows/tier_01.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "iron_hills.bow.tier_02",
+      "region": "iron_hills",
+      "kind": "bow",
+      "path": "assets/kings/iron_hills/bows/tier_02.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "iron_hills.bow.tier_03",
+      "region": "iron_hills",
+      "kind": "bow",
+      "path": "assets/kings/iron_hills/bows/tier_03.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "iron_hills.bow.tier_04",
+      "region": "iron_hills",
+      "kind": "bow",
+      "path": "assets/kings/iron_hills/bows/tier_04.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "iron_hills.bow.tier_05",
+      "region": "iron_hills",
+      "kind": "bow",
+      "path": "assets/kings/iron_hills/bows/tier_05.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "iron_hills.projectiles",
+      "region": "iron_hills",
+      "kind": "projectile",
+      "path": "assets/kings/iron_hills/projectiles.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "iron_hills.vfx",
+      "region": "iron_hills",
+      "kind": "vfx",
+      "path": null,
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [],
+      "note": "regional effect set"
+    },
+    {
+      "id": "iron_hills.portrait",
+      "region": "iron_hills",
+      "kind": "icon",
+      "path": "assets/kings/iron_hills/icons/portrait.png",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "iron_hills.portrait_upgraded",
+      "region": "iron_hills",
+      "kind": "icon",
+      "path": "assets/kings/iron_hills/icons/portrait_upgraded.png",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "iron_hills.cargo",
+      "region": "iron_hills",
+      "kind": "cargo",
+      "path": null,
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [],
+      "note": "coins, logs, stone, iron attachment variants"
+    },
+    {
+      "id": "sunscorch.king.glb",
+      "region": "sunscorch",
+      "kind": "king",
+      "path": "assets/kings/sunscorch/king.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [
+        "mounted_idle",
+        "mounted_walk",
+        "mounted_gallop",
+        "bow_fire",
+        "multishot",
+        "special_attack",
+        "axe_chop_left",
+        "axe_chop_right",
+        "pickaxe_slam",
+        "hit_react",
+        "victory",
+        "ko"
+      ],
+      "sockets": [
+        "saddle_rider_root",
+        "bow_grip",
+        "bow_string",
+        "quiver",
+        "axe",
+        "pickaxe",
+        "cape_root",
+        "cargo"
+      ],
+      "hooks": [],
+      "blocker": "R05: original king concept image not supplied"
+    },
+    {
+      "id": "sunscorch.horse.glb",
+      "region": "sunscorch",
+      "kind": "horse",
+      "path": "assets/kings/sunscorch/horse.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [
+        "mounted_idle",
+        "mounted_walk",
+        "mounted_gallop"
+      ],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "sunscorch.barding",
+      "region": "sunscorch",
+      "kind": "barding",
+      "path": "assets/kings/sunscorch/barding.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "sunscorch.crown",
+      "region": "sunscorch",
+      "kind": "crown",
+      "path": "assets/kings/sunscorch/crown.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "sunscorch.cape",
+      "region": "sunscorch",
+      "kind": "cape",
+      "path": "assets/kings/sunscorch/cape.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "sunscorch.emblem",
+      "region": "sunscorch",
+      "kind": "emblem",
+      "path": "assets/kings/sunscorch/emblem.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "sunscorch.banner",
+      "region": "sunscorch",
+      "kind": "banner",
+      "path": "assets/kings/sunscorch/banner.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "sunscorch.bow.tier_01",
+      "region": "sunscorch",
+      "kind": "bow",
+      "path": "assets/kings/sunscorch/bows/tier_01.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "sunscorch.bow.tier_02",
+      "region": "sunscorch",
+      "kind": "bow",
+      "path": "assets/kings/sunscorch/bows/tier_02.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "sunscorch.bow.tier_03",
+      "region": "sunscorch",
+      "kind": "bow",
+      "path": "assets/kings/sunscorch/bows/tier_03.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "sunscorch.bow.tier_04",
+      "region": "sunscorch",
+      "kind": "bow",
+      "path": "assets/kings/sunscorch/bows/tier_04.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "sunscorch.bow.tier_05",
+      "region": "sunscorch",
+      "kind": "bow",
+      "path": "assets/kings/sunscorch/bows/tier_05.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "sunscorch.projectiles",
+      "region": "sunscorch",
+      "kind": "projectile",
+      "path": "assets/kings/sunscorch/projectiles.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "sunscorch.vfx",
+      "region": "sunscorch",
+      "kind": "vfx",
+      "path": null,
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [],
+      "note": "regional effect set"
+    },
+    {
+      "id": "sunscorch.portrait",
+      "region": "sunscorch",
+      "kind": "icon",
+      "path": "assets/kings/sunscorch/icons/portrait.png",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "sunscorch.portrait_upgraded",
+      "region": "sunscorch",
+      "kind": "icon",
+      "path": "assets/kings/sunscorch/icons/portrait_upgraded.png",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "sunscorch.cargo",
+      "region": "sunscorch",
+      "kind": "cargo",
+      "path": null,
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [],
+      "note": "coins, logs, stone, iron attachment variants"
+    },
+    {
+      "id": "frostmarch.king.glb",
+      "region": "frostmarch",
+      "kind": "king",
+      "path": "assets/kings/frostmarch/king.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [
+        "mounted_idle",
+        "mounted_walk",
+        "mounted_gallop",
+        "bow_fire",
+        "multishot",
+        "special_attack",
+        "axe_chop_left",
+        "axe_chop_right",
+        "pickaxe_slam",
+        "hit_react",
+        "victory",
+        "ko"
+      ],
+      "sockets": [
+        "saddle_rider_root",
+        "bow_grip",
+        "bow_string",
+        "quiver",
+        "axe",
+        "pickaxe",
+        "cape_root",
+        "cargo"
+      ],
+      "hooks": [],
+      "blocker": "R05: original king concept image not supplied"
+    },
+    {
+      "id": "frostmarch.horse.glb",
+      "region": "frostmarch",
+      "kind": "horse",
+      "path": "assets/kings/frostmarch/horse.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [
+        "mounted_idle",
+        "mounted_walk",
+        "mounted_gallop"
+      ],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "frostmarch.barding",
+      "region": "frostmarch",
+      "kind": "barding",
+      "path": "assets/kings/frostmarch/barding.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "frostmarch.crown",
+      "region": "frostmarch",
+      "kind": "crown",
+      "path": "assets/kings/frostmarch/crown.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "frostmarch.cape",
+      "region": "frostmarch",
+      "kind": "cape",
+      "path": "assets/kings/frostmarch/cape.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "frostmarch.emblem",
+      "region": "frostmarch",
+      "kind": "emblem",
+      "path": "assets/kings/frostmarch/emblem.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "frostmarch.banner",
+      "region": "frostmarch",
+      "kind": "banner",
+      "path": "assets/kings/frostmarch/banner.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "frostmarch.bow.tier_01",
+      "region": "frostmarch",
+      "kind": "bow",
+      "path": "assets/kings/frostmarch/bows/tier_01.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "frostmarch.bow.tier_02",
+      "region": "frostmarch",
+      "kind": "bow",
+      "path": "assets/kings/frostmarch/bows/tier_02.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "frostmarch.bow.tier_03",
+      "region": "frostmarch",
+      "kind": "bow",
+      "path": "assets/kings/frostmarch/bows/tier_03.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "frostmarch.bow.tier_04",
+      "region": "frostmarch",
+      "kind": "bow",
+      "path": "assets/kings/frostmarch/bows/tier_04.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "frostmarch.bow.tier_05",
+      "region": "frostmarch",
+      "kind": "bow",
+      "path": "assets/kings/frostmarch/bows/tier_05.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "frostmarch.projectiles",
+      "region": "frostmarch",
+      "kind": "projectile",
+      "path": "assets/kings/frostmarch/projectiles.glb",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "frostmarch.vfx",
+      "region": "frostmarch",
+      "kind": "vfx",
+      "path": null,
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [],
+      "note": "regional effect set"
+    },
+    {
+      "id": "frostmarch.portrait",
+      "region": "frostmarch",
+      "kind": "icon",
+      "path": "assets/kings/frostmarch/icons/portrait.png",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "frostmarch.portrait_upgraded",
+      "region": "frostmarch",
+      "kind": "icon",
+      "path": "assets/kings/frostmarch/icons/portrait_upgraded.png",
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "frostmarch.cargo",
+      "region": "frostmarch",
+      "kind": "cargo",
+      "path": null,
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [],
+      "note": "coins, logs, stone, iron attachment variants"
+    },
+    {
+      "id": "royal_bow.tier_01",
+      "region": "shared",
+      "kind": "bow",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "hero.bow"
+      ],
+      "name": "Golden Longbow",
+      "customization": [
+        "finish",
+        "gem",
+        "string",
+        "trail"
+      ]
+    },
+    {
+      "id": "royal_bow.tier_02",
+      "region": "shared",
+      "kind": "bow",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "hero.bow"
+      ],
+      "name": "Gilded Recurve",
+      "customization": [
+        "finish",
+        "gem",
+        "string",
+        "trail"
+      ]
+    },
+    {
+      "id": "royal_bow.tier_03",
+      "region": "shared",
+      "kind": "bow",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "hero.bow"
+      ],
+      "name": "Sunforged Bow",
+      "customization": [
+        "finish",
+        "gem",
+        "string",
+        "trail"
+      ]
+    },
+    {
+      "id": "royal_bow.tier_04",
+      "region": "shared",
+      "kind": "bow",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "hero.bow"
+      ],
+      "name": "Dragonwing Bow",
+      "customization": [
+        "finish",
+        "gem",
+        "string",
+        "trail"
+      ]
+    },
+    {
+      "id": "royal_bow.tier_05",
+      "region": "shared",
+      "kind": "bow",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "hero.bow"
+      ],
+      "name": "Crown of Arrows",
+      "customization": [
+        "finish",
+        "gem",
+        "string",
+        "trail"
+      ]
+    },
+    {
+      "id": "weapon.bow",
+      "region": "shared",
+      "kind": "weapon",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "WEAPONS.bow"
+      ]
+    },
+    {
+      "id": "weapon.crossbow",
+      "region": "shared",
+      "kind": "weapon",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "WEAPONS.crossbow"
+      ]
+    },
+    {
+      "id": "weapon.fire",
+      "region": "shared",
+      "kind": "weapon",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "WEAPONS.fire"
+      ]
+    },
+    {
+      "id": "weapon.multi",
+      "region": "shared",
+      "kind": "weapon",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "WEAPONS.multi"
+      ]
+    },
+    {
+      "id": "weapon.storm",
+      "region": "shared",
+      "kind": "weapon",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "WEAPONS.storm"
+      ]
+    },
+    {
+      "id": "unit.knight",
+      "region": "shared",
+      "kind": "unit",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "UNITS.knight"
+      ]
+    },
+    {
+      "id": "unit.archer",
+      "region": "shared",
+      "kind": "unit",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "UNITS.archer"
+      ]
+    },
+    {
+      "id": "unit.raider",
+      "region": "shared",
+      "kind": "unit",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "UNITS.raider"
+      ]
+    },
+    {
+      "id": "unit.villager",
+      "region": "shared",
+      "kind": "unit",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [],
+      "note": "chop, mine, farm, haul (wheelbarrow)"
+    },
+    {
+      "id": "enemy.grunt",
+      "region": "shared",
+      "kind": "enemy",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "ENEMIES.grunt"
+      ]
+    },
+    {
+      "id": "enemy.brute",
+      "region": "shared",
+      "kind": "enemy",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "ENEMIES.brute"
+      ]
+    },
+    {
+      "id": "enemy.archer",
+      "region": "shared",
+      "kind": "enemy",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "ENEMIES.archer"
+      ]
+    },
+    {
+      "id": "enemy.raider",
+      "region": "shared",
+      "kind": "enemy",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "ENEMIES.raider"
+      ]
+    },
+    {
+      "id": "enemy.hound",
+      "region": "shared",
+      "kind": "enemy",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "ENEMIES.hound"
+      ]
+    },
+    {
+      "id": "enemy.treant",
+      "region": "shared",
+      "kind": "enemy",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "ENEMIES.treant"
+      ]
+    },
+    {
+      "id": "enemy.fgate",
+      "region": "shared",
+      "kind": "enemy",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "ENEMIES.fgate"
+      ]
+    },
+    {
+      "id": "enemy.ftower",
+      "region": "shared",
+      "kind": "enemy",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "ENEMIES.ftower"
+      ]
+    },
+    {
+      "id": "enemy.sgate",
+      "region": "shared",
+      "kind": "enemy",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "ENEMIES.sgate"
+      ]
+    },
+    {
+      "id": "enemy.stower",
+      "region": "shared",
+      "kind": "enemy",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "ENEMIES.stower"
+      ]
+    },
+    {
+      "id": "enemy.skeep",
+      "region": "shared",
+      "kind": "enemy",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "ENEMIES.skeep"
+      ]
+    },
+    {
+      "id": "enemy.boss",
+      "region": "shared",
+      "kind": "enemy",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "ENEMIES.boss"
+      ]
+    },
+    {
+      "id": "building.castle",
+      "region": "shared",
+      "kind": "building",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "BUILDINGS.castle"
+      ]
+    },
+    {
+      "id": "building.house",
+      "region": "shared",
+      "kind": "building",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "BUILDINGS.house"
+      ]
+    },
+    {
+      "id": "building.farm",
+      "region": "shared",
+      "kind": "building",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "BUILDINGS.farm"
+      ]
+    },
+    {
+      "id": "building.warehouse",
+      "region": "shared",
+      "kind": "building",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "BUILDINGS.warehouse"
+      ]
+    },
+    {
+      "id": "building.barracks",
+      "region": "shared",
+      "kind": "building",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "BUILDINGS.barracks"
+      ]
+    },
+    {
+      "id": "building.stable",
+      "region": "shared",
+      "kind": "building",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "BUILDINGS.stable"
+      ]
+    },
+    {
+      "id": "building.range",
+      "region": "shared",
+      "kind": "building",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "BUILDINGS.range"
+      ]
+    },
+    {
+      "id": "building.pass",
+      "region": "shared",
+      "kind": "building",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "BUILDINGS.pass"
+      ]
+    },
+    {
+      "id": "building.outpost",
+      "region": "shared",
+      "kind": "building",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "BUILDINGS.outpost"
+      ]
+    },
+    {
+      "id": "building.goldmine",
+      "region": "shared",
+      "kind": "building",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "BUILDINGS.goldmine"
+      ]
+    },
+    {
+      "id": "building.bridge",
+      "region": "shared",
+      "kind": "building",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "BUILDINGS.bridge"
+      ]
+    },
+    {
+      "id": "building.lumber",
+      "region": "shared",
+      "kind": "building",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "BUILDINGS.lumber"
+      ]
+    },
+    {
+      "id": "building.quarry",
+      "region": "shared",
+      "kind": "building",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "BUILDINGS.quarry"
+      ]
+    },
+    {
+      "id": "building.ironmine",
+      "region": "shared",
+      "kind": "building",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "BUILDINGS.ironmine"
+      ]
+    },
+    {
+      "id": "building.blacksmith",
+      "region": "shared",
+      "kind": "building",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "BUILDINGS.blacksmith"
+      ]
+    },
+    {
+      "id": "building.catapult",
+      "region": "shared",
+      "kind": "building",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "BUILDINGS.catapult"
+      ]
+    },
+    {
+      "id": "building.tower",
+      "region": "shared",
+      "kind": "building",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js (original, repository licence)",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [
+        "BUILDINGS.tower"
+      ]
+    },
+    {
+      "id": "env.walls",
+      "region": "greenwood",
+      "kind": "environment",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js / js/render.js",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "env.gates",
+      "region": "greenwood",
+      "kind": "environment",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js / js/render.js",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "env.trees",
+      "region": "greenwood",
+      "kind": "environment",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js / js/render.js",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "env.rocks",
+      "region": "greenwood",
+      "kind": "environment",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js / js/render.js",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "env.peaks",
+      "region": "greenwood",
+      "kind": "environment",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js / js/render.js",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "env.terrain",
+      "region": "greenwood",
+      "kind": "environment",
+      "path": null,
+      "status": "placeholder",
+      "source": "js/terrain.js groundH + js/render.js ground mesh",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "env.water",
+      "region": "greenwood",
+      "kind": "environment",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js / js/render.js",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "env.bridge_wood",
+      "region": "greenwood",
+      "kind": "environment",
+      "path": null,
+      "status": "placeholder",
+      "source": "procedural geometry in js/models.js / js/render.js",
+      "palette": "docs/crownfall/03_ART_AND_ASSETS.md anchors",
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": "ground centre",
+      "triangles": {
+        "lod0": null
+      },
+      "materials": "vertex colours, MeshLambert/Standard flat",
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": []
+    },
+    {
+      "id": "env.old_stone_bridge",
+      "region": "greenwood",
+      "kind": "environment",
+      "path": null,
+      "status": "missing",
+      "source": null,
+      "palette": null,
+      "units": "metres",
+      "forward": "+z",
+      "up": "+y",
+      "pivot": null,
+      "triangles": {
+        "lod0": null,
+        "lod1": null,
+        "lod2": null,
+        "lod3": null
+      },
+      "materials": null,
+      "rig": null,
+      "clips": [],
+      "sockets": [],
+      "hooks": [],
+      "note": "working name; proposed landmark, separate from the wooden bridge"
+    },
+    {
+      "id": "concept.key_art",
+      "region": "shared",
+      "kind": "concept",
+      "path": null,
+      "status": "missing",
+      "note": "R32 deliverable; not supplied"
+    },
+    {
+      "id": "concept.king_turnarounds",
+      "region": "shared",
+      "kind": "concept",
+      "path": null,
+      "status": "missing",
+      "note": "R32 deliverable; not supplied"
+    },
+    {
+      "id": "concept.bow_sheet",
+      "region": "shared",
+      "kind": "concept",
+      "path": null,
+      "status": "missing",
+      "note": "R32 deliverable; not supplied"
+    },
+    {
+      "id": "concept.unit_lineups",
+      "region": "shared",
+      "kind": "concept",
+      "path": null,
+      "status": "missing",
+      "note": "R32 deliverable; not supplied"
+    },
+    {
+      "id": "concept.building_sheets",
+      "region": "shared",
+      "kind": "concept",
+      "path": null,
+      "status": "missing",
+      "note": "R32 deliverable; not supplied"
+    },
+    {
+      "id": "concept.biome_moodboards",
+      "region": "shared",
+      "kind": "concept",
+      "path": null,
+      "status": "missing",
+      "note": "R32 deliverable; not supplied"
+    },
+    {
+      "id": "concept.ui_mockup",
+      "region": "shared",
+      "kind": "concept",
+      "path": null,
+      "status": "missing",
+      "note": "R32 deliverable; not supplied"
+    },
+    {
+      "id": "concept.camera_transition_concept",
+      "region": "shared",
+      "kind": "concept",
+      "path": null,
+      "status": "missing",
+      "note": "R32 deliverable; not supplied"
+    },
+    {
+      "id": "concept.macro_map_concept",
+      "region": "shared",
+      "kind": "concept",
+      "path": null,
+      "status": "missing",
+      "note": "R32 deliverable; not supplied"
+    },
+    {
+      "id": "icon.app",
+      "region": "shared",
+      "kind": "icon",
+      "path": "icons/icon-512.png",
+      "status": "ready",
+      "source": "repository",
+      "note": "PWA icons 192/512/maskable/apple-touch"
+    }
+  ]
+}

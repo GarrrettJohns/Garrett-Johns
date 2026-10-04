@@ -311,6 +311,16 @@ export class UI {
     this.el.ratesBody.innerHTML = html;
   }
 
+  setCamLabel(cs) {
+    const sig = `${cs.override}|${cs.mode}`;
+    if (sig === this.camSig) return;
+    this.camSig = sig;
+    const el = $('btn-cam');
+    const icon = { kingdom: '🏰', adventure: '🐎', combat: '⚔️' }[cs.mode];
+    el.innerHTML = `<span>${icon}</span><small>${cs.override === 'auto' ? 'Auto' : 'Fixed'}</small>`;
+    el.setAttribute('aria-label', `Camera: ${cs.mode}, ${cs.override === 'auto' ? 'automatic' : 'fixed'}. Tap to change.`);
+  }
+
   // A tutorial card that explains a new idea, with a Got it button.
   showTip(title, html) {
     this.el.tipTitle.textContent = title;

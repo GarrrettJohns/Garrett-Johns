@@ -10,7 +10,7 @@ import {
 import {
   LANES, LANE, lanePoint, laneCrossing, laneAtZ, FIXED_PADS, START, BRIDGE, RIVER_Z,
   RIVER_HALF, BOUNDS, CASTLE_R, distToLanes, PATH_HALF, GRID, STRONGHOLD, FRONTIERS, OUTPOSTS,
-  HIGHLAND, inHighland, GORGE_OUT, GORGE_IN, CAMPS, FOREST_Z, scenery, FORT, RIVER_X1, eastLimit, OUTPOST_ZONE,
+  HIGHLAND, inHighland, GORGE_OUT, GORGE_IN, CAMPS, FOREST_Z, scenery, FORT, RIVER_X1, eastLimit, OUTPOST_ZONE, LANDMARKS,
 } from './map.js';
 
 // Trees the king can chop (the forest and southern grove) and boulders he can
@@ -338,6 +338,7 @@ export class World {
     this.wave = 0;
     this.res = { wood: 0, stone: 0, iron: 0, gold: 0 };   // gold here is banked at a warehouse
     this.smith = { king: 0, workers: 0, arrows: 0 };
+    this.discovered = [];   // landmarks the king has seen (ids)
     this.order = 'posts';   // standing order for soldiers in the field: posts | follow | march
     this.stations = { S: 0, E: 0, W: 0, N: 0 };   // soldiers wanted on guard at each road's gate
     this.income = [];     // recent production: { t, res, src, n, kind: 'made' | 'home' }
@@ -507,6 +508,20 @@ export class World {
     const up = whs.find((w) => w.level < BUILDINGS.warehouse.levels.length - 1);
     if (up) return { key: 'whup', text: `${what}: upgrade the Warehouse for more haulers`, at: up };
     return { key: 'wh2', text: `${what}: build another Warehouse near it`, at: full };
+  }
+
+  // The first time the king comes within sight of a landmark, reveal it.
+  updateDiscovery() {
+    const h = this.hero;
+    if (!h.alive) return;
+    for (const L of LANDMARKS) {
+      if (this.discovered.includes(L.id)) continue;
+      if (Math.hypot(L.x - h.x, L.z - h.z) > L.sight) continue;
+      // Beyond the claimed road the fog still hides it.
+      if (L.z > this.frontier + 25) continue;
+      this.discovered.push(L.id);
+      this.emit('discovered', { id: L.id, name: L.name, sub: L.sub, x: L.x, z: L.z });
+    }
   }
 
   // Remind the player (now and then, between waves) when stock is stuck.
@@ -2280,6 +2295,7 @@ export class World {
       if (targets.length) {
         h.atkCd = wp.interval / this.heroStat('rate');
         h.shootT = 0.32;
+        h.lastShot = this.t;
         const dmg = this.heroStat('damage') * wp.dmg * this.smithMul('arrows') * ROYAL_BOW[h.bow || 0].mul;
         for (const t of targets) {
           this.shoot(h.x, h.z, 2.3, t, {
@@ -2572,6 +2588,7 @@ export class World {
     this.updateNature(dt);
     this.updateAllies(dt);
     this.updateAdvice(dt);
+    this.updateDiscovery();
     this.updateTowers(dt);
     this.updateEnemies(dt);
     this.updateProjectiles(dt);
@@ -2610,6 +2627,7 @@ export class World {
       funds: { ...this.funds },
       objective: this.objective,
       order: this.order,
+      discovered: [...this.discovered],
       stations: { ...this.stations },
       smith: { ...this.smith },
       level: this.level,
@@ -2632,6 +2650,7 @@ export class World {
     this.res = { gold: 0, iron: 0, ...s.res };
     this.smith = { king: 0, workers: 0, arrows: 0, ...(s.smith || {}) };
     this.order = s.order || (s.rally ? 'follow' : 'posts');
+    this.discovered = [...(s.discovered || [])];
     this.stations = { S: 0, E: 0, W: 0, N: 0, ...(s.stations || {}) };
     this.funds = {};
     this.objective = s.objective;

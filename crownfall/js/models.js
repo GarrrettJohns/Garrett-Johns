@@ -112,6 +112,18 @@ export function cliffGeo(color = 0x7b7f86, top = 0x6fae4f) {
   return b.build();
 }
 
+// A faceted mountain peak (unit footprint, unit height): a rocky shoulder,
+// a sharper summit and a snow cap.
+export function peakGeo(color = 0x7b7f86) {
+  const b = new Builder();
+  const dark = 0x5f636a;
+  b.cone(0.62, 0.62, 7, dark, { y: 0, ry: 0.3 });
+  b.cone(0.42, 1.0, 6, color, { x: 0.06, y: 0, z: -0.04, ry: 0.9 });
+  b.cone(0.17, 0.28, 6, 0xeef3f8, { x: 0.06, y: 0.72, z: -0.04, ry: 0.9 });
+  b.cone(0.3, 0.42, 5, color, { x: -0.3, y: 0, z: 0.22, ry: 1.7 });
+  return b.build();
+}
+
 export function palmGeo() {
   const b = new Builder();
   for (let i = 0; i < 5; i++) b.cyl(0.2 - i * 0.015, 0.24 - i * 0.015, 0.75, 6, i % 2 ? 0x9a7448 : 0x8a6640, { x: i * 0.08, y: i * 0.72, rz: -0.05 });
@@ -613,7 +625,7 @@ function part(build, o = {}) {
   build(b);
   return {
     geo: b.build(), pivot: o.pivot || [0, 0, 0], anim: o.anim || 'none', tint: !!o.tint, show: o.show || null, hide: o.hide || null, phase: o.phase || 0,
-    tintKey: o.tintKey || null, only: o.only || null,   // per-part colour from st.tints[tintKey]; drawn only when st[only[0]] === only[1]
+    tintKey: o.tintKey || null, only: o.only || null, stow: !!o.stow,   // per-part colour from st.tints[tintKey]; drawn only when st[only[0]] === only[1]
   };
 }
 
@@ -697,7 +709,7 @@ export const RIGS = {
     parts.push(part((b) => b.box(0.16, 0.5, 0.16, C.blue, { x: 0.42, y: 2.0 }), { pivot: [0.42, 2.3, 0], anim: 'aim', hide: ['axe', 'pick'] }));
     // The Royal Bow, one set of parts per tier: limbs, string and gem are
     // recoloured by the king's chosen style; the grip stays leather.
-    const BOW = { pivot: [0.42, 2.3, 0], anim: 'aim', hide: ['axe', 'pick'] };
+    const BOW = { pivot: [0.42, 2.3, 0], anim: 'aim', hide: ['axe', 'pick'], stow: true };
     ROYAL_BOW.forEach((tier, k) => {
       const S = tier.size, R = 0.96 * S, cx = 0.54, cy = 2.1, cz = 0.32;
       const at = (th, r = R) => ({ y: cy + r * Math.cos(th), z: cz + r * Math.sin(th) });

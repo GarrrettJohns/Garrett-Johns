@@ -26,6 +26,11 @@ export class Input {
     this.onDrag = null;
     this.dragId = null;
     this.mouseDrag = null;
+    // In the closer camera views a drag that starts on the right of the
+    // screen turns the camera instead of steering.
+    this.turnMode = false;
+    this.turner = null;
+    this.turn = 0;
 
     stage.addEventListener('pointerdown', (e) => this.down(e));
     window.addEventListener('pointermove', (e) => this.move(e), { passive: false });
@@ -67,6 +72,10 @@ export class Input {
       return;
     }
     if (this.pointers.size > 2 || this.stick) return;
+    if (this.turnMode && !this.dragMode && p.x > this.stage.clientWidth * 0.6) {
+      this.turner = { id: e.pointerId, x: p.x, sx: p.x, sy: p.y, t: performance.now(), moved: false };
+      return;
+    }
     if (this.dragMode) {
       this.dragId = e.pointerId;
       if (this.onDrag) this.onDrag(p.x, p.y);
@@ -94,6 +103,14 @@ export class Input {
     }
     if (!this.pointers.has(e.pointerId)) return;
     const p = this.local(e);
+    if (this.turner && e.pointerId === this.turner.id && !this.two) {
+      e.preventDefault();
+      if (Math.hypot(p.x - this.turner.sx, p.y - this.turner.sy) > TAP_PX) this.turner.moved = true;
+      this.turn += p.x - this.turner.x;
+      this.turner.x = p.x;
+      this.pointers.set(e.pointerId, p);
+      return;
+    }
     this.pointers.set(e.pointerId, p);
     if (this.two && this.pointers.size === 2) {
       e.preventDefault();
@@ -143,6 +160,12 @@ export class Input {
     this.pointers.delete(e.pointerId);
     if (e.pointerId === this.dragId) this.dragId = null;
     if (this.pointers.size < 2) this.two = null;
+    if (this.turner && e.pointerId === this.turner.id) {
+      const tr = this.turner;
+      this.turner = null;
+      if (!cancelled && !wasTwo && !tr.moved && performance.now() - tr.t < TAP_MS && this.onTap) this.onTap(tr.sx, tr.sy);
+      return;
+    }
     if (s && e.pointerId === s.id) {
       const quick = performance.now() - s.t < TAP_MS;
       this.release();
@@ -152,9 +175,13 @@ export class Input {
 
   release() {
     this.stick = null;
+    this.turner = null;
     this.vec.x = this.vec.z = 0;
     this.joyEl.hidden = true;
   }
+
+  // Screen pixels the camera was turned since the last call.
+  takeTurn() { const t = this.turn; this.turn = 0; return t; }
 
   // Screen pixels the camera was dragged since the last call.
   takePan() {

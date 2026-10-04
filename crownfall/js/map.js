@@ -60,6 +60,16 @@ export const HIGHLAND_TRAILS = [
 // The Iron Hills: an iron-rich field east of the road past the Riverford
 // Outpost. The outpost claims it; an Iron Mine works it.
 export const IRON = { x: spread(40), z: spread(64), r: 12 };
+// Landmarks the king discovers as he rides out: each gets a short camera
+// reveal the first time he comes within `sight` metres. Working names.
+export const LANDMARKS = [
+  { id: 'forest', name: 'The Greenwood', sub: 'Pines and timber beyond the river', x: -4, z: spread(-29) - 14, sight: 22 },
+  { id: 'fort', name: 'The Mountain Fort', sub: 'It holds the only way into the eastern mountains', x: spread(46), z: -8, sight: 52 },
+  { id: 'riverford', name: 'Riverford', sub: 'The first camp on the road south', x: spread(1), z: spread(58), sight: 40 },
+  { id: 'iron', name: 'The Iron Hills', sub: 'Rust-streaked rock, full of ore', x: spread(40), z: spread(64), sight: 34 },
+  { id: 'stonehill', name: 'Stonehill', sub: 'Halfway to the enemy', x: spread(-12), z: spread(106), sight: 40 },
+  { id: 'stronghold', name: 'The Enemy Stronghold', sub: 'The Warlord waits behind its walls', x: 0, z: spread(179), sight: 75 },
+];
 // Land around a claimed outpost where houses, farms and workshops can go.
 export const OUTPOST_ZONE = 14;
 // Enemy camps guarding the trails. Each is a list of enemy kinds.

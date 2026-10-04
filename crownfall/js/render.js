@@ -4,7 +4,7 @@
 
 import * as THREE from './vendor/three.js';
 import {
-  C, Builder, vcMat, RIGS, pineGeo, rockGeo, cliffGeo, palisadeGeo, stoneWallGeo, gateGeo, gateDoorGeo,
+  C, Builder, vcMat, RIGS, pineGeo, rockGeo, cliffGeo, peakGeo, palisadeGeo, stoneWallGeo, gateGeo, gateDoorGeo,
   castleGeo, houseGeo, farmGeo, barracksGeo, stableGeo, rangeGeo, goldmineGeo, lumberGeo, quarryGeo,
   bridgeGeo, towerGeo, towerGunGeo, coinGeo, arrowGeo, chevronGeo, rockfallGeo, passGeo, treeGeo, outpostGeo, logGeo,
   strongholdWallsGeo, strongholdGateGeo, strongholdTowerGeo, strongholdKeepGeo, warehouseGeo, stumpGeo,
@@ -15,6 +15,8 @@ import {
   FORT, RIVER_X1,
 } from './map.js';
 import { BUILDINGS, HERO, STYLES } from './config.js';
+import { groundH as G, standH, setBridge, footing, TERRAIN } from './terrain.js';
+import { CAM } from './camera.js';
 import { KING_SWING } from './world.js';
 
 const TAU = Math.PI * 2;
@@ -40,7 +42,13 @@ const _m2 = new THREE.Matrix4();
 const _q = new THREE.Quaternion();
 const _e = new THREE.Euler();
 const IRON_C = new THREE.Color(0.6, 0.42, 0.36);
-const SHOOT_T = 0.32;   // keep in step with the hero's shootT in world.js
+const SHOOT_T = 0.32;
+// The bow's place on the king's back: from where he holds it (centre about
+// (0.54, 2.1, 0.32) in the rig) turned flat against his back and tilted.
+const STOW = new THREE.Matrix4().makeTranslation(0, 2.2, -0.5)
+  .multiply(new THREE.Matrix4().makeRotationZ(0.8))
+  .multiply(new THREE.Matrix4().makeRotationY(Math.PI / 2))
+  .multiply(new THREE.Matrix4().makeTranslation(-0.54, -2.1, -0.32));   // keep in step with the hero's shootT in world.js
 // The king's style choices as colours, ready to tint his bow.
 const STYLE_C = Object.fromEntries(Object.entries(STYLES).map(([cat, def]) => [cat, Object.fromEntries(Object.entries(def.options).map(([k, o]) => [k, o.color == null ? null : new THREE.Color(o.color)]))]));
 const _v = new THREE.Vector3();
@@ -74,6 +82,7 @@ class RigMesh {
   }
   begin() { for (const pt of this.parts) pt.n = 0; }
   add(x, y, z, yaw, scale, st) {
+    y += standH(x, z);
     _q.setFromAxisAngle(UP, yaw);
     _m.compose(_v.set(x, y, z), _q, _s.set(scale, scale, scale));
     const walk = st.walk || 0;
@@ -93,7 +102,11 @@ class RigMesh {
       else if (p.anim === 'aim') a = -(st.swing || 0) * 0.5;
       else if (p.anim === 'smash') a = st.smash || 0;
       const yawA = p.anim === 'sweep' ? st.sweep || 0 : 0;
-      if (yawA) {
+      if (p.stow && st.stowed) {
+        // Slung diagonally across the king's back between shots.
+        _m2.copy(_m).multiply(STOW);
+        pt.m.setMatrixAt(pt.n, _m2);
+      } else if (yawA) {
         this.rot.makeRotationY(yawA);
         _m2.copy(_m).multiply(pt.T).multiply(this.rot).multiply(pt.Ti);
         pt.m.setMatrixAt(pt.n, _m2);
@@ -235,8 +248,11 @@ export class Renderer {
     const base = new THREE.Color(B.ground), dark = new THREE.Color(B.dark), forest = new THREE.Color(B.forest);
     const sand = new THREE.Color(B.sand), light = new THREE.Color(B.light), bank = new THREE.Color(B.bank), highland = new THREE.Color(B.highland);
     const tmp = new THREE.Color();
+    const rockC = new THREE.Color(0x9a9a92), snowy = new THREE.Color(0xeef2f4);
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i), z = pos.getZ(i);
+      const hy = G(x, z);
+      pos.setY(i, hy);
       const n = Math.sin(x * 0.13 + Math.cos(z * 0.09) * 2) * 0.5 + Math.sin(z * 0.17 - x * 0.05) * 0.5;
       tmp.copy(base).lerp(n > 0 ? light : dark, Math.abs(n) * 0.55);
       if (z < FOREST_Z + 2) tmp.lerp(forest, Math.min(1, (FOREST_Z + 2 - z) / 5) * 0.85);
@@ -248,10 +264,17 @@ export class Renderer {
       // Scorched earth around the enemy stronghold.
       const sd = Math.hypot((x - STRONGHOLD.x) * 0.8, z - STRONGHOLD.z);
       if (sd < 30) tmp.lerp(new THREE.Color(0x6e5a4a), Math.min(1, (30 - sd) / 12) * 0.75);
+      // Height shading: sunlit crests, rocky and then snowy high ground.
+      tmp.multiplyScalar(0.92 + Math.min(0.16, Math.max(-0.1, hy * 0.03)));
+      const mtn = x > HIGHLAND.x0 && z < HIGHLAND.z1 + 6;
+      if (hy > 7) tmp.lerp(mtn ? rockC : dark, Math.min(1, (hy - 7) / 6) * (mtn ? 0.7 : 0.55));
+      if (mtn && hy > 9) tmp.lerp(snowy, Math.min(1, (hy - 9) / 4) * 0.7);
       colors.set([tmp.r, tmp.g, tmp.b], i * 3);
     }
     g.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    const ground = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true }));
+    g.computeVertexNormals();
+    // Faceted, low-poly hills.
+    const ground = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true }));
     ground.receiveShadow = true;
     scene.add(ground);
 
@@ -279,7 +302,7 @@ export class Renderer {
 
     // Square castle courtyard.
     const yard = new THREE.Mesh(new THREE.PlaneGeometry((CASTLE_R + 1.6) * 2, (CASTLE_R + 1.6) * 2), roadMat);
-    yard.rotation.x = -Math.PI / 2; yard.position.y = 0.03;
+    yard.rotation.x = -Math.PI / 2; yard.position.y = G(0, 0) + 0.05;
     yard.receiveShadow = true;
     scene.add(yard);
 
@@ -288,14 +311,14 @@ export class Renderer {
     const RW = RIVER_X1 + W / 2, RX = (RIVER_X1 - W / 2) / 2;
     const water = new THREE.Mesh(new THREE.PlaneGeometry(RW, RIVER_HALF * 2), new THREE.MeshLambertMaterial({ color: B.water, transparent: true, opacity: 0.92 }));
     water.rotation.x = -Math.PI / 2;
-    water.position.set(RX, 0.06, RIVER_Z);
+    water.position.set(RX, TERRAIN.water, RIVER_Z);
     water.receiveShadow = true;
     scene.add(water);
     const foamMat = new THREE.MeshBasicMaterial({ color: 0xe6f6ff, transparent: true, opacity: 0.55 });
     for (const sgn of [-1, 1]) {
       const foam = new THREE.Mesh(new THREE.PlaneGeometry(RW, 0.35), foamMat);
       foam.rotation.x = -Math.PI / 2;
-      foam.position.set(RX, 0.07, RIVER_Z + sgn * (RIVER_HALF - 0.2));
+      foam.position.set(RX, TERRAIN.water + 0.02, RIVER_Z + sgn * (RIVER_HALF - 0.2));
       scene.add(foam);
     }
 
@@ -313,7 +336,7 @@ export class Renderer {
       const mesh = new THREE.InstancedMesh(geo, vcMat, Math.max(1, list.length));
       list.forEach((t, i) => {
         _q.setFromAxisAngle(UP, t.r);
-        _m.compose(_v.set(t.x, 0, t.z), _q, _s.set(t.s, t.s * (0.9 + (i % 5) * 0.06), t.s));
+        _m.compose(_v.set(t.x, G(t.x, t.z) - 0.15, t.z), _q, _s.set(t.s, t.s * (0.9 + (i % 5) * 0.06), t.s));
         mesh.setMatrixAt(i, _m);
         this.treeInst.set(treeIndex.get(t), { mesh, i, t, sy: 0.9 + (i % 5) * 0.06 });
       });
@@ -334,7 +357,7 @@ export class Renderer {
     this.rockBase = sc.rocks.map((t) => (t.iron ? [0.62, 0.46, 0.4] : [1, 1, 1]));
     sc.rocks.forEach((t, i) => {
       _q.setFromAxisAngle(UP, t.r);
-      _m.compose(_v.set(t.x, 0, t.z), _q, _s.set(t.s, t.s, t.s));
+      _m.compose(_v.set(t.x, G(t.x, t.z) - 0.1, t.z), _q, _s.set(t.s, t.s, t.s));
       rock.setMatrixAt(i, _m);
       if (t.iron) rock.setColorAt(i, _c.setRGB(...this.rockBase[i]));
     });
@@ -343,10 +366,12 @@ export class Renderer {
 
     // Cliffs and crags, and snow-capped peaks in the mountains.
     for (const [list, top] of [[sc.cliffs.filter((c) => !c.peak), B.cliffTop], [sc.cliffs.filter((c) => c.peak), 0xeef3f8]]) {
-      const cliff = new THREE.InstancedMesh(cliffGeo(B.cliff, top), vcMat, Math.max(1, list.length));
+      const peaks = list[0]?.peak;
+      const cliff = new THREE.InstancedMesh(peaks ? peakGeo(B.cliff) : cliffGeo(B.cliff, top), vcMat, Math.max(1, list.length));
       list.forEach((t, i) => {
         _q.setFromAxisAngle(UP, t.r);
-        _m.compose(_v.set(t.x, 0, t.z), _q, _s.set(t.w, t.h, t.d));
+        // Peaks spread wider than their old boxes so they read as mountains.
+        _m.compose(_v.set(t.x, G(t.x, t.z) - 0.6, t.z), _q, peaks ? _s.set(t.w * 2.1, t.h * 1.25, t.d * 2.1) : _s.set(t.w, t.h, t.d));
         cliff.setMatrixAt(i, _m);
       });
       cliff.count = list.length;
@@ -357,7 +382,7 @@ export class Renderer {
 
     // The Mountain Fort at the mountains' west face.
     const fort = new THREE.Group();
-    fort.position.set(FORT.x, 0, FORT.z);
+    fort.position.set(FORT.x, G(FORT.x, FORT.z), FORT.z);
     const fmk = (geo) => { const m = new THREE.Mesh(geo, vcMat); m.castShadow = true; m.receiveShadow = true; fort.add(m); return m; };
     fmk(fortWallsGeo());
     this.fort = {
@@ -393,7 +418,7 @@ export class Renderer {
   buildStronghold(scene) {
     const S = STRONGHOLD;
     const grp = new THREE.Group();
-    grp.position.set(S.x, 0, 0);
+    grp.position.set(S.x, G(S.x, S.gateZ + 4), 0);
     // Its own material so it can turn see-through when the king rides inside.
     this.shMat = new THREE.MeshLambertMaterial({ vertexColors: true, transparent: true, opacity: 1 });
     const mk = (geo) => { const m = new THREE.Mesh(geo, this.shMat); m.castShadow = true; m.receiveShadow = true; grp.add(m); return m; };
@@ -455,7 +480,7 @@ export class Renderer {
         const sc = standing ? 1 : 0;
         const tilt = Math.sin(age * 42) * 0.09 * k;
         _q.setFromEuler(_e.set(tilt, ti.t.r, tilt * 0.6, 'YXZ'));
-        _m.compose(_v.set(ti.t.x, 0, ti.t.z), _q, _s.set(ti.t.s * sc, ti.t.s * ti.sy * sc, ti.t.s * sc));
+        _m.compose(_v.set(ti.t.x, G(ti.t.x, ti.t.z) - 0.15, ti.t.z), _q, _s.set(ti.t.s * sc, ti.t.s * ti.sy * sc, ti.t.s * sc));
         ti.mesh.setMatrixAt(ti.i, _m);
         ti.mesh.setColorAt(ti.i, _c.setRGB(1 + 0.9 * k, 1 + 0.75 * k, 1 + 0.3 * k));
         touched.add(ti.mesh);
@@ -464,7 +489,7 @@ export class Renderer {
         if (!r) { this.nodeFx.delete(key); continue; }
         const sc = (standing ? 1 : 0) * (1 + 0.08 * k * Math.abs(Math.sin(age * 30)));
         _q.setFromAxisAngle(UP, r.r + Math.sin(age * 50) * 0.05 * k);
-        _m.compose(_v.set(r.x, 0, r.z), _q, _s.set(r.s * sc, r.s * sc, r.s * sc));
+        _m.compose(_v.set(r.x, G(r.x, r.z) - 0.1, r.z), _q, _s.set(r.s * sc, r.s * sc, r.s * sc));
         this.rockMesh.setMatrixAt(fx.si, _m);
         const base = this.rockBase[fx.si] || [1, 1, 1];
         this.rockMesh.setColorAt(fx.si, _c.setRGB(base[0] * (1 + 0.8 * k), base[1] * (1 + 0.7 * k), base[2] * (1 + 0.45 * k)));
@@ -486,7 +511,7 @@ export class Renderer {
         if (!ti) continue;
         const k = n.state === 'up' ? 1 : n.state === 'grow' ? n.grow : 0;
         _q.setFromAxisAngle(UP, ti.t.r);
-        _m.compose(_v.set(ti.t.x, 0, ti.t.z), _q, _s.set(ti.t.s * k, ti.t.s * ti.sy * k, ti.t.s * k));
+        _m.compose(_v.set(ti.t.x, G(ti.t.x, ti.t.z) - 0.15, ti.t.z), _q, _s.set(ti.t.s * k, ti.t.s * ti.sy * k, ti.t.s * k));
         ti.mesh.setMatrixAt(ti.i, _m);
         touched.add(ti.mesh);
       }
@@ -495,7 +520,7 @@ export class Renderer {
         if (!r) continue;
         const k = n.state === 'up' ? 1 : n.state === 'grow' ? n.grow : 0;
         _q.setFromAxisAngle(UP, r.r);
-        _m.compose(_v.set(r.x, 0, r.z), _q, _s.set(r.s * k, r.s * k, r.s * k));
+        _m.compose(_v.set(r.x, G(r.x, r.z) - 0.1, r.z), _q, _s.set(r.s * k, r.s * k, r.s * k));
         this.rockMesh.setMatrixAt(n.si, _m);
         touched.add(this.rockMesh);
       }
@@ -507,7 +532,7 @@ export class Renderer {
     _q.identity();
     for (const n of world.trees) {
       if (n.state === 'up') continue;
-      _m.compose(_v.set(n.x, 0, n.z), _q, _s.set(n.s, n.s, n.s));
+      _m.compose(_v.set(n.x, G(n.x, n.z) - 0.05, n.z), _q, _s.set(n.s, n.s, n.s));
       sp.push(_m);
     }
     sp.end();
@@ -519,7 +544,7 @@ export class Renderer {
       for (let i = 0; i < Math.min(6, n.pieces); i++) {
         const d = 1 + i * 0.75;
         _q.setFromEuler(_e.set(0, n.fall + Math.PI / 2, 0));
-        _m.compose(_v.set(n.x + fx * d, 0.25, n.z + fz * d), _q, _s.set(1, 1, 1));
+        _m.compose(_v.set(n.x + fx * d, G(n.x + fx * d, n.z + fz * d) + 0.25, n.z + fz * d), _q, _s.set(1, 1, 1));
         this.logPool.push(_m);
       }
     }
@@ -528,7 +553,7 @@ export class Renderer {
       for (let i = 0; i < Math.min(6, n.pieces); i++) {
         const a = i * 2.1 + n.si;
         _q.setFromEuler(_e.set(i, a, 0));
-        _m.compose(_v.set(n.x + Math.cos(a) * 0.7, 0.2, n.z + Math.sin(a) * 0.7), _q, _s.set(1.2, 1.2, 1.2));
+        _m.compose(_v.set(n.x + Math.cos(a) * 0.7, G(n.x, n.z) + 0.2, n.z + Math.sin(a) * 0.7), _q, _s.set(1.2, 1.2, 1.2));
         this.stonePool.push(_m, n.iron ? IRON_C : undefined);
       }
     }
@@ -540,11 +565,11 @@ export class Renderer {
         const row = Math.floor(i / 4), col = i % 4;
         if (b.type === 'lumber') {
           _q.setFromEuler(_e.set(0, Math.PI / 2, 0));
-          _m.compose(_v.set(b.x - 1.4 + col * 0.45, 0.3 + row * 0.35, b.z + 2.9), _q, _s.set(1, 1, 1));
+          _m.compose(_v.set(b.x - 1.4 + col * 0.45, footing(b.x, b.z, b.size) + 0.3 + row * 0.35, b.z + 2.9), _q, _s.set(1, 1, 1));
           this.logPool.push(_m);
         } else {
           _q.setFromEuler(_e.set(i, i * 1.7, 0));
-          _m.compose(_v.set(b.x - 1.2 + col * 0.55, 0.25 + row * 0.4, b.z + 2.9), _q, _s.set(1.3, 1.3, 1.3));
+          _m.compose(_v.set(b.x - 1.2 + col * 0.55, footing(b.x, b.z, b.size) + 0.25 + row * 0.4, b.z + 2.9), _q, _s.set(1.3, 1.3, 1.3));
           this.stonePool.push(_m, b.type === 'ironmine' ? IRON_C : undefined);
         }
       }
@@ -663,6 +688,7 @@ export class Renderer {
 
   // Wipe per-game objects when a new game or a reload starts.
   reset() {
+    this.pose = null; this.cine = null; this.camYaw = Math.PI;
     this.tour = null;
     for (const e of this.buildings.values()) this.scene.remove(e.group);
     this.buildings.clear();
@@ -717,7 +743,7 @@ export class Renderer {
 
   makeBuilding(b, key) {
     const group = new THREE.Group();
-    group.position.set(b.x, 0, b.z);
+    group.position.set(b.x, b.type === 'bridge' ? TERRAIN.riverBank : footing(b.x, b.z, b.size), b.z);
     const e = { key, group, pop: 1, body: null, sig: '' };
     if (key === 'site') {
       const size = Math.max(3.8, b.size);
@@ -888,7 +914,7 @@ export class Renderer {
       const mesh = new THREE.InstancedMesh(geo, vcMat, Math.max(1, keep.length));
       keep.forEach(([x, z, ry, sx], i) => {
         _q.setFromAxisAngle(UP, ry);
-        _m.compose(_v.set(x, 0, z), _q, _s.set(sx * 1.02, 1, 1));
+        _m.compose(_v.set(x, G(x, z) - 0.05, z), _q, _s.set(sx * 1.02, 1, 1));
         mesh.setMatrixAt(i, _m);
       });
       mesh.count = keep.length;
@@ -899,7 +925,7 @@ export class Renderer {
       const corner = this.geo(`corner:${stone}`, () => cornerGeo(stone));
       for (const cx of [-R, R]) for (const cz of [-R, R]) {
         const c = new THREE.Mesh(corner, vcMat);
-        c.position.set(cx, 0, cz);
+        c.position.set(cx, G(cx, cz) - 0.05, cz);
         c.castShadow = true;
         this.wallGroup.add(c);
       }
@@ -907,7 +933,7 @@ export class Renderer {
       this.gateMeshes = {};
       for (const g of Object.values(world.gates)) {
         const grp = new THREE.Group();
-        grp.position.set(g.x, 0, g.z);
+        grp.position.set(g.x, G(g.x, g.z), g.z);
         grp.rotation.y = g.side === 'ns' ? 0 : Math.PI / 2;
         const frame = new THREE.Mesh(this.geo(`gate:${stone}`, () => gateGeo(stone)), vcMat);
         const door = new THREE.Mesh(this.geo(`door:${stone}`, () => gateDoorGeo(stone)), vcMat);
@@ -939,6 +965,7 @@ export class Renderer {
     this.syncWalls(world);
     this.syncStronghold(world);
     this.syncFort(world);
+    setBridge(world.built('bridge'));
     this.syncFog(world, dt);
     this.ready = true;
 
@@ -961,7 +988,7 @@ export class Renderer {
       const cape = 0.12 + 0.85 * gallop + Math.sin(t * 9) * 0.14 * gallop + Math.sin(t * 1.7) * 0.05 + shot * 0.2;
       this.rigs.hero.add(hero.x, bob + shot * 0.14, hero.z, hero.yaw, HERO_S, {
         walk: gallop, anim: hero.anim * 2.2, swing: hero.tool ? 0 : shot * 1.7, sweep, smash, flash: hero.flash, load: hero.tool,
-        legK: 1.35, cape, tier: hero.bow || 0, gemTier: sty.gem && sty.gem !== 'none' ? hero.bow || 0 : -1,
+        legK: 1.35, cape, tier: hero.bow || 0, stowed: !hero.tool && world.t - (hero.lastShot ?? -99) > 1.1, gemTier: sty.gem && sty.gem !== 'none' ? hero.bow || 0 : -1,
         tints: { bow: tint('finish'), string: tint('string'), gem: tint('gem') },
       });
       // A glint from the bow when he looses, and a shimmer on the grand bows.
@@ -1008,7 +1035,7 @@ export class Renderer {
     for (const c of world.coins) {
       if (c.res === 'wood') {
         _q.setFromEuler(_e.set(0, c.spin * 0.4, 0));
-        _m.compose(_v.set(c.x, c.y + 0.35 + (c.vy === 0 ? Math.sin(t * 3 + c.id) * 0.06 : 0), c.z), _q, _s.set(1.2, 1.2, 1.2));
+        _m.compose(_v.set(c.x, G(c.x, c.z) + c.y + 0.35 + (c.vy === 0 ? Math.sin(t * 3 + c.id) * 0.06 : 0), c.z), _q, _s.set(1.2, 1.2, 1.2));
         this.logPool.push(_m);
         continue;
       }
@@ -1016,7 +1043,7 @@ export class Renderer {
       _e.set(Math.PI / 2, c.spin, 0, 'YXZ');
       _q.setFromEuler(_e);
       const s = (c.value > 1 ? Math.min(1.8, 1 + c.value * 0.04) : 1) * 1.35;
-      _m.compose(_v.set(c.x, c.y + 0.28 * s + bob, c.z), _q, _s.set(s, s, s));
+      _m.compose(_v.set(c.x, G(c.x, c.z) + c.y + 0.28 * s + bob, c.z), _q, _s.set(s, s, s));
       cp.push(_m);
     }
     cp.end();
@@ -1029,7 +1056,7 @@ export class Renderer {
       const k = Math.min(8, Math.ceil(hero.load.n / 8));
       for (let i = 0; i < k; i++) {
         const side = i % 2 ? -1 : 1, up = Math.floor(i / 2);
-        const x = hero.x + rx * side * 0.75 * HERO_S, z = hero.z + rz * side * 0.75 * HERO_S, y = 1.35 * HERO_S + up * 0.3;
+        const x = hero.x + rx * side * 0.75 * HERO_S, z = hero.z + rz * side * 0.75 * HERO_S, y = G(hero.x, hero.z) + 1.35 * HERO_S + up * 0.3;
         if (hero.load.res === 'wood') {
           _q.setFromEuler(_e.set(0, hero.yaw + Math.PI / 2, 0));
           _m.compose(_v.set(x, y + 0.3, z), _q, _s.set(0.8, 0.8, 0.8));
@@ -1054,7 +1081,7 @@ export class Renderer {
       this.stackLean.z += (tz - this.stackLean.z) * Math.min(1, dt * 5);
       const fx = Math.sin(hero.yaw), fz = Math.cos(hero.yaw);
       const bx = hero.x - fx * 0.7 * HERO_S, bz = hero.z - fz * 0.7 * HERO_S;
-      const base = 1.95 * HERO_S + Math.abs(Math.sin(hero.anim * 1.2)) * 0.12 * Math.min(1, Math.hypot(hero.vx, hero.vz) / 4);
+      const base = G(hero.x, hero.z) + 1.95 * HERO_S + Math.abs(Math.sin(hero.anim * 1.2)) * 0.12 * Math.min(1, Math.hypot(hero.vx, hero.vz) / 4);
       _q.identity();
       for (let i = 0; i < shown; i++) {
         const h = i * 0.085;
@@ -1064,14 +1091,14 @@ export class Renderer {
       }
       const h = shown * 0.085;
       this.stackTop.set(bx + this.stackLean.x * h * h * 0.018, base + h, bz + this.stackLean.z * h * h * 0.018);
-    } else this.stackTop.set(hero.x, 2, hero.z);
+    } else this.stackTop.set(hero.x, G(hero.x, hero.z) + 2, hero.z);
     for (const m of world.list('goldmine')) {
       if (m.state !== 'built' || !m.pile) continue;
       _q.identity();
       for (let i = 0; i < m.pile; i++) {
         const col = Math.floor(i / 20), k = i % 20;
         const ox = 2.0 + (col % 3) * 0.66, oz = 2.2 + Math.floor(col / 3) * 0.66;
-        _m.compose(_v.set(m.x + ox, 0.05 + k * 0.085, m.z + oz), _q, _s.set(1, 1, 1));
+        _m.compose(_v.set(m.x + ox, footing(m.x, m.z, m.size) + 0.05 + k * 0.085, m.z + oz), _q, _s.set(1, 1, 1));
         sp.push(_m);
       }
     }
@@ -1097,7 +1124,7 @@ export class Renderer {
     for (const p of world.projectiles) {
       if (p.kind === 'boulder') {
         _q.setFromEuler(_e.set(this.time * 5, this.time * 3, 0));
-        _m.compose(_v.set(p.x, p.y, p.z), _q, _s.set(0.75, 0.75, 0.75));
+        _m.compose(_v.set(p.x, G(p.x, p.z) + p.y, p.z), _q, _s.set(0.75, 0.75, 0.75));
         bp.push(_m);
         continue;
       }
@@ -1107,7 +1134,7 @@ export class Renderer {
       _e.set(pitch, p.yaw, 0, 'YXZ');
       _q.setFromEuler(_e);
       const s = p.kind === 'ballista' ? 2.2 : p.kind === 'bolt' ? 1.25 : 1;
-      _m.compose(_v.set(p.x, p.y, p.z), _q, _s.set(s, s, s));
+      _m.compose(_v.set(p.x, G(p.x, p.z) + p.y, p.z), _q, _s.set(s, s, s));
       const trailC = p.from === 'hero' ? STYLES.trail.options[world.hero.style?.trail]?.color ?? 0xffd84a : null;
       if (p.kind === 'fire') _c.setRGB(2.2, 0.9, 0.2);
       else if (p.kind === 'storm') _c.setRGB(0.6, 1.6, 2.2);
@@ -1130,7 +1157,8 @@ export class Renderer {
       if (q.life <= 0) { this.particles.splice(i, 1); continue; }
       q.vy -= q.g * dt;
       q.x += q.vx * dt; q.y += q.vy * dt; q.z += q.vz * dt;
-      if (q.y < 0.05) { q.y = 0.05; q.vy *= -0.3; q.vx *= 0.7; q.vz *= 0.7; }
+      const fl = G(q.x, q.z) + 0.05;
+      if (q.y < fl) { q.y = fl; q.vy *= -0.3; q.vx *= 0.7; q.vz *= 0.7; }
       const s = q.size * Math.min(1, q.life / q.max * 1.6);
       _q.setFromEuler(_e.set(q.life * 5, q.life * 3, 0));
       _m.compose(_v.set(q.x, q.y, q.z), _q, _s.set(s, s, s));
@@ -1163,7 +1191,7 @@ export class Renderer {
         for (let s = end - 28 + off; s < end; s += 2.5) {
           const p = lanePoint(lane, s);
           _q.setFromAxisAngle(UP, Math.atan2(-p.dx, -p.dz));
-          _m.compose(_v.set(p.x, 0.14, p.z), _q, _s.set(1.5, 1, 1.5));
+          _m.compose(_v.set(p.x, G(p.x, p.z) + 0.18, p.z), _q, _s.set(1.5, 1, 1.5));
           tp.push(_m);
         }
       }
@@ -1184,7 +1212,7 @@ export class Renderer {
         _q.setFromAxisAngle(UP, ry);
         for (let s = 2 + off, i = 0; s < d - 2 && i < 16; s += 1.6, i++) {
           const fade = Math.min(1, (s - 2) / 1.2, (d - 2 - s) / 1.2);
-          _m.compose(_v.set(hero.x + ux * s, 0.12, hero.z + uz * s), _q, _s.set(fade, 1, fade));
+          _m.compose(_v.set(hero.x + ux * s, G(hero.x + ux * s, hero.z + uz * s) + 0.16, hero.z + uz * s), _q, _s.set(fade, 1, fade));
           cpv.push(_m);
         }
       }
@@ -1193,13 +1221,13 @@ export class Renderer {
 
     // ---- rings & ghost
     this.heroRing.visible = hero.alive;
-    this.heroRing.position.set(hero.x, 0.08, hero.z);
+    this.heroRing.position.set(hero.x, G(hero.x, hero.z) + 0.12, hero.z);
     this.healRing.visible = world.phase === 'wave';
     this.healRing.material.opacity = hero.healing ? 0.85 : 0.35 + Math.sin(t * 3) * 0.12;
     if (hero.healing && Math.random() < 0.35) this.spark(hero.x, 2.5, hero.z, 0x6dff8a, 1, 0.22, 1.5, 0.7, -2);
     const sel = view.rangeOf;
     this.rangeRing.visible = !!sel;
-    if (sel) { this.rangeRing.position.set(sel.x, 0.1, sel.z); this.rangeRing.scale.setScalar(sel.r); }
+    if (sel) { this.rangeRing.position.set(sel.x, G(sel.x, sel.z) + 0.25, sel.z); this.rangeRing.scale.setScalar(sel.r); }
 
     const pl = view.placing;
     this.ghost.visible = !!pl;
@@ -1213,7 +1241,7 @@ export class Renderer {
     if (pl) {
       const def = BUILDINGS[pl.type];
       this.ghostMesh.geometry = this.geo(`${pl.type}:0`, () => BUILD_GEO[pl.type](0));
-      this.ghost.position.set(pl.x, 0, pl.z);
+      this.ghost.position.set(pl.x, footing(pl.x, pl.z, BUILDINGS[pl.type].size), pl.z);
       this.ghostFoot.scale.set(def.size, def.size, 1);
       this.ghostFoot.material.color.set(pl.ok ? 0x4cff7a : 0xff4a4a);
       this.ghostMat.color.set(pl.ok ? 0xffffff : 0xff7a6a);
@@ -1230,6 +1258,7 @@ export class Renderer {
     bg.begin(); fg.begin();
     const camQ = this.camera.quaternion;
     const bar = (x, y, z, f, w, color) => {
+      y += standH(x, z);
       _m.compose(_v.set(x, y, z), camQ, _s.set(w + 0.08, 0.2, 1));
       bg.push(_m, _c.setRGB(0.08, 0.08, 0.1));
       // Shift the fill left inside the bar.
@@ -1257,6 +1286,7 @@ export class Renderer {
   updateCamera(dt, world, view) {
     const h = world.hero;
     const fx = h.alive ? h.x : 0, fz = h.alive ? h.z : CASTLE_R + 2;
+    const fx0 = fx, fz0 = fz;
     const portrait = this.camera.aspect < 1;
     const k = Math.min(1, dt * 6);
     if (this.tour) {
@@ -1291,14 +1321,79 @@ export class Renderer {
     this.camOff = this.camOff || { x: 0, z: 0 };
     this.camOff.x += (sideShift - this.camOff.x) * k;
     this.camOff.z += (sheetShift - this.camOff.z) * k;
-    const cx = this.camTarget.x + this.camOff.x + sx, cz = this.camTarget.z + this.camOff.z + sz;
-    this.camera.position.set(cx, Math.sin(pitch) * dist, cz + Math.cos(pitch) * dist);
-    this.camera.lookAt(cx, 0, cz);
+    const cx = this.camTarget.x + this.camOff.x, cz = this.camTarget.z + this.camOff.z;
+    const gy = G(cx, cz);
+    // The high kingdom view, as it always was, now sitting on the land.
+    const kingdom = { px: cx, py: gy + Math.sin(pitch) * dist, pz: cz + Math.cos(pitch) * dist, lx: cx, ly: gy, lz: cz, fov: 42 };
+    let target = kingdom;
+    const mode = this.tour || this.free ? 'kingdom' : this.camMode || 'kingdom';
+    const T = this.time;
+    // The chase camera swings round behind the king as he rides, unless the
+    // player has just turned it by hand.
+    if (this.camYaw === undefined) this.camYaw = Math.PI;
+    const speed = Math.hypot(h.vx, h.vz);
+    if (mode !== 'kingdom' && speed > 2.5 && T - (this.lastTurn || -99) > CAM.manualHold) {
+      const d = Math.atan2(Math.sin(h.yaw - this.camYaw), Math.cos(h.yaw - this.camYaw));
+      // Riding back towards the camera doesn't spin it round (that would flip
+      // the stick and send him in circles); only turns and forward riding do.
+      const st = this.stick || { x: 0, z: 0 }, sm = Math.hypot(st.x, st.z);
+      const forward = sm > 0.2 && -st.z / sm > 0.7;   // only while pushing mostly ahead
+      if (forward && Math.abs(d) < CAM.followArc) this.camYaw += Math.sign(d) * Math.min(Math.abs(d), CAM.followTurn * dt * Math.min(1, speed / 8));
+    }
+    if (mode !== 'kingdom') this.camYaw += this.turnIn || 0;
+    this.turnIn = 0;
+    if (mode === 'adventure' || mode === 'combat') {
+      const c = CAM[mode];
+      const z = Math.max(0.75, Math.min(1.35, this.zoom));
+      const fx = Math.sin(this.camYaw), fz = Math.cos(this.camYaw);
+      const rx = -fz, rz = fx;
+      const sh = c.shoulder || 0;
+      const px = fx0 - fx * c.dist * z + rx * sh, pz = fz0 - fz * c.dist * z + rz * sh;
+      const lx = fx0 + fx * c.ahead + rx * sh * 0.5, lz = fz0 + fz * c.ahead + rz * sh * 0.5;
+      const hy = G(fx0, fz0);
+      target = { px, py: hy + c.height * z, pz, lx, ly: G(lx, lz) + c.lookUp, lz, fov: c.fov };
+    }
+    // A landmark reveal: rise up beside the king and look at it, then back.
+    if (this.cine) {
+      const q = this.cine;
+      q.t += dt;
+      if (q.t > q.dur) this.cine = null;
+      else {
+        const dx = q.x - fx0, dz = q.z - fz0, d = Math.hypot(dx, dz) || 1;
+        const back = Math.min(26, d * 0.45);
+        const px = fx0 - (dx / d) * back + (-dz / d) * 6, pz = fz0 - (dz / d) * back + (dx / d) * 6;
+        target = { px, py: Math.max(G(px, pz), G(fx0, fz0)) + 18, pz, lx: q.x, ly: G(q.x, q.z) + 3, lz: q.z, fov: 46 };
+      }
+    }
+    // Ease towards the target pose (about CAM.blend seconds to settle).
+    const P = this.pose || (this.pose = { ...target });
+    const e = 1 - Math.exp(-dt * (3 / CAM.blend));
+    for (const key of ['px', 'py', 'pz', 'lx', 'ly', 'lz', 'fov']) P[key] += (target[key] - P[key]) * e;
+    // Keep the camera above the land, including over hills between it and
+    // what it looks at.
+    let lift = Math.max(0, G(P.px, P.pz) + 1.8 - P.py);
+    for (const k2 of [0.3, 0.55, 0.8]) {
+      const x = P.lx + (P.px - P.lx) * k2, z = P.lz + (P.pz - P.lz) * k2, y = P.ly + (P.py - P.ly) * k2;
+      lift = Math.max(lift, (G(x, z) + 0.9 - y) / k2);
+    }
+    P.py += lift;
+    if (Math.abs(this.camera.fov - P.fov) > 0.05) { this.camera.fov = P.fov; this.camera.updateProjectionMatrix(); }
+    this.camera.position.set(P.px + sx, P.py, P.pz + sz);
+    this.camera.lookAt(P.lx + sx, P.ly, P.lz + sz);
+    // Which way the view faces on the ground, for steering relative to it.
+    this.viewYaw = Math.atan2(P.lx - P.px, P.lz - P.pz);
     // Sun follows the view so shadows are crisp where you are looking.
-    const tx = Math.round(cx), tz = Math.round(cz);
-    this.sun.position.set(tx - 16, 36, tz - 10);
-    this.sun.target.position.set(tx, 0, tz);
+    const tx = Math.round(P.lx), tz = Math.round(P.lz);
+    this.sun.position.set(tx - 16, P.ly + 36, tz - 10);
+    this.sun.target.position.set(tx, P.ly, tz);
   }
+
+  // Short landmark reveal (skippable; never takes away control).
+  cinematic(x, z, dur = 3.4) { this.cine = { x, z, t: 0, dur }; }
+  skipCinematic() { if (this.cine) this.cine.t = this.cine.dur; }
+
+  // Turn the chase camera by screen pixels (right-side drag).
+  turnBy(px) { this.turnIn = (this.turnIn || 0) - px * 0.008; this.lastTurn = this.time; }
 
   // Placement grid over every area you can build in: the castle grounds and
   // each claimed outpost's land, on the same 2 m grid.
@@ -1308,8 +1403,9 @@ export class Renderer {
     for (const zn of zones) {
       const x0 = Math.ceil((zn.x - zn.h) / 2) * 2, x1 = Math.floor((zn.x + zn.h) / 2) * 2;
       const z0 = Math.ceil((zn.z - zn.h) / 2) * 2, z1 = Math.floor((zn.z + zn.h) / 2) * 2;
-      for (let v = x0; v <= x1 + 0.01; v += 2) pts.push(v, 0, z0, v, 0, z1);
-      for (let v = z0; v <= z1 + 0.01; v += 2) pts.push(x0, 0, v, x1, 0, v);
+      const y = G(zn.x, zn.z) + 0.05;   // build areas are levelled
+      for (let v = x0; v <= x1 + 0.01; v += 2) pts.push(v, y, z0, v, y, z1);
+      for (let v = z0; v <= z1 + 0.01; v += 2) pts.push(x0, y, v, x1, y, v);
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
@@ -1339,7 +1435,8 @@ export class Renderer {
       const h = zn.h;
       const c = [[-h, -h], [h, -h], [h, h], [-h, h]];
       const pts = [];
-      for (let i = 0; i < 4; i++) { const a = c[i], b = c[(i + 1) % 4]; pts.push(zn.x + a[0], 0.12, zn.z + a[1], zn.x + b[0], 0.12, zn.z + b[1]); }
+      const zy = G(zn.x, zn.z) + 0.16;
+      for (let i = 0; i < 4; i++) { const a = c[i], b = c[(i + 1) % 4]; pts.push(zn.x + a[0], zy, zn.z + a[1], zn.x + b[0], zy, zn.z + b[1]); }
       const g = new THREE.BufferGeometry();
       g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
       const line = new THREE.LineSegments(g, mat);
@@ -1347,7 +1444,7 @@ export class Renderer {
       this.zoneGroup.add(line);
       for (const [x, z] of [[-h, -h], [h, -h], [h, h], [-h, h]]) {
         const m = new THREE.Mesh(post, vcMat);
-        m.position.set(zn.x + x, 0, zn.z + z);
+        m.position.set(zn.x + x, G(zn.x + x, zn.z + z), zn.z + z);
         m.castShadow = true;
         this.zoneGroup.add(m);
       }
@@ -1359,8 +1456,7 @@ export class Renderer {
     const ndcX = (px / this.w) * 2 - 1, ndcY = -(py / this.h) * 2 + 1;
     const o = this.camera.position;
     _v.set(ndcX, ndcY, 0.5).unproject(this.camera).sub(o).normalize();
-    const t = -o.y / _v.y;
-    return { x: o.x + _v.x * t, z: o.z + _v.z * t };
+    return rayGround(o, _v);
   }
 
   setBiome(name) { if (name !== this.biome) this.buildTerrain(name); }
@@ -1368,6 +1464,8 @@ export class Renderer {
   // Drag the camera by screen pixels (two-finger pan). Detaches it from the king.
   panBy(px, py) {
     if (!px && !py) return;
+    // Closer views turn instead of sliding.
+    if ((this.camMode === 'adventure' || this.camMode === 'combat') && !this.tour) { this.turnBy(px); return; }
     const tanH = Math.tan((this.camera.fov * Math.PI) / 360);
     const perPx = (2 * (this.dist || 40) * tanH) / Math.max(1, this.h);
     this.camTarget.x -= px * perPx;
@@ -1377,7 +1475,7 @@ export class Renderer {
     this.free = true;
   }
 
-  recenter() { this.free = false; this.tour = null; }
+  recenter() { this.free = false; this.tour = null; this.cine = null; }
 
   // Glide the camera to a spot, hold there, then glide back to the king.
   flyTo(x, z, hold = 3.5) { this.free = false; this.tour = { x, z, t: 0, hold }; }
@@ -1389,8 +1487,10 @@ export class Renderer {
     const o = this.camera.position;
     _v.set(ndcX, ndcY, 0.5).unproject(this.camera).sub(o).normalize();
     const H = { castle: 8, tower: 4.5, goldmine: 3, house: 3.2, barracks: 3.5 };
+    const hit = rayGround(o, _v);
+    const gy = G(hit.x, hit.z);
     for (let y = 8; y >= 0; y -= 0.5) {
-      const t = (y - o.y) / _v.y;
+      const t = (gy + y - o.y) / _v.y;
       if (t <= 0) continue;
       const x = o.x + _v.x * t, z = o.z + _v.z * t;
       const b = world.buildingAt(x, z, y === 0 ? 0.8 : 0.1);
@@ -1400,12 +1500,14 @@ export class Renderer {
   }
 
   project(x, y, z) {
-    _v.set(x, y, z).project(this.camera);
+    _v.set(x, y + standH(x, z), z).project(this.camera);
     return { x: (_v.x * 0.5 + 0.5) * this.w, y: (-_v.y * 0.5 + 0.5) * this.h, behind: _v.z > 1 };
   }
 
   // ---------------------------------------------------------------- effects
+  // Sparks, rings and screen projections take heights above the ground.
   spark(x, y, z, color, n = 6, size = 0.18, speed = 3, life = 0.5, g = 12) {
+    y += G(x, z);
     if (this.particles.length > 850) return;
     const c = new THREE.Color(color);
     for (let i = 0; i < n; i++) {
@@ -1423,7 +1525,7 @@ export class Renderer {
     mat.color.set(color);
     const mesh = new THREE.Mesh(this.ringGeo, mat);
     mesh.rotation.x = -Math.PI / 2;
-    mesh.position.set(x, 0.15, z);
+    mesh.position.set(x, G(x, z) + 0.2, z);
     this.scene.add(mesh);
     this.rings.push({ mesh, t: 0, dur, r });
   }
@@ -1483,13 +1585,13 @@ export class Renderer {
       case 'posted': this.spark(ev.x, 1.5, ev.z, 0x9ff0ff, 10, 0.15, 3, 0.7, 4); break;
       case 'spend': {
         const n = Math.min(14, Math.ceil(ev.n / 5));
-        for (let i = 0; i < n; i++) this.flyers.push({ from: this.stackTop.clone(), to: new THREE.Vector3(ev.x, 0.3, ev.z), t: -i * 0.035, dur: 0.38 });
+        for (let i = 0; i < n; i++) this.flyers.push({ from: this.stackTop.clone(), to: new THREE.Vector3(ev.x, G(ev.x, ev.z) + 0.3, ev.z), t: -i * 0.035, dur: 0.38 });
         break;
       }
       case 'pickup':
         if (ev.from) {
           const m = world.b[ev.from];
-          for (let i = 0; i < Math.min(3, ev.n); i++) this.flyers.push({ from: new THREE.Vector3(m.x + 2.3, 1, m.z + 2.5), toHero: true, t: -i * 0.05, dur: 0.3 });
+          for (let i = 0; i < Math.min(3, ev.n); i++) this.flyers.push({ from: new THREE.Vector3(m.x + 2.3, G(m.x, m.z) + 1, m.z + 2.5), toHero: true, t: -i * 0.05, dur: 0.3 });
         }
         break;
       case 'waveClear': this.ring(0, CASTLE_R + 2.5, 8, 0xffd84a, 0.9); break;
@@ -1497,7 +1599,7 @@ export class Renderer {
       case 'treeFell': {
         // Topple a copy of the tree away from whoever felled it.
         const root = new THREE.Group();
-        root.position.set(ev.x, 0, ev.z);
+        root.position.set(ev.x, G(ev.x, ev.z) - 0.15, ev.z);
         root.rotation.y = ev.dir;
         const pivot = new THREE.Group();
         root.add(pivot);
@@ -1542,6 +1644,23 @@ function cornerGeo(stone) {
   return b.build();
 }
 
+// Where a view ray first meets the land: march, then refine.
+function rayGround(o, d) {
+  if (d.y >= -1e-4) return { x: o.x, z: o.z };
+  let t0 = 0, t1 = 0;
+  for (let t = 0; t < 900; t += 1.5) {
+    const x = o.x + d.x * t, z = o.z + d.z * t;
+    if (o.y + d.y * t <= G(x, z)) { t1 = t; break; }
+    t0 = t;
+  }
+  if (!t1) t1 = (G(o.x, o.z) - o.y) / d.y;
+  for (let i = 0; i < 12; i++) {
+    const t = (t0 + t1) / 2, x = o.x + d.x * t, z = o.z + d.z * t;
+    if (o.y + d.y * t <= G(x, z)) t1 = t; else t0 = t;
+  }
+  return { x: o.x + d.x * t1, z: o.z + d.z * t1 };
+}
+
 function ribbon(pts, half, y) {
   const pos = [];
   const idx = [];
@@ -1551,7 +1670,8 @@ function ribbon(pts, half, y) {
     const l = Math.hypot(dx, dz) || 1;
     dx /= l; dz /= l;
     const [x, z] = pts[i];
-    pos.push(x - dz * half, y, z + dx * half, x + dz * half, y, z - dx * half);
+    const ax = x - dz * half, az = z + dx * half, bx = x + dz * half, bz = z - dx * half;
+    pos.push(ax, G(ax, az) + y + 0.04, az, bx, G(bx, bz) + y + 0.04, bz);
     if (i > 0) {
       const k = i * 2;
       idx.push(k - 2, k, k - 1, k - 1, k, k + 1);
