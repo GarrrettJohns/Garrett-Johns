@@ -465,3 +465,9 @@ body:not([data-state="play"]) .tip-card { display: none; }
 body:not([data-state="play"]) .rates-card { display: none; }
 
 .swatch { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; border: 3px solid rgba(0, 0, 0, 0.2); box-shadow: inset 0 3px 6px rgba(255, 255, 255, 0.45), 0 2px 4px rgba(0, 0, 0, 0.2); font-size: 18px; color: #888; }
+
+.dev-card { position: relative; }
+.dev-x { position: absolute; top: 14px; right: 14px; }
+.dev-status { position: sticky; top: 0; z-index: 2; background: #ece6da; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); border-radius: 12px; padding: 10px 12px; margin: 0 0 12px; text-align: left; font-size: 14px; }
+.dev-status b { display: block; margin-bottom: 4px; }
+.dev-status span { display: block; opacity: 0.75; font-size: 12.5px; font-variant-numeric: tabular-nums; }

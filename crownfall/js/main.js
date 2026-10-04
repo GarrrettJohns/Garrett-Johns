@@ -8,6 +8,7 @@ import { audio } from './audio.js';
 import { save } from './save.js';
 import { BUILDINGS, HERO_UPGRADES, WALLS, levelInfo } from './config.js';
 import { CASTLE_R, FOREST_Z, FORT, inHighland } from './map.js';
+import { rand } from './util.js';
 
 const $ = (id) => document.getElementById(id);
 const stage = $('stage');
@@ -281,17 +282,151 @@ function devCalm() {
   lostAt = 0;
 }
 
+// ---- Dev build-up: a kingdom as an average player would have it by a given
+// point. Stages are cumulative and only ever add (nothing already built is
+// torn down), so jumping ahead from a real game keeps what you made.
+const STAGES = ['start', 'w4', 'w5', 'w8', 'w10', 'siege'];
+function devBuild(stage) {
+  devCalm();
+  const w = world;
+  const at = (s) => STAGES.indexOf(stage) >= STAGES.indexOf(s);
+  const pad = (id, level = 0) => {
+    const b = w.b[id];
+    if (!b) return null;
+    if (b.state !== 'built') w.finishBuilding(b);
+    b.level = Math.max(b.level, Math.min(level, BUILDINGS[b.type].levels.length - 1));
+    return b;
+  };
+  // Put a building on open ground in an area (castle grounds or an outpost).
+  const zoneOf = (id) => w.buildZones().find((z) => (id ? z.id === id : z.castle));
+  const have = (type, zone) => w.list(type).filter((b) => Math.abs(b.x - zone.x) <= zone.h && Math.abs(b.z - zone.z) <= zone.h);
+  const place = (type, n, zoneId = null, level = 0) => {
+    const zone = zoneOf(zoneId);
+    if (!zone) return;
+    for (let k = have(type, zone).length; k < n; k++) {
+      let best = null, bd = Infinity;
+      for (let gx = zone.x - zone.h; gx <= zone.x + zone.h; gx += 2) for (let gz = zone.z - zone.h; gz <= zone.z + zone.h; gz += 2) {
+        const p = snapToGrid(type, gx, gz);
+        const d = Math.hypot(p.x - zone.x, p.z - zone.z + 3) + Math.random() * 0.01;
+        if (d < bd && w.canPlace(type, p.x, p.z).ok) { bd = d; best = p; }
+      }
+      if (!best) return;
+      const b = w.place(type, best.x, best.z);
+      if (b) w.finishBuilding(b);
+    }
+    for (const b of have(type, zone)) { if (b.state !== 'built') w.finishBuilding(b); b.level = Math.max(b.level, level); }
+  };
+  const king = (up, extra = {}) => {
+    const h = w.hero;
+    for (const [k, v] of Object.entries(up)) h.up[k] = Math.max(h.up[k], Math.min(v, HERO_UPGRADES[k].values.length - 1));
+    for (const wp of extra.weapons || []) h.weapons[wp] = true;
+    if (extra.bow) h.bow = Math.max(h.bow || 0, extra.bow);
+    if (extra.weapon) h.weapon = extra.weapon;
+    h.hp = w.heroMaxHp;
+  };
+  const army = (n) => {
+    const kinds = ['knight', 'archer', 'knight', 'raider', 'archer'];
+    for (let i = w.soldiers; i < n; i++) w.addSoldier(kinds[i % kinds.length], (i % 6) * 1.4 - 3.5, CASTLE_R + 2 + Math.floor((i % 30) / 6) * 1.3);
+  };
+  const people = () => { while (w.pop < w.beds) w.spawnVillager(rand(-6, 6), CASTLE_R + 3 + Math.random() * 2); };
+  const staff = () => {
+    for (const b of w.jobBuildings()) for (let i = 0; i < 8 && w.freeVillagers > 0 && w.wantedAt(b) < w.workerSlots(b); i++) w.setWorkers(b.id, 1);
+  };
+  const clearFort = () => {
+    w.enemies = w.enemies.filter((e) => !e.fort && !e.guard);
+    if (!w.built('pass')) w.finishBuilding(w.b.pass);
+    w.enemies = w.enemies.filter((e) => !e.guard);   // the camps are cleared too
+  };
+  const castle = (lv) => { w.b.castle.level = Math.max(w.b.castle.level, lv); w.castleHp = w.castleMax; };
+
+  if (at('w4')) {
+    for (const id of ['tower-S1', 'tower-S2', 'tower-S3', 'tower-E1']) pad(id, 1);
+    place('house', 3);
+    place('barracks', 1);
+    pad('bridge'); pad('lumber-1');
+    place('warehouse', 1);
+    place('blacksmith', 1);
+    king({ damage: 1, rate: 1, hp: 1 });
+    army(3);
+  }
+  if (at('w5')) {
+    pad('lumber-2'); pad('tower-E2', 1);
+    place('house', 4);
+    king({ damage: 2, rate: 2, hp: 2, range: 1 }, { bow: 1 });
+    army(5);
+  }
+  if (at('w8')) {
+    clearFort();
+    castle(1);
+    pad('quarry-1'); pad('goldmine'); pad('catapult-S'); pad('catapult-E');
+    for (const id of ['tower-S1', 'tower-S2', 'tower-E1', 'tower-E2']) pad(id, 2);
+    for (const id of ['tower-W1', 'tower-W2']) pad(id, 1);
+    w.walls.level = Math.max(w.walls.level, 1); w.walls.gate = Math.max(w.walls.gate, 2);
+    place('house', 6); place('farm', 1);
+    w.wave = Math.max(w.wave, 7);
+    pad('outpost-1');
+    place('house', 2, 'outpost-1'); place('farm', 1, 'outpost-1'); place('barracks', 1, 'outpost-1');
+    pad('ironmine-1');
+    king({ damage: 3, rate: 3, hp: 3, range: 2, speed: 2, carry: 2 }, { weapons: ['crossbow'], bow: 2, weapon: 'crossbow' });
+    army(14);
+  }
+  if (at('w10')) {
+    castle(2);
+    for (const id of ['tower-S1', 'tower-S2', 'tower-S3', 'tower-E1', 'tower-E2', 'tower-E3', 'tower-W1', 'tower-W2', 'tower-W3']) pad(id, 3);
+    for (const id of ['tower-N1', 'tower-N2']) pad(id, 2);
+    pad('catapult-S', 1); pad('catapult-E', 1); pad('catapult-O1');
+    pad('tower-O1a', 2); pad('tower-O1b', 2);
+    w.walls.level = Math.max(w.walls.level, 2); w.walls.gate = Math.max(w.walls.gate, 3);
+    place('house', 8);
+    w.wave = Math.max(w.wave, 9);
+    pad('outpost-2');
+    place('house', 2, 'outpost-2'); place('barracks', 1, 'outpost-2');
+    king({ damage: 4, rate: 4, hp: 4, range: 3, speed: 3, carry: 3, magnet: 2 }, { weapons: ['crossbow', 'fire', 'multi'], bow: 3, weapon: 'multi' });
+    w.smith = { king: Math.max(w.smith.king, 1), workers: Math.max(w.smith.workers, 1), arrows: Math.max(w.smith.arrows, 1) };
+    army(24);
+  }
+  if (at('siege')) {
+    // Everything the final battle asks for: every outpost settled with
+    // upgraded Barracks and Houses, home defences up, and 55+ soldiers.
+    castle(BUILDINGS.castle.levels.length - 1);
+    w.armor = Math.max(w.armor, 3);
+    for (const b of w.list('tower')) pad(b.id, 3);
+    for (const b of w.list('catapult')) pad(b.id, 1);
+    w.walls.level = Math.max(w.walls.level, 3); w.walls.gate = Math.max(w.walls.gate, 3);
+    w.wave = Math.max(w.wave, 14);
+    pad('outpost-3');
+    place('barracks', 1, null, 2);
+    for (const o of ['outpost-1', 'outpost-2', 'outpost-3']) { place('house', 3, o, 2); place('barracks', 1, o, 2); }
+    place('house', 10, null, 2);
+    king(Object.fromEntries(Object.keys(HERO_UPGRADES).map((k) => [k, 99])), { weapons: ['crossbow', 'fire', 'multi', 'storm'], bow: 4, weapon: 'storm' });
+    w.smith = { king: 3, workers: 3, arrows: 3 };
+    army(58);
+    w.wave = Math.max(w.wave, 15);
+  }
+  w.rebuildGates();
+  w.castleHp = w.castleMax;
+  people();
+  staff();
+  w.hero.coins = Math.max(w.hero.coins, 200);
+  w.res.wood = Math.max(w.res.wood, at('w8') ? 200 : 60);
+  if (at('w8')) w.res.stone = Math.max(w.res.stone, 120);
+  if (at('w10')) w.res.iron = Math.max(w.res.iron, 60);
+}
+
+const WAVE_STAGE = (n) => (n >= 15 ? 'siege' : n >= 10 ? 'w10' : n >= 8 ? 'w8' : n >= 5 ? 'w5' : n >= 4 ? 'w4' : 'start');
+
 const DEV = {
   level(n) {
     world = new World(null, { level: n, carry: devCarry(n) });
     renderer.reset();
-    return `Level ${n}: ${world.levelInfo.name}`;
+    // A fresh map, so give the new biome a settled kingdom to test from.
+    if (n > 1) devBuild('w5');
+    return `Level ${n}: ${world.levelInfo.name}, with a settled kingdom`;
   },
   wave(n) {
-    devCalm();
+    devBuild(WAVE_STAGE(n));
     world.wave = n - 1;
-    world.hero.coins = Math.max(world.hero.coins, 200);
-    return `Ready for wave ${n} — tap Start Wave`;
+    return `Ready for wave ${n}, built up as a player would be by then`;
   },
   // An average king around waves 5-6 (wood-tier upgrades, 3 troops) in Level 1,
   // waiting just outside the Mountain Fort.
@@ -308,10 +443,14 @@ const DEV = {
     return 'Average king at wave 6 — take the Mountain Fort!';
   },
   siege() {
-    devCalm();
-    world.wave = Math.max(world.wave, 15);
-    DEV.outposts();
-    return 'Siege Camp built — tap Lay Siege!';
+    devBuild('siege');
+    world.setRally(true);
+    // Start at the Siege Camp with the army formed up behind the king.
+    const camp = world.b['outpost-3'], h = world.hero;
+    h.x = camp.x + 6; h.z = camp.z + 8;
+    world.allies.forEach((a, i) => { a.x = h.x + (i % 8) * 1.3 - 4.5; a.z = h.z - 3 - Math.floor(i / 8) * 1.3; });
+    renderer.recenter();
+    return `Siege ready: ${world.soldiers} soldiers, every outpost settled. Close this, then tap Lay Siege!`;
   },
   outposts() {
     world.wave = Math.max(world.wave, 14);
@@ -348,24 +487,35 @@ const DEV = {
   },
 };
 
+// Dev buttons act on the game behind the panel, which stays open until it's
+// closed; each one reports what it did in the panel's status line.
 function devRun(cmd) {
   const [name, arg] = cmd.split(':');
-  const msg = DEV[name](arg !== undefined ? Number(arg) : undefined);
+  let msg;
+  try { msg = DEV[name](arg !== undefined ? Number(arg) : undefined); } catch (err) { console.error(err); msg = `⚠️ ${err.message}`; }
   placing = null;
   ui.closeMenu();
   ui.closeBuild();
-  play();
   if (world.phase === 'build') persist();
-  if (msg) ui.banner('🛠 Dev', msg, 2.2);
+  dirty = true;
+  devStatus(msg || 'Done');
+  for (const b of document.querySelectorAll('#dev-levels .chip')) b.classList.toggle('on', b.dataset.dev === `level:${world.level}`);
+}
+function devStatus(msg) {
+  const el = $('dev-status');
+  const w = world;
+  el.innerHTML = `<b>${msg}</b><span>L${w.level} · wave ${w.wave + 1} · ${w.soldiers} soldiers · ${w.pop}/${w.beds} people · castle Lv ${w.b.castle.level + 1} · 🪙 ${w.gold} 🪵 ${w.res.wood} 🪨 ${w.res.stone} ⚙️ ${w.res.iron}</span>`;
 }
 
 $('dev-levels').innerHTML = Array.from({ length: MAX_LEVELS }, (_, i) => `<button class="chip" data-dev="level:${i + 1}">${i + 1} · ${levelInfo(i + 1).name}</button>`).join('');
 $('btn-dev').addEventListener('click', () => {
   audio.tap();
   for (const b of document.querySelectorAll('#dev-levels .chip')) b.classList.toggle('on', b.dataset.dev === `level:${world.level}`);
+  devStatus('Pick something to test. This panel stays open until you close it.');
   show('screen-dev');
 });
-$('btn-dev-back').addEventListener('click', () => { audio.tap(); show('screen-pause'); });
+$('btn-dev-back').addEventListener('click', () => { audio.tap(); play(); });
+$('btn-dev-x').addEventListener('click', () => { audio.tap(); play(); });
 $('screen-dev').addEventListener('click', (e) => {
   const b = e.target.closest('[data-dev]');
   if (!b) return;

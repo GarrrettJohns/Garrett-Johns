@@ -77,6 +77,15 @@ It then launches full screen and works offline.
   so an army big enough (the guide asks for 55) means building Barracks and
   Houses at every outpost. In simulation a fully upgraded king loses with 22
   or 30 soldiers, is a coin flip at 45 and wins every time with 55+.
+- **Developer tools** (top of the pause menu) stay open until closed, with a
+  status line showing what each button did. Jumps build the kingdom up the
+  way an average player would have it by then (towers and upgrades, houses,
+  barracks, camps, warehouse, blacksmith, the Mountain Fort taken, outposts
+  and their land, king upgrades and army), adding to what's already built.
+  Level jumps start the new biome with a settled kingdom, and *Siege ready*
+  sets up everything the siege needs (every outpost settled with level-3
+  Barracks and Houses, home defences, a maxed king and 58 soldiers at the
+  Siege Camp).
 - **Notifications** appear at the top under the objective, stay for 15
   seconds or until you tap ✕, and stack up to four.
 - **Outposts serve the king:** tap a built outpost for the same King upgrades

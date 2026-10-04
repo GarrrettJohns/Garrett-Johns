@@ -169,8 +169,10 @@
 
   <section id="screen-dev" class="screen">
     <div class="card wide dev-card">
+      <button id="btn-dev-x" class="icon-btn dark dev-x" type="button" aria-label="Close developer tools">✕</button>
       <h2>🛠 Developer tools</h2>
-      <p class="sub">Jump around for testing. The king gets upgrades and troops to match the level.</p>
+      <p class="sub">Jump around for testing. Each jump builds the kingdom up the way an average player would have it by then.</p>
+      <div id="dev-status" class="dev-status" aria-live="polite"></div>
       <div class="dev-group"><b>Jump to level</b>
         <div class="dev-row" id="dev-levels"></div>
       </div>
@@ -183,7 +185,7 @@
           <button class="chip" data-dev="wave:10">Wave 10 · Boss</button>
           <button class="chip" data-dev="wave:11">Wave 11 · Forest</button>
           <button class="chip" data-dev="fort">⛰ Mountain Fort</button>
-          <button class="chip" data-dev="siege">Siege ready</button>
+          <button class="chip" data-dev="siege">Siege ready (55+ army)</button>
         </div>
       </div>
       <div class="dev-group"><b>Give</b>
@@ -202,7 +204,7 @@
           <button class="chip" data-dev="lose">Lose this wave</button>
         </div>
       </div>
-      <button id="btn-dev-back" class="btn ghost" type="button">Back</button>
+      <button id="btn-dev-back" class="btn primary" type="button">Close and play</button>
     </div>
   </section>
 
