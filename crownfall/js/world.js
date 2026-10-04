@@ -4,7 +4,7 @@
 // `events`, which main.js drains each frame for sound, effects and UI.
 
 import {
-  BUILDINGS, HERO, HERO_UPGRADES, WEAPONS, WALLS, UNITS, ENEMIES, VILLAGER, SMITH,
+  BUILDINGS, HERO, HERO_UPGRADES, WEAPONS, WALLS, UNITS, ENEMIES, VILLAGER, SMITH, ROYAL_BOW, STYLES,
   ARMOR_UPGRADE, waveSpec, levelInfo, levelMul,
 } from './config.js';
 import {
@@ -27,6 +27,7 @@ export const KING_SWING = 0.5;      // the king swings faster
 const HUT_REACH = 24;        // how far from their hut workers will go for trees and rocks
 const STOCK_CAP = 60;        // a hut's stockpile
 const GOLD_PER_ITEM = 5;
+const DEFAULT_STYLE = { finish: 'gold', gem: 'none', string: 'white', trail: 'gold' };
 const HUT_RES = { lumber: 'wood', quarry: 'stone', ironmine: 'iron' };     // a wheelbarrow "item" of gold is a sack of 5 coins
 const GATHER_REACH = 3.2;
 const GATHER_EVERY = 0.8;
@@ -131,6 +132,17 @@ const OBJECTIVES = [
     done: (w) => w.jobBuildings().some((b) => w.wantedAt(b) >= 2),
     at: (w) => w.firstOf('lumber'),
   },
+  {
+    text: 'Build a Blacksmith (🔨) and forge the king a finer bow',
+    tip: 'smith',
+    done: (w) => (w.hero.bow || 0) >= 1,
+    at: (w) => w.firstOf('blacksmith') || null,
+  },
+  {
+    text: 'Make the bow yours: pick a finish, gem or arrow trail at the Blacksmith',
+    done: (w) => Object.keys(w.hero.styles).length > 0,
+    at: (w) => w.firstOf('blacksmith') || null,
+  },
   // Get the king ready before sending him at the Mountain Fort.
   {
     text: 'Ready for the fort: at the Castle, raise Arrow damage and Fire rate to Lv 3',
@@ -209,7 +221,7 @@ const OBJECTIVES = [
     at: (w) => w.b['ironmine-1'],
   },
   {
-    text: 'Build a Blacksmith (🔨) and forge iron tools',
+    text: 'At the Blacksmith, forge iron tools (Iron tab)',
     done: (w) => Object.values(w.smith).some((v) => v > 0),
     at: (w) => w.firstOf('blacksmith') || null,
   },
@@ -249,6 +261,7 @@ export class World {
     const h = this.hero;
     return {
       up: { ...h.up }, weapons: { ...h.weapons }, weapon: h.weapon, armor: this.armor,
+      bow: h.bow, style: { ...h.style }, styles: { ...h.styles },
       army: [...this.allies.map((a) => a.kind), ...this.list('tower').flatMap((t) => Array(t.garrison).fill('archer'))],
       coins: Math.min(h.coins, 150),
     };
@@ -258,6 +271,9 @@ export class World {
     const h = this.hero;
     h.up = { ...h.up, ...c.up };
     h.weapons = { ...c.weapons };
+    if (c.bow) h.bow = c.bow;
+    if (c.style) h.style = { ...DEFAULT_STYLE, ...c.style };
+    if (c.styles) h.styles = { ...c.styles };
     h.weapon = c.weapon;
     h.hp = this.heroMaxHp;
     h.coins = c.coins || 0;
@@ -288,6 +304,7 @@ export class World {
       coins: 0, moving: false, fundT: 0, fundAcc: 0, fundId: null,
       up: { damage: 0, rate: 0, range: 0, speed: 0, hp: 0, carry: 0, magnet: 0 },
       weapons: { bow: true }, weapon: 'bow', anim: 0, shootT: 0, flash: 0, needShown: false,
+      bow: 0, style: { ...DEFAULT_STYLE }, styles: {},
       load: { res: null, n: 0 }, tool: null, gatherT: 0, warned: null,
     };
 
@@ -617,13 +634,36 @@ export class World {
         apply: () => { w.hero.up[a]++; if (a === 'hp') w.hero.hp = w.heroMaxHp; },
       };
     }
-    if (kind === 'weapon') {
+    if (kind === 'weapon' || kind === 'forge') {
+      // Weapons are forged at the Blacksmith; the castle and outposts can
+      // only switch between the ones the king already owns.
       const wp = WEAPONS[a];
       const owned = !!this.hero.weapons[a];
+      const lock = owned ? null : kind === 'weapon' ? 'Forge at the Blacksmith' : this.lockReason({ castle: wp.castle });
       return {
         key, icon: wp.icon, title: wp.name, desc: wp.desc, cost: owned ? {} : costText(wp.cost),
-        owned, equipped: this.hero.weapon === a, locked: owned ? null : this.lockReason({ castle: wp.castle }),
+        owned, equipped: this.hero.weapon === a, equipKey: `weapon:${a}`, locked: lock, forge: kind === 'forge',
         apply: () => { w.hero.weapons[a] = true; w.hero.weapon = a; },
+      };
+    }
+    if (kind === 'bow') {
+      const tier = this.hero.bow || 0;
+      const cur = ROYAL_BOW[tier], next = ROYAL_BOW[tier + 1];
+      return {
+        key, icon: '🏹', title: next ? `Forge the ${next.name}` : cur.name, level: tier + 1, max: ROYAL_BOW.length,
+        cost: next ? costText(next.cost) : {}, maxed: !next, forge: true,
+        locked: next ? this.lockReason({ castle: next.castle }) : null,
+        desc: next ? `A bigger, grander bow. Arrow damage ×${fmt(cur.mul)} → ×${fmt(next.mul)}` : `The finest bow in the realm · arrow damage ×${fmt(cur.mul)}`,
+        apply: () => { w.hero.bow = tier + 1; },
+      };
+    }
+    if (kind === 'style') {
+      const opt = STYLES[a].options[c];
+      const owned = this.styleOwned(a, c);
+      return {
+        key, icon: { finish: '🎨', gem: '💎', string: '🧵', trail: '✨' }[a], title: opt.name, desc: STYLES[a].label,
+        cost: owned ? {} : costText(opt.cost), owned, equipped: this.hero.style[a] === c, equipKey: key, forge: true, swatch: opt.color,
+        apply: () => { w.hero.styles[`${a}:${c}`] = true; w.hero.style[a] = c; },
       };
     }
     if (kind === 'workers') {
@@ -689,7 +729,7 @@ export class World {
   menu(b) {
     const t = b.type;
     let tabs;
-    const KING = ['hero:damage', 'hero:rate', 'hero:range', 'weapon:bow', 'weapon:crossbow', 'weapon:fire', 'weapon:multi', 'hero:speed', 'hero:hp', 'hero:carry', 'hero:magnet'];
+    const KING = ['hero:damage', 'hero:rate', 'hero:range', 'weapon:bow', 'weapon:crossbow', 'weapon:fire', 'weapon:multi', 'weapon:storm', 'hero:speed', 'hero:hp', 'hero:carry', 'hero:magnet'];
     if (t === 'castle') {
       tabs = [
         { tab: 'King', items: KING },
@@ -705,7 +745,13 @@ export class World {
     } else if (t === 'barracks') {
       tabs = [{ tab: 'Barracks', items: [`train:${b.id}:knight`, `train:${b.id}:archer`, `train:${b.id}:raider`, `up:${b.id}`, 'armor'] }];
     } else if (t === 'blacksmith') {
-      tabs = [{ tab: 'Blacksmith', items: ['smith:king', 'smith:workers', 'smith:arrows'] }];
+      const opts = (cat) => Object.keys(STYLES[cat].options).map((o) => `style:${cat}:${o}`);
+      tabs = [
+        { tab: 'Bow', items: ['bow', ...opts('finish'), ...opts('gem')] },
+        { tab: 'Style', items: [...opts('string'), ...opts('trail')] },
+        { tab: 'Weapons', items: ['forge:crossbow', 'forge:fire', 'forge:multi', 'forge:storm'] },
+        { tab: 'Iron', items: ['smith:king', 'smith:workers', 'smith:arrows'] },
+      ];
     } else if (t === 'stable') {
       tabs = [{ tab: 'Stable', items: ['hero:speed', 'hero:hp', 'hero:carry', 'hero:magnet'] }];
     } else if (t === 'range') {
@@ -787,12 +833,24 @@ export class World {
     this.res.iron -= it.cost.iron || 0;
     it.apply();
     this.emit('bought', { key, title: it.title, gold });
+    if (it.forge) this.emit('forged', { key, title: it.title, x: this.hero.x, z: this.hero.z });
     return gold || 1;
   }
 
-  equip(w) {
-    if (this.hero.weapons[w]) { this.hero.weapon = w; this.emit('equip', { w }); }
+  // Switch weapon ('crossbow' or 'weapon:crossbow') or bow style ('style:gem:ruby').
+  equip(key) {
+    const h = this.hero;
+    const [kind, a, c] = key.includes(':') ? key.split(':') : ['weapon', key];
+    if (kind === 'style') {
+      if (!this.styleOwned(a, c)) return;
+      h.style[a] = c;
+      this.emit('equip', { style: a, value: c });
+      return;
+    }
+    if (h.weapons[a]) { h.weapon = a; this.emit('equip', { w: a }); }
   }
+
+  styleOwned(cat, opt) { return !STYLES[cat].options[opt].cost || !!this.hero.styles[`${cat}:${opt}`]; }
 
   finishBuilding(b) {
     b.state = 'built';
@@ -1525,7 +1583,7 @@ export class World {
   shoot(x, z, y, target, o) {
     const p = {
       x, z, y, y0: y, target, tx: target.x, tz: target.z, speed: o.speed || 30, dmg: o.dmg,
-      from: o.from, pierce: o.pierce || 0, burn: o.burn || 0, splash: o.splash || 0, splashK: o.splashK || 0.4, lob: !!o.lob, kind: o.kind || 'arrow',
+      from: o.from, pierce: o.pierce || 0, burn: o.burn || 0, splash: o.splash || 0, splashK: o.splashK || 0.4, lob: !!o.lob, chain: o.chain || 0, kind: o.kind || 'arrow',
       dist0: Math.max(1, hyp(target.x - x, target.z - z)), travelled: 0, hit: null, dirX: 0, dirZ: 0, straight: 0, yaw: 0,
     };
     this.projectiles.push(p);
@@ -1584,6 +1642,24 @@ export class World {
     }
     this.damageEnemy(t, p.dmg, p.kind);
     if (p.burn) { t.burn = 3; t.burnDps = Math.max(t.burnDps, p.dmg * p.burn); }
+    if (p.chain) {
+      // Lightning leaps on to the nearest enemies the arrow didn't hit.
+      let from = t;
+      const hit = new Set([t]);
+      for (let k = 0; k < p.chain; k++) {
+        let next = null, bd = 6;
+        for (const e of this.enemies) {
+          if (e.hp <= 0 || hit.has(e) || e.invuln) continue;
+          const d = hyp(e.x - from.x, e.z - from.z);
+          if (d < bd) { bd = d; next = e; }
+        }
+        if (!next) break;
+        hit.add(next);
+        this.emit('chain', { x0: from.x, z0: from.z, x1: next.x, z1: next.z });
+        this.damageEnemy(next, p.dmg * 0.65, 'chain');
+        from = next;
+      }
+    }
     if (p.splash) {
       for (const e of this.enemies) {
         if (e === t || e.hp <= 0) continue;
@@ -1980,12 +2056,12 @@ export class World {
       const targets = this.nearestEnemies(h.x, h.z, range, wp.count || 1);
       if (targets.length) {
         h.atkCd = wp.interval / this.heroStat('rate');
-        h.shootT = 0.2;
-        const dmg = this.heroStat('damage') * wp.dmg * this.smithMul('arrows');
+        h.shootT = 0.32;
+        const dmg = this.heroStat('damage') * wp.dmg * this.smithMul('arrows') * ROYAL_BOW[h.bow || 0].mul;
         for (const t of targets) {
           this.shoot(h.x, h.z, 2.3, t, {
-            dmg, speed: wp.speed, from: 'hero', pierce: wp.pierce, burn: wp.burn, splash: wp.splash,
-            kind: h.weapon === 'fire' ? 'fire' : h.weapon === 'crossbow' ? 'bolt' : 'arrow',
+            dmg, speed: wp.speed, from: 'hero', pierce: wp.pierce, burn: wp.burn, splash: wp.splash, chain: wp.chain,
+            kind: h.weapon === 'fire' ? 'fire' : h.weapon === 'crossbow' ? 'bolt' : h.weapon === 'storm' ? 'storm' : 'arrow',
           });
         }
         if (!h.moving) h.yaw = turn(h.yaw, Math.atan2(targets[0].x - h.x, targets[0].z - h.z), 1);
@@ -2308,7 +2384,7 @@ export class World {
       stats: { ...this.stats },
       walls: { ...this.walls },
       armor: this.armor,
-      hero: { x: h.x, z: h.z, coins: h.coins, up: { ...h.up }, weapons: { ...h.weapons }, weapon: h.weapon, load: { ...h.load } },
+      hero: { x: h.x, z: h.z, coins: h.coins, up: { ...h.up }, weapons: { ...h.weapons }, weapon: h.weapon, load: { ...h.load }, bow: h.bow, style: { ...h.style }, styles: { ...h.styles } },
       buildings: Object.values(this.b).map((b) => ({ id: b.id, type: b.type, x: b.x, z: b.z, state: b.state, level: b.level, fixed: b.fixed, lane: b.lane, garrison: b.garrison, pile: b.pile, assigned: b.assigned, stock: b.stock || 0 })),
       villagers: this.villagers.length,
       allies: this.allies.map((a) => a.kind),
@@ -2337,6 +2413,9 @@ export class World {
     h.weapons = { ...s.hero.weapons };
     if (s.hero.load) h.load = { ...s.hero.load };
     h.weapon = s.hero.weapon;
+    h.bow = s.hero.bow || 0;
+    h.style = { ...DEFAULT_STYLE, ...(s.hero.style || {}) };
+    h.styles = { ...(s.hero.styles || {}) };
     h.hp = this.heroMaxHp;
     this.b = {};
     const fixed = Object.fromEntries(FIXED_PADS.map((p) => [p.id, p]));

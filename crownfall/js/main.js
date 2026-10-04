@@ -114,6 +114,14 @@ const TIPS = {
     <ul>${un.map((u) => `<li>${u}</li>`).join('')}</ul>
     <p>Enemy waves keep growing. Without this, your towers and gates stop at their gold tiers and you can't cut stone, so the next waves will break through.</p>`;
   }],
+  smith: ['🛠️ The Blacksmith', `
+    <p>The king's own forge. Build one inside the walls (🔨 Build) and tap it:</p>
+    <ul>
+      <li><b>🏹 Bow</b>: forge his <b>Royal Bow</b> into ever grander bows that hit harder, and choose its finish and the gem in its grip.</li>
+      <li><b>✨ Style</b>: pick a bowstring and the trail his arrows leave.</li>
+      <li><b>⚔️ Weapons</b>: forge the Crossbow, Fire arrows, Multishot and the Storm Bow. Switch between them at the castle or any outpost.</li>
+      <li><b>⚙️ Iron</b>: once you mine iron, iron tools and arrowheads.</li>
+    </ul>`],
   catapult: ['☄️ Catapults', `
     <p>Your stone builds a new kind of defence. A catapult hurls a boulder into the <b>thickest pack of enemies</b> it can reach, hurting everyone in the blast.</p>
     <ul>
@@ -302,7 +310,8 @@ const DEV = {
   king() {
     const h = world.hero;
     for (const [k, u] of Object.entries(HERO_UPGRADES)) h.up[k] = u.values.length - 1;
-    h.weapons = { bow: true, crossbow: true, fire: true, multi: true };
+    h.weapons = { bow: true, crossbow: true, fire: true, multi: true, storm: true };
+    h.bow = 4;
     h.hp = world.heroMaxHp;
     return 'The king is maxed out';
   },
@@ -443,6 +452,7 @@ function handle(ev, events = []) {
       break;
     case 'need': audio.deny(); ui.toast(ev.text, true); break;
     case 'advice': audio.villager(); ui.toast(`💡 ${ev.text}`); break;
+    case 'forged': audio.buy(); ui.banner('⚒️ Forged!', ev.title.replace(/^Forge the /, ''), 1.6); break;
     case 'deposit': audio.spend(); ui.float(at(ev.x, 2.6, ev.z), `🏦 +${ev.n} banked`, '#ffe28a'); break;
     case 'rally': ui.toast(ev.on ? '🚩 Your troops ride with you' : '🏰 Troops head back to their posts'); break;
     case 'toast': ui.toast(ev.text); break;

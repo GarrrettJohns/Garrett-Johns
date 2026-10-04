@@ -14,7 +14,7 @@ import {
   LANES, lanePoint, BRIDGE, RIVER_Z, RIVER_HALF, FOREST_Z, PATH_HALF, CASTLE_R, scenery, HIGHLAND, HIGHLAND_TRAILS, BOUNDS, STRONGHOLD,
   FORT, RIVER_X1,
 } from './map.js';
-import { BUILDINGS, HERO } from './config.js';
+import { BUILDINGS, HERO, STYLES } from './config.js';
 import { KING_SWING } from './world.js';
 
 const TAU = Math.PI * 2;
@@ -40,13 +40,16 @@ const _m2 = new THREE.Matrix4();
 const _q = new THREE.Quaternion();
 const _e = new THREE.Euler();
 const IRON_C = new THREE.Color(0.6, 0.42, 0.36);
+const SHOOT_T = 0.32;   // keep in step with the hero's shootT in world.js
+// The king's style choices as colours, ready to tint his bow.
+const STYLE_C = Object.fromEntries(Object.entries(STYLES).map(([cat, def]) => [cat, Object.fromEntries(Object.entries(def.options).map(([k, o]) => [k, o.color == null ? null : new THREE.Color(o.color)]))]));
 const _v = new THREE.Vector3();
 const _s = new THREE.Vector3();
 const _c = new THREE.Color();
 const UP = new THREE.Vector3(0, 1, 0);
 // Units are drawn a bit larger than life so they read on a phone.
 const UNIT_S = 1.3;
-const HERO_S = 1.4;
+const HERO_S = 1.55;
 
 const VILLAGER_TINTS = [0xe8d7b0, 0x7fa7d9, 0xd98c6a, 0x9cc77a, 0xcfa0d6, 0xf0c060, 0xa0a0a0].map((h) => new THREE.Color(h));
 const easeOutBack = (t) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * (t - 1) ** 3 + c1 * (t - 1) ** 2; };
@@ -78,11 +81,14 @@ class RigMesh {
     for (const pt of this.parts) {
       if (pt.n >= pt.cap) continue;
       const p = pt.p;
+      if (p.only && st[p.only[0]] !== p.only[1]) continue;
       if (p.show && (Array.isArray(p.show) ? !p.show.includes(st.load) : p.show !== st.load)) continue;
       if (p.hide && p.hide.includes(st.load)) continue;
       let a = 0;
-      if (p.anim === 'legA') a = s * 0.65 * walk;
-      else if (p.anim === 'legB') a = -s * 0.65 * walk;
+      const legK = st.legK || 1;
+      if (p.anim === 'legA') a = s * 0.65 * walk * legK;
+      else if (p.anim === 'legB') a = -s * 0.65 * walk * legK;
+      else if (p.anim === 'cape') a = st.cape || 0;
       else if (p.anim === 'arm') a = -(st.swing || 0) * 1.5 + s * 0.35 * walk;
       else if (p.anim === 'aim') a = -(st.swing || 0) * 0.5;
       else if (p.anim === 'smash') a = st.smash || 0;
@@ -96,7 +102,8 @@ class RigMesh {
         _m2.copy(_m).multiply(pt.T).multiply(this.rot).multiply(pt.Ti);
         pt.m.setMatrixAt(pt.n, _m2);
       } else pt.m.setMatrixAt(pt.n, _m);
-      if (p.tint && st.tint) _c.copy(st.tint); else _c.setRGB(1, 1, 1);
+      const tc = p.tintKey ? st.tints?.[p.tintKey] : null;
+      if (tc) _c.copy(tc); else if (p.tint && st.tint) _c.copy(st.tint); else _c.setRGB(1, 1, 1);
       if (st.flash) _c.multiplyScalar(1 + st.flash * 1.6);
       pt.m.setColorAt(pt.n, _c);
       pt.n++;
@@ -940,13 +947,28 @@ export class Renderer {
     if (hero.alive) {
       const v = Math.hypot(hero.vx, hero.vz);
       const gallop = Math.min(1, v / 4);
-      const bob = Math.abs(Math.sin(hero.anim * 1.2)) * 0.12 * gallop;
+      const bob = Math.abs(Math.sin(hero.anim * 1.2)) * 0.22 * gallop;
       // Tools: the axe sweeps side to side through the trunk (180°, striking
       // as it passes the middle); the pickaxe rises overhead and slams down.
       const u = Math.min(1, (hero.gatherT || 0) / KING_SWING);
       const sweep = hero.tool === 'axe' ? (Math.PI / 2) * Math.sin(Math.PI * ((hero.swings || 0) + u)) : 0;
       const smash = hero.tool === 'pick' ? (u < 0.72 ? -2.1 * (u / 0.72) : -2.1 + 2.7 * ((u - 0.72) / 0.28)) : 0;
-      this.rigs.hero.add(hero.x, bob, hero.z, hero.yaw, HERO_S, { walk: gallop, anim: hero.anim * 2.2, swing: hero.tool ? 0 : hero.shootT * 5, sweep, smash, flash: hero.flash, load: hero.tool });
+      // A big draw-and-loose on every shot: the bow arm snaps up, the king
+      // rises in the saddle, and the cape streams out at a gallop.
+      const shot = hero.shootT > 0 ? Math.sin(Math.PI * (1 - hero.shootT / SHOOT_T)) : 0;
+      const sty = hero.style || {};
+      const tint = (cat) => STYLE_C[cat][sty[cat]] || null;
+      const cape = 0.12 + 0.85 * gallop + Math.sin(t * 9) * 0.14 * gallop + Math.sin(t * 1.7) * 0.05 + shot * 0.2;
+      this.rigs.hero.add(hero.x, bob + shot * 0.14, hero.z, hero.yaw, HERO_S, {
+        walk: gallop, anim: hero.anim * 2.2, swing: hero.tool ? 0 : shot * 1.7, sweep, smash, flash: hero.flash, load: hero.tool,
+        legK: 1.35, cape, tier: hero.bow || 0, gemTier: sty.gem && sty.gem !== 'none' ? hero.bow || 0 : -1,
+        tints: { bow: tint('finish'), string: tint('string'), gem: tint('gem') },
+      });
+      // A glint from the bow when he looses, and a shimmer on the grand bows.
+      const bowX = hero.x + Math.cos(hero.yaw) * 0.8 + Math.sin(hero.yaw) * 0.6, bowZ = hero.z - Math.sin(hero.yaw) * 0.8 + Math.cos(hero.yaw) * 0.6;
+      if (hero.shootT > SHOOT_T - 0.04 && !this.glinted) { this.glinted = true; this.spark(bowX, 3.2, bowZ, STYLES.trail.options[sty.trail]?.color || 0xffd84a, 6, 0.12, 3, 0.35); }
+      if (hero.shootT <= 0) this.glinted = false;
+      if ((hero.bow || 0) >= 3 && Math.random() < dt * 4) this.spark(bowX, 2.6 + Math.random() * 1.4, bowZ, 0xfff0a0, 1, 0.08, 1, 0.5);
     }
     const UNIT_RIG = { knight: 'knight', archer: 'archer', raider: 'raider' };
     for (const a of world.allies) {
@@ -1086,9 +1108,13 @@ export class Renderer {
       _q.setFromEuler(_e);
       const s = p.kind === 'ballista' ? 2.2 : p.kind === 'bolt' ? 1.25 : 1;
       _m.compose(_v.set(p.x, p.y, p.z), _q, _s.set(s, s, s));
+      const trailC = p.from === 'hero' ? STYLES.trail.options[world.hero.style?.trail]?.color ?? 0xffd84a : null;
       if (p.kind === 'fire') _c.setRGB(2.2, 0.9, 0.2);
+      else if (p.kind === 'storm') _c.setRGB(0.6, 1.6, 2.2);
       else if (p.from === 'enemy') _c.setRGB(0.55, 0.25, 0.22);
+      else if (trailC != null) _c.set(trailC).multiplyScalar(1.4);
       else _c.setRGB(1, 1, 1);
+      if (trailC != null && Math.random() < 0.6) this.spark(p.x, p.y, p.z, p.kind === 'storm' ? 0x9ae6ff : trailC, 1, 0.07, 0.4, 0.3);
       ap.push(_m, _c);
       if (p.kind === 'fire' && Math.random() < 0.5) this.spark(p.x, p.y, p.z, 0xff9a2a, 1, 0.2);
     }
@@ -1423,6 +1449,19 @@ export class Renderer {
         if (ev.type !== 'placed') { this.spark(ev.x, 2, ev.z, 0xffd84a, 14, 0.18, 6, 0.9); this.ring(ev.x, ev.z, r, 0xffffff, 0.6); }
         break;
       }
+      case 'chain': {
+        // A jagged bolt of lightning between the two enemies.
+        const n = 6;
+        for (let i = 0; i <= n; i++) {
+          const k = i / n, j = i === 0 || i === n ? 0 : (Math.random() - 0.5) * 0.9;
+          this.spark(ev.x0 + (ev.x1 - ev.x0) * k + j, 1.4 + Math.random() * 0.5, ev.z0 + (ev.z1 - ev.z0) * k + j, 0x9ae6ff, 2, 0.1, 1.2, 0.3);
+        }
+        break;
+      }
+      case 'forged':
+        this.ring(ev.x, ev.z, 3.2, 0xffd84a, 0.8);
+        this.spark(ev.x, 2.4, ev.z, 0xffd84a, 30, 0.18, 5, 0.9, 6);
+        break;
       case 'splash':
         if (ev.kind === 'boulder') {
           this.ring(ev.x, ev.z, ev.r, 0xd8c8a8, 0.5);

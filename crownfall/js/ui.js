@@ -6,7 +6,7 @@ import { BUILDINGS } from './config.js';
 const $ = (id) => document.getElementById(id);
 const PLACEABLE = ['house', 'warehouse', 'farm', 'barracks', 'blacksmith'];
 const LIMIT = { barracks: 2, blacksmith: 1 };
-const TAB_ICON = { King: '👑', Army: '⚔️', Castle: '🏰' };
+const TAB_ICON = { King: '👑', Army: '⚔️', Castle: '🏰', Bow: '🏹', Style: '✨', Weapons: '⚔️', Iron: '⚙️' };
 
 export class UI {
   constructor(h) {
@@ -323,7 +323,7 @@ export class UI {
     if (it.kind === 'workers') {
       const dots = Array.from({ length: it.slots }, (_, i) => `<i class="${i < it.working ? 'on' : i < it.assigned ? 'coming' : ''}"></i>`).join('');
       return `<div class="row workers">
-        <div class="ri">${it.icon}</div>
+        <div class="ri">${it.swatch !== undefined ? `<span class="swatch" style="background:${it.swatch == null ? 'transparent' : '#' + it.swatch.toString(16).padStart(6, '0')}">${it.swatch == null ? '∅' : ''}</span>` : it.icon}</div>
         <div class="rb">
           <div class="rt">Workers ${it.assigned}/${it.slots} <span class="pips big">${dots}</span></div>
           <div class="rd">${esc(it.desc)}</div>
@@ -343,10 +343,10 @@ export class UI {
     const pips = it.max > 1 ? `<span class="pips">${Array.from({ length: it.max }, (_, i) => `<i class="${i < it.level ? 'on' : ''}"></i>`).join('')}</span>` : '';
     let btn;
     if (it.maxed) btn = '<button class="rbtn max" type="button" disabled>MAX</button>';
-    else if (it.owned) btn = it.equipped ? '<button class="rbtn max" type="button" disabled>Equipped</button>' : `<button class="rbtn blue" type="button" data-key="${it.key}" data-equip="${it.key.split(':')[1]}">Equip</button>`;
+    else if (it.owned) btn = it.equipped ? '<button class="rbtn max" type="button" disabled>Equipped</button>' : `<button class="rbtn blue" type="button" data-key="${it.key}" data-equip="${it.equipKey || it.key}">Equip</button>`;
     else if (it.locked) btn = `<button class="rbtn off" type="button" disabled>🔒 ${esc(it.locked)}</button>`;
     else {
-      const verb = it.key.startsWith('train') ? 'Train' : it.key.startsWith('weapon') ? 'Unlock' : 'Upgrade';
+      const verb = it.key.startsWith('train') ? 'Train' : it.key.startsWith('style') ? 'Buy' : it.forge ? 'Forge' : it.key.startsWith('weapon') ? 'Unlock' : 'Upgrade';
       const need = lackG ? 'gold' : lackW ? 'wood' : lackS ? 'stone' : lackI ? 'iron' : '';
       btn = `<button class="rbtn ${need ? 'off' : ''}" type="button" data-key="${it.key}">${need ? 'Need ' + need : verb}</button>`;
     }
@@ -357,7 +357,7 @@ export class UI {
       ${it.cost.iron ? `<span class="${lackI ? 'lack' : ''}">⚙️ ${it.cost.iron}</span>` : ''}
     </div>`;
     return `<div class="row">
-      <div class="ri">${it.icon}</div>
+      <div class="ri">${it.swatch !== undefined ? `<span class="swatch" style="background:${it.swatch == null ? 'transparent' : '#' + it.swatch.toString(16).padStart(6, '0')}">${it.swatch == null ? '∅' : ''}</span>` : it.icon}</div>
       <div class="rb">
         <div class="rt">${esc(it.title)} ${pips}</div>
         ${it.desc ? `<div class="rd">${esc(it.desc)}</div>` : ''}

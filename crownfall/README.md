@@ -56,6 +56,20 @@ It then launches full screen and works offline.
   Haulers push wheelbarrows at double walking speed, 5 items a trip, up to 4
   per warehouse. Riding past a warehouse banks the coins on the king's horse
   (🏦 in the HUD): banked gold is safe if he falls and still pays for anything.
+- **The Blacksmith** (build it early, 70 gold) is the king's forge:
+  - *Bow*: forge his **Royal Bow** through five ever-grander tiers (Golden
+    Longbow → Gilded Recurve → Sunforged → Dragonwing → Crown of Arrows), each
+    bigger and harder-hitting, and pick its finish (gold, silver, crimson,
+    azure, obsidian, jade) and grip gem (ruby, sapphire, emerald, amethyst,
+    sunstone).
+  - *Style*: bowstring colour and the trail his arrows leave.
+  - *Weapons*: forge the Crossbow, Fire arrows, Multishot and the new Storm
+    Bow (lightning leaps to two more enemies). Switch weapons at the castle or
+    any outpost.
+  - *Iron*: iron tools and arrowheads once you mine iron.
+- **A livelier king:** bigger, with a cape that streams out at a gallop,
+  longer strides, a big draw-and-loose on every shot with a glint from the
+  bow, coloured arrow trails, and a shimmer on the grandest bows.
 - **Outposts serve the king:** tap a built outpost for the same King upgrades
   as the castle (bow, weapons, horse) and an Army tab that trains troops on
   the spot once you have Barracks, so there's no ride home.

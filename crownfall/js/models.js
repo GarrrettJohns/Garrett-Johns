@@ -4,6 +4,7 @@
 
 import * as THREE from './vendor/three.js';
 import { STRONGHOLD } from './map.js';
+import { ROYAL_BOW } from './config.js';
 
 export const C = {
   grass: 0x6cbf4f, grassDark: 0x5aa843, forest: 0x3f8c3a, sand: 0xe6c99a, sandDark: 0xd2b07a,
@@ -610,7 +611,10 @@ export function siteGeo(size) {
 function part(build, o = {}) {
   const b = new Builder();
   build(b);
-  return { geo: b.build(), pivot: o.pivot || [0, 0, 0], anim: o.anim || 'none', tint: !!o.tint, show: o.show || null, hide: o.hide || null, phase: o.phase || 0 };
+  return {
+    geo: b.build(), pivot: o.pivot || [0, 0, 0], anim: o.anim || 'none', tint: !!o.tint, show: o.show || null, hide: o.hide || null, phase: o.phase || 0,
+    tintKey: o.tintKey || null, only: o.only || null,   // per-part colour from st.tints[tintKey]; drawn only when st[only[0]] === only[1]
+  };
 }
 
 function humanoid({ body, legs, head = C.skin, hat, extra, arm, tintBody = false, bulk = 1, height = 1 }) {
@@ -674,7 +678,6 @@ export const RIGS = {
       b.box(0.66, 0.14, 0.5, C.gold, { y: 2.1 });
       b.box(0.3, 0.5, 0.2, C.white, { x: 0.38, y: 1.6, z: 0.15 });
       b.box(0.3, 0.5, 0.2, C.white, { x: -0.38, y: 1.6, z: 0.15 });
-      b.box(0.75, 0.9, 0.1, C.red, { y: 1.75, z: -0.3, rx: 0.15 });
       b.ball(0.3, C.skin, { y: 2.85 }, 1);
       b.box(0.42, 0.3, 0.2, 0xd8d0c4, { y: 2.62, z: 0.18 });
       b.cyl(0.3, 0.27, 0.2, 8, C.gold, { y: 3.05 });
@@ -684,11 +687,52 @@ export const RIGS = {
       }
       b.ball(0.06, C.blue, { y: 3.12, z: 0.29 });
     }));
+    // A royal cape that streams out behind him at a gallop.
     parts.push(part((b) => {
-      b.box(0.16, 0.5, 0.16, C.blue, { x: 0.42, y: 2.0 });
-      b.add(new THREE.TorusGeometry(0.55, 0.04, 3, 10, Math.PI), C.woodDark, { x: 0.5, y: 2.0, z: 0.35, rz: Math.PI / 2, ry: Math.PI / 2 });
-      b.box(0.02, 1.1, 0.02, C.white, { x: 0.5, y: 1.45, z: 0.35 });
-    }, { pivot: [0.42, 2.3, 0], anim: 'aim', hide: ['axe', 'pick'] }));
+      b.box(0.8, 1.0, 0.08, C.red, { y: 1.72, z: -0.3 });
+      b.box(0.82, 0.12, 0.1, C.gold, { y: 1.24, z: -0.3 });
+      b.box(0.86, 0.14, 0.16, 0xf4efe4, { y: 2.2, z: -0.27 });
+    }, { pivot: [0, 2.22, -0.3], anim: 'cape' }));
+    // Bow arm.
+    parts.push(part((b) => b.box(0.16, 0.5, 0.16, C.blue, { x: 0.42, y: 2.0 }), { pivot: [0.42, 2.3, 0], anim: 'aim', hide: ['axe', 'pick'] }));
+    // The Royal Bow, one set of parts per tier: limbs, string and gem are
+    // recoloured by the king's chosen style; the grip stays leather.
+    const BOW = { pivot: [0.42, 2.3, 0], anim: 'aim', hide: ['axe', 'pick'] };
+    ROYAL_BOW.forEach((tier, k) => {
+      const S = tier.size, R = 0.96 * S, cx = 0.54, cy = 2.1, cz = 0.32;
+      const at = (th, r = R) => ({ y: cy + r * Math.cos(th), z: cz + r * Math.sin(th) });
+      parts.push(part((b) => {
+        const LIMB = 0xf7f1e2;
+        b.add(new THREE.TorusGeometry(R, 0.07 * S + 0.012 * k, 4, 14, Math.PI), LIMB, { x: cx, y: cy, z: cz, rz: Math.PI / 2, ry: Math.PI / 2 });
+        // Tips: recurve hooks from tier 1, wings from tier 3, a crown at tier 4.
+        for (const th of [0.04, Math.PI - 0.04]) {
+          const p = at(th);
+          const up = th < 1 ? 1 : -1;
+          b.cone(0.07 * S, 0.22 * S, 5, LIMB, { x: cx, y: p.y + up * 0.08, z: p.z - 0.02, rx: up > 0 ? 0 : Math.PI });
+          if (k >= 1) b.add(new THREE.TorusGeometry(0.12 * S, 0.03 * S, 3, 8, Math.PI), LIMB, { x: cx, y: p.y + up * 0.12, z: p.z - 0.12, rz: Math.PI / 2, ry: Math.PI / 2, rx: up > 0 ? 0 : Math.PI });
+        }
+        if (k >= 2) b.add(new THREE.TorusGeometry(R * 0.86, 0.025 * S, 3, 12, Math.PI * 0.8), LIMB, { x: cx, y: cy, z: cz, rz: Math.PI / 2, ry: Math.PI / 2, rx: Math.PI * 0.1 });
+        if (k >= 3) {
+          for (const th of [0.75, Math.PI - 0.75]) {
+            const p = at(th, R + 0.05);
+            const up = th < 1.5 ? 1 : -1;
+            b.box(0.03, 0.42 * S, 0.12 * S, LIMB, { x: cx, y: p.y + up * 0.1, z: p.z + 0.12, rx: up * 0.7 });
+            b.box(0.03, 0.3 * S, 0.1 * S, LIMB, { x: cx, y: p.y + up * 0.22, z: p.z + 0.02, rx: up * 1.0 });
+          }
+        }
+        if (k >= 4) {
+          const g = at(Math.PI / 2, R + 0.1);
+          for (let i = -2; i <= 2; i++) b.cone(0.045, 0.22, 4, LIMB, { x: cx, y: g.y + i * 0.08, z: g.z + 0.08, rx: Math.PI / 2 - i * 0.25 });
+        }
+      }, { ...BOW, tintKey: 'bow', only: ['tier', k] }));
+      // String.
+      parts.push(part((b) => b.box(0.022, 2 * R, 0.022, 0xffffff, { x: cx, y: cy, z: cz }), { ...BOW, tintKey: 'string', only: ['tier', k] }));
+      // Leather grip.
+      const g = at(Math.PI / 2);
+      parts.push(part((b) => b.box(0.11, 0.3 * S, 0.11, 0x5a3a24, { x: cx, y: g.y, z: g.z }), { ...BOW, only: ['tier', k] }));
+      // Gem in the grip.
+      parts.push(part((b) => b.ball(0.085 * S, 0xffffff, { x: cx, y: g.y, z: g.z + 0.09 }, 0), { ...BOW, tintKey: 'gem', only: ['gemTier', k] }));
+    });
     // The king's tools: an axe in the forest, a pickaxe in the highland.
     for (const tool of ['axe', 'pick']) {
       parts.push(part((b) => {

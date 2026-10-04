@@ -79,6 +79,10 @@ export const WEAPONS = {
     name: 'Multishot', icon: '🌟', desc: 'Loose three arrows at three different targets.',
     dmg: 0.75, interval: 1.15, speed: 34, count: 3, cost: { gold: 220, wood: 60, stone: 40 }, castle: 3,
   },
+  storm: {
+    name: 'Storm Bow', icon: '⚡', desc: 'Arrows crackle with lightning that leaps to two more enemies.',
+    dmg: 1.05, interval: 1.0, speed: 46, chain: 2, cost: { gold: 300, stone: 60, iron: 40 }, castle: 3,
+  },
 };
 
 // Buildings. `size` is the footprint in metres (square). `place` buildings
@@ -192,9 +196,9 @@ export const BUILDINGS = {
     ],
   },
   blacksmith: {
-    name: 'Blacksmith', icon: '🔨', size: 6, place: true, castle: 2,
-    desc: 'Forges iron into better tools and arrowheads for the whole kingdom.',
-    levels: [{ cost: { gold: 80, wood: 40, stone: 30 } }],
+    name: 'Blacksmith', icon: '🛠️', size: 6, place: true,
+    desc: "The king's forge: new weapons, his Royal Bow and its finish, and iron tools once you have iron.",
+    levels: [{ cost: { gold: 70 } }],
   },
   // Stone-throwers: slow, long range, and they smash whole groups.
   catapult: {
@@ -355,5 +359,62 @@ export const SMITH = {
     desc: 'Harder-hitting arrows for the king, archers and towers.',
     values: [1, 1.15, 1.3, 1.5],
     costs: [{ gold: 90, iron: 30 }, { gold: 160, iron: 60 }, { gold: 260, iron: 120 }],
+  },
+};
+
+// The king's own bow, forged ever finer at the Blacksmith. Each tier is
+// bigger, flashier and hits harder (a multiplier on the king's arrows).
+export const ROYAL_BOW = [
+  { name: 'Golden Longbow', mul: 1, size: 0.9 },
+  { name: 'Gilded Recurve', mul: 1.12, size: 1.0, cost: { gold: 120, wood: 30 } },
+  { name: 'Sunforged Bow', mul: 1.25, size: 1.08, cost: { gold: 220, wood: 40, stone: 40 } },
+  { name: 'Dragonwing Bow', mul: 1.42, size: 1.16, cost: { gold: 340, stone: 80, iron: 30 }, castle: 3 },
+  { name: 'Crown of Arrows', mul: 1.65, size: 1.26, cost: { gold: 520, stone: 120, iron: 80 }, castle: 4 },
+];
+
+// How the king's bow looks: the finish of its limbs, a gem in the grip, the
+// colour of the string and the trail his arrows leave. Bought once, then
+// switch freely.
+export const STYLES = {
+  finish: {
+    label: 'Bow finish',
+    options: {
+      gold: { name: 'Royal Gold', color: 0xf2c33a, cost: null },
+      silver: { name: 'Moon Silver', color: 0xdfe6ee, cost: { gold: 40 } },
+      crimson: { name: 'Crimson Lacquer', color: 0xc8332c, cost: { gold: 50 } },
+      azure: { name: 'Azure Enamel', color: 0x3a7fe0, cost: { gold: 50 } },
+      obsidian: { name: 'Obsidian', color: 0x2c2a34, cost: { gold: 70, stone: 20 } },
+      jade: { name: 'Jade', color: 0x3fbf86, cost: { gold: 70, stone: 20 } },
+    },
+  },
+  gem: {
+    label: 'Grip gem',
+    options: {
+      none: { name: 'No gem', color: null, cost: null },
+      ruby: { name: 'Ruby', color: 0xff2e4a, cost: { gold: 45 } },
+      sapphire: { name: 'Sapphire', color: 0x2e7bff, cost: { gold: 45 } },
+      emerald: { name: 'Emerald', color: 0x2ee07a, cost: { gold: 45 } },
+      amethyst: { name: 'Amethyst', color: 0xb44dff, cost: { gold: 60 } },
+      sun: { name: 'Sunstone', color: 0xffb21e, cost: { gold: 90, iron: 10 } },
+    },
+  },
+  string: {
+    label: 'Bowstring',
+    options: {
+      white: { name: 'Linen', color: 0xf4f0e6, cost: null },
+      gold: { name: 'Gold thread', color: 0xffd84a, cost: { gold: 30 } },
+      red: { name: 'Red silk', color: 0xff4a3a, cost: { gold: 30 } },
+      shadow: { name: 'Shadow cord', color: 0x24202c, cost: { gold: 30 } },
+    },
+  },
+  trail: {
+    label: 'Arrow trail',
+    options: {
+      gold: { name: 'Golden sparks', color: 0xffd84a, cost: null },
+      fire: { name: 'Embers', color: 0xff7a2a, cost: { gold: 40 } },
+      frost: { name: 'Frost', color: 0x9ae6ff, cost: { gold: 40 } },
+      royal: { name: 'Royal violet', color: 0xc070ff, cost: { gold: 50 } },
+      leaf: { name: 'Forest', color: 0x7ee05a, cost: { gold: 40 } },
+    },
   },
 };
