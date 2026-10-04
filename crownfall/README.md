@@ -70,6 +70,15 @@ It then launches full screen and works offline.
 - **A livelier king:** bigger, with a cape that streams out at a gallop,
   longer strides, a big draw-and-loose on every shot with a glint from the
   bow, coloured arrow trails, and a shimmer on the grandest bows.
+- **The final siege is hard on purpose:** the stronghold has a 30-strong
+  elite garrison in front of the gate, in the courtyard and around the keep,
+  a tougher gate, towers and keep, and 12 fresh troops every 18 seconds. Only
+  one Barracks fits inside the castle walls and one on each outpost's land,
+  so an army big enough (the guide asks for 55) means building Barracks and
+  Houses at every outpost. In simulation a fully upgraded king loses with 22
+  or 30 soldiers, is a coin flip at 45 and wins every time with 55+.
+- **Notifications** appear at the top under the objective, stay for 15
+  seconds or until you tap ✕, and stack up to four.
 - **Outposts serve the king:** tap a built outpost for the same King upgrades
   as the castle (bow, weapons, horse) and an Army tab that trains troops on
   the spot once you have Barracks, so there's no ride home.

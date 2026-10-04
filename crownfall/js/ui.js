@@ -5,7 +5,7 @@ import { BUILDINGS } from './config.js';
 
 const $ = (id) => document.getElementById(id);
 const PLACEABLE = ['house', 'warehouse', 'farm', 'barracks', 'blacksmith'];
-const LIMIT = { barracks: 2, blacksmith: 1 };
+const LIMIT = { barracks: 4, blacksmith: 1 };
 const TAB_ICON = { King: '👑', Army: '⚔️', Castle: '🏰', Bow: '🏹', Style: '✨', Weapons: '⚔️', Iron: '⚙️' };
 
 export class UI {
@@ -411,17 +411,40 @@ export class UI {
     this.bannerT = dur;
   }
 
+  // Notifications sit at the top under the objective and stay for 15 seconds
+  // or until tapped away. A repeat of one already showing just restarts it.
   toast(text, warn = false) {
-    // Don't stack the same message.
-    const now = performance.now();
-    if (now - (this.toastSeen.get(text) || 0) < 1800) return;
-    this.toastSeen.set(text, now);
+    const box = this.el.toasts;
+    for (const d of box.children) {
+      if (d.dataset.text === text && !d.classList.contains('out')) { this.armToast(d); return; }
+    }
     const d = document.createElement('div');
     d.className = `toast${warn ? ' warn' : ''}`;
-    d.textContent = text;
-    this.el.toasts.appendChild(d);
-    while (this.el.toasts.children.length > 3) this.el.toasts.firstChild.remove();
-    setTimeout(() => d.remove(), 2700);
+    d.dataset.text = text;
+    const span = document.createElement('span');
+    span.textContent = text;
+    const x = document.createElement('button');
+    x.type = 'button';
+    x.setAttribute('aria-label', 'Dismiss');
+    x.textContent = '✕';
+    x.addEventListener('click', (e) => { e.stopPropagation(); this.dropToast(d); });
+    d.append(span, x);
+    box.appendChild(d);
+    this.armToast(d);
+    const live = [...box.children].filter((c) => !c.classList.contains('out'));
+    while (live.length > 4) this.dropToast(live.shift());
+  }
+
+  armToast(d) {
+    clearTimeout(d._t);
+    d._t = setTimeout(() => this.dropToast(d), 15000);
+  }
+
+  dropToast(d) {
+    if (!d || d.classList.contains('out')) return;
+    clearTimeout(d._t);
+    d.classList.add('out');
+    setTimeout(() => d.remove(), 320);
   }
 
   float(pt, text, color = '#fff') {

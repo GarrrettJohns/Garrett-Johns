@@ -27,6 +27,20 @@ export const KING_SWING = 0.5;      // the king swings faster
 const HUT_REACH = 24;        // how far from their hut workers will go for trees and rocks
 const STOCK_CAP = 60;        // a hut's stockpile
 const GOLD_PER_ITEM = 5;
+// The stronghold's garrison: [kind, x from centre, z from the gate line].
+// Negative z stands in front of the gate, positive inside the courtyard.
+const GARRISON = [
+  ...[-9, -6, -3, 0, 3, 6, 9].map((x) => ['grunt', x, -6]),
+  ...[-7.5, -2.5, 2.5, 7.5].map((x) => ['brute', x, -9]),
+  ...[-8, -4, 4, 8].map((x) => ['archer', x, -3]),
+  ...[-10, 10].map((x) => ['hound', x, -11]),
+  ...[-6, -2, 2, 6].map((x) => ['grunt', x, 6]),
+  ...[-4, 0, 4].map((x) => ['brute', x, 9]),
+  ...[-9, 9].map((x) => ['archer', x, 8]),
+  // The keep's own guard.
+  ...[-6, -3, 0, 3, 6].map((x) => ['brute', x, 15]),
+  ...[-8, -4, 4, 8].map((x) => ['grunt', x, 13]),
+];
 const DEFAULT_STYLE = { finish: 'gold', gem: 'none', string: 'white', trail: 'gold' };
 const HUT_RES = { lumber: 'wood', quarry: 'stone', ironmine: 'iron' };     // a wheelbarrow "item" of gold is a sack of 5 coins
 const GATHER_REACH = 3.2;
@@ -215,6 +229,12 @@ const OBJECTIVES = [
     at: (w) => w.b['outpost-1'],
   },
   {
+    text: 'Build Barracks on Riverford’s land: each outpost can raise its own troops',
+    tip: 'army',
+    done: (w) => w.list('barracks').some((b) => b.state === 'built' && w.inOutpostLand(b)),
+    at: (w) => w.b['outpost-1'],
+  },
+  {
     text: 'Build the Iron Mine in the Iron Hills past Riverford',
     tip: 'iron',
     done: (w) => w.built('ironmine-1'),
@@ -234,6 +254,12 @@ const OBJECTIVES = [
     text: 'Build the Siege Camp in sight of the stronghold',
     done: (w) => w.built('outpost-3'),
     at: (w) => w.b['outpost-3'],
+  },
+  {
+    text: 'Muster 55 soldiers for the siege: Barracks and Houses at every outpost',
+    tip: 'siege',
+    done: (w) => w.won || w.soldiers >= 55,
+    at: () => null,
   },
   {
     text: 'Lay siege! Break the gate and bring down the keep',
@@ -889,6 +915,13 @@ export class World {
     }
     // Keep a lane open around everything so the king can always ride between.
     const GAP = 2;
+    // One Barracks per area: the castle grounds and each outpost's land.
+    if (type === 'barracks') {
+      const zn = this.buildZones().find((z0) => Math.abs(x - z0.x) + h <= z0.h && Math.abs(z - z0.z) + h <= z0.h);
+      if (zn && this.list('barracks').some((b) => Math.abs(b.x - zn.x) <= zn.h && Math.abs(b.z - zn.z) <= zn.h)) {
+        return { ok: false, reason: zn.castle ? 'One Barracks here: build the next on an outpost\'s land' : 'This outpost already has Barracks' };
+      }
+    }
     if (Math.abs(x) < CASTLE_R + h + GAP && Math.abs(z) < CASTLE_R + h + GAP) return { ok: false, reason: 'Too close to the castle' };
     for (const o of Object.values(this.b)) {
       if (o.type === 'castle') continue;
@@ -988,12 +1021,25 @@ export class World {
     add('stower', S.x + 11, S.gateZ + 3);
     this.sgKeep = add('skeep', S.x, S.z + 4, { invuln: true });
     this.reinforceT = 30;
+    // The garrison: elite defenders who hold the ground before the gate and
+    // the courtyard behind it. The king can't win this alone.
+    const hpK = 3.2 * this.spec.hpMul * mul, dmgK = this.spec.dmgMul * 1.5;
+    const post = (kind, x, z) => {
+      const def = ENEMIES[kind];
+      this.enemies.push({
+        id: this.id(), kind, lane: LANE.S, s: 0, off: 0, x, z, yaw: Math.PI, guard: { x, z, camp: 'stronghold' },
+        hp: def.hp * hpK, max: def.hp * hpK, dmg: def.dmg * dmgK, atkCd: rand(0, 1), speed: def.speed * 1.1,
+        target: null, retarget: Math.random() * 0.3, burn: 0, burnDps: 0, flash: 0, anim: Math.random() * 10, moving: false,
+        attackT: 0, def, scale: (def.scale || 1) * 1.1, coins: def.coins + 3, name: null, elite: true,
+      });
+    };
+    GARRISON.forEach(([kind, dx, dz]) => post(kind, S.x + dx, S.gateZ + dz));
   }
 
   spawnEnemy(q) {
     const def = ENEMIES[q.kind];
     const spec = this.spec;
-    const hp = def.hp * spec.hpMul * (q.boss ? q.boss.hpMul : 1);
+    const hp = def.hp * spec.hpMul * (q.boss ? q.boss.hpMul : 1) * (q.hpK || 1);
     const lane = LANE[q.lane];
     // Southern troops muster just past the frontier (or at the stronghold gate).
     const s0 = q.s ?? (lane.id === 'S' ? laneAtZ(lane, Math.min(STRONGHOLD.gateZ, this.frontier + 10)) : 0);
@@ -1926,7 +1972,7 @@ export class World {
   campsAlive() {
     const out = {};
     for (const c of CAMPS) out[c.id] = 0;
-    for (const e of this.enemies) if (e.guard && e.hp > 0) out[e.guard.camp]++;
+    for (const e of this.enemies) if (e.guard && e.hp > 0 && e.guard.camp in out) out[e.guard.camp]++;
     return out;
   }
 
@@ -2327,10 +2373,10 @@ export class World {
       if (this.siege && !this.spawnQueue.length) {
         this.reinforceT -= dt;
         if (this.reinforceT <= 0) {
-          this.reinforceT = 26;
+          this.reinforceT = 18;
           const lanes = this.lanesOpen;
-          const kinds = ['grunt', 'grunt', 'grunt', 'archer', 'brute', 'raider', 'grunt', 'archer'];
-          this.spawnQueue = kinds.map((kind, i) => ({ kind, lane: i < 4 ? 'S' : lanes[i % lanes.length].id }));
+          const kinds = ['grunt', 'grunt', 'grunt', 'brute', 'archer', 'hound', 'grunt', 'brute', 'archer', 'raider', 'grunt', 'hound'];
+          this.spawnQueue = kinds.map((kind, i) => ({ kind, lane: i < 8 ? 'S' : lanes[i % lanes.length].id, hpK: i < 8 ? 1.4 : 1 }));
         }
       }
     }

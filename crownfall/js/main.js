@@ -122,6 +122,19 @@ const TIPS = {
       <li><b>⚔️ Weapons</b>: forge the Crossbow, Fire arrows, Multishot and the Storm Bow. Switch between them at the castle or any outpost.</li>
       <li><b>⚙️ Iron</b>: once you mine iron, iron tools and arrowheads.</li>
     </ul>`],
+  army: ['⚔️ Raising an army', `
+    <p>Only <b>one Barracks</b> fits inside the castle walls. Every outpost's land can hold <b>one more</b>, and each Barracks you build and upgrade lets you field more soldiers.</p>
+    <ul>
+      <li>Soldiers are villagers who enlist, so build <b>Houses</b> on the outpost land too.</li>
+      <li>Train troops at any outpost's Army tab once it has Barracks.</li>
+    </ul>`],
+  siege: ['🏰 The enemy stronghold', `
+    <p>The stronghold is held by a <b>garrison of elite troops</b>, towers, a massive gate and keep, and fresh troops pour out every few seconds. The king cannot take it alone.</p>
+    <ul>
+      <li>Muster at least <b>55 soldiers</b>: that takes upgraded Barracks at the castle <b>and every outpost</b>, with Houses to fill them.</li>
+      <li>Tap 🚩 Follow me so they march with you, and keep the king behind the line.</li>
+      <li>Leave your home towers and gates strong: the enemy still attacks the castle while you're away.</li>
+    </ul>`],
   catapult: ['☄️ Catapults', `
     <p>Your stone builds a new kind of defence. A catapult hurls a boulder into the <b>thickest pack of enemies</b> it can reach, hurting everyone in the blast.</p>
     <ul>

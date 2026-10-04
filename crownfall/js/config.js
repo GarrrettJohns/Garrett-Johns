@@ -127,7 +127,7 @@ export const BUILDINGS = {
   },
   barracks: {
     name: 'Barracks', icon: '⚔️', size: 6, place: true,
-    desc: 'Where the army is raised: villagers enlist here as knights, archers and raiders.',
+    desc: 'Where the army is raised: villagers enlist here as knights, archers and raiders. One per area: the castle grounds and each outpost\'s land.',
     levels: [
       { army: 6, cost: { gold: 60 } },
       { army: 10, cost: { gold: 120, wood: 50 } },
@@ -283,9 +283,9 @@ export const ENEMIES = {
   fgate: { name: 'Mountain Fort Gate', hp: 900, dmg: 0, interval: 9, range: 0, speed: 0, aggro: 0, coins: 40, radius: 2.6, armor: 2, structure: true },
   ftower: { name: 'Fort Tower', hp: 480, dmg: 8, interval: 1.3, range: 12, speed: 0, aggro: 12, coins: 25, radius: 1.8, armor: 1, structure: true, ranged: true },
   // The enemy stronghold's defences: they never move.
-  sgate: { name: 'Stronghold Gate', hp: 2600, dmg: 0, interval: 9, range: 0, speed: 0, aggro: 0, coins: 80, radius: 3.4, armor: 3, structure: true },
-  stower: { name: 'Stronghold Tower', hp: 1300, dmg: 13, interval: 1.2, range: 14, speed: 0, aggro: 14, coins: 50, radius: 2.2, armor: 2, structure: true, ranged: true },
-  skeep: { name: 'Stronghold Keep', hp: 4200, dmg: 0, interval: 9, range: 0, speed: 0, aggro: 0, coins: 250, radius: 4.5, armor: 3, structure: true },
+  sgate: { name: 'Stronghold Gate', hp: 4200, dmg: 0, interval: 9, range: 0, speed: 0, aggro: 0, coins: 80, radius: 3.4, armor: 3, structure: true },
+  stower: { name: 'Stronghold Tower', hp: 1900, dmg: 16, interval: 1.2, range: 14, speed: 0, aggro: 14, coins: 50, radius: 2.2, armor: 2, structure: true, ranged: true },
+  skeep: { name: 'Stronghold Keep', hp: 9500, dmg: 0, interval: 9, range: 0, speed: 0, aggro: 0, coins: 250, radius: 4.5, armor: 3, structure: true },
   boss: { name: 'Warlord', hp: 1100, dmg: 34, interval: 1.7, range: 2.6, speed: 1.5, aggro: 6, coins: 60, radius: 1.5, armor: 2, scale: 2.8, slam: 3.2 },
 };
 
