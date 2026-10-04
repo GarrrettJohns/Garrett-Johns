@@ -1458,6 +1458,8 @@ export class Renderer {
         }
         break;
       }
+      case 'structHit': if (Math.random() < 0.35) this.spark(ev.x, 2.5, ev.z, 0xc8a070, 4, 0.18, 3, 0.5); break;
+      case 'wrecked': this.spark(ev.x, 2, ev.z, 0x9a7a5a, 34, 0.35, 6, 1.1, 8); this.ring(ev.x, ev.z, 5, 0xff8a3a, 0.7); this.shake = Math.max(this.shake, 0.8); break;
       case 'forged':
         this.ring(ev.x, ev.z, 3.2, 0xffd84a, 0.8);
         this.spark(ev.x, 2.4, ev.z, 0xffd84a, 30, 0.18, 5, 0.9, 6);

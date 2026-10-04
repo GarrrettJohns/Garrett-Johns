@@ -41,6 +41,19 @@ const GARRISON = [
   ...[-6, -3, 0, 3, 6].map((x) => ['brute', x, 15]),
   ...[-8, -4, 4, 8].map((x) => ['grunt', x, 13]),
 ];
+// How far soldiers riding with the king reach out to fight.
+const ESCORT = {
+  guard: 15,   // enemies this close to the king draw the whole escort
+  rush: 34,    // ...if the soldier is within this distance of them
+  reach: 16,   // otherwise each soldier takes on enemies this close to it
+  leash: 26,   // as long as they're within this of the king
+};
+// Hit points for defences the siege's columns can wreck, by level.
+const STRUCT_HP = {
+  tower: (lv) => 500 + 300 * lv,
+  catapult: (lv) => 900 + 300 * lv,
+  outpost: () => 3000,
+};
 const DEFAULT_STYLE = { finish: 'gold', gem: 'none', string: 'white', trail: 'gold' };
 const HUT_RES = { lumber: 'wood', quarry: 'stone', ironmine: 'iron' };     // a wheelbarrow "item" of gold is a sack of 5 coins
 const GATHER_REACH = 3.2;
@@ -256,9 +269,9 @@ const OBJECTIVES = [
     at: (w) => w.b['outpost-3'],
   },
   {
-    text: 'Muster 55 soldiers for the siege: Barracks and Houses at every outpost',
+    text: 'Muster 65 soldiers for the siege: upgraded Barracks and Houses at every outpost',
     tip: 'siege',
-    done: (w) => w.won || w.soldiers >= 55,
+    done: (w) => w.won || w.soldiers >= 65,
     at: () => null,
   },
   {
@@ -567,6 +580,7 @@ export class World {
   padVisible(b) {
     if (b.state === 'built') return true;
     const t = BUILDINGS[b.type];
+    if (b.needs && !this.built(b.needs)) return false;
     if (b.type === 'tower') return LANE[b.lane].opens <= this.wave + 3;
     if (b.type === 'outpost') return OUTPOST[b.id].index === 0 || this.built(OUTPOSTS[OUTPOST[b.id].index - 1].id);
     if (b.needs && !this.built(b.needs)) return false;
@@ -1020,7 +1034,15 @@ export class World {
     add('stower', S.x - 11, S.gateZ + 3);
     add('stower', S.x + 11, S.gateZ + 3);
     this.sgKeep = add('skeep', S.x, S.z + 4, { invuln: true });
-    this.reinforceT = 30;
+    this.reinforceT = 20;
+    this.reinforceN = 0;
+    // The enemy marches on the road: towers, catapults and outposts in its
+    // way can now be battered down.
+    for (const b of Object.values(this.b)) {
+      if (b.state !== 'built' || !STRUCT_HP[b.type]) continue;
+      b.bld = true; b.gone = false;
+      b.max = b.hp = STRUCT_HP[b.type](b.level);
+    }
     // The garrison: elite defenders who hold the ground before the gate and
     // the courtyard behind it. The king can't win this alone.
     const hpK = 3.2 * this.spec.hpMul * mul, dmgK = this.spec.dmgMul * 1.5;
@@ -1042,7 +1064,7 @@ export class World {
     const hp = def.hp * spec.hpMul * (q.boss ? q.boss.hpMul : 1) * (q.hpK || 1);
     const lane = LANE[q.lane];
     // Southern troops muster just past the frontier (or at the stronghold gate).
-    const s0 = q.s ?? (lane.id === 'S' ? laneAtZ(lane, Math.min(STRONGHOLD.gateZ, this.frontier + 10)) : 0);
+    const s0 = q.s ?? (lane.id === 'S' ? laneAtZ(lane, this.siege ? STRONGHOLD.gateZ : Math.min(STRONGHOLD.gateZ, this.frontier + 10)) : 0);
     const e = {
       id: this.id(), kind: q.kind, lane, s: s0, off: rand(-1, 1) * (q.kind === 'boss' ? 0 : 1.1),
       x: 0, z: 0, yaw: 0, hp, max: hp, dmg: def.dmg * spec.dmgMul, atkCd: rand(0, 0.5),
@@ -1525,8 +1547,7 @@ export class World {
         gx = hero.x + fz * lx + fx * lz;
         gz = hero.z - fx * lx + fz * lz;
         a.post = null;
-        if (a.kind === 'archer') target = this.nearestEnemy(a.x, a.z, u.range);
-        else { const e = this.nearestEnemy(a.x, a.z, 7); if (e && hyp(e.x - hero.x, e.z - hero.z) < 11) target = e; }
+        target = this.escortTarget(a);
       } else if (a.kind === 'archer') {
         if (repost && !a.post?.startsWith?.('tower')) {
           const t = this.freeTowerSlot(a.x, a.z);
@@ -1563,9 +1584,8 @@ export class World {
           gx = hero.x + fz * lx + fx * lz;
           gz = hero.z - fx * lx + fz * lz;
         } else { gx = (a.slot % 4) * 1.5 - 2.25; gz = CASTLE_R + 2 + Math.floor(a.slot / 4) * 1.4; }
-        const anchorX = hero.alive ? hero.x : 0, anchorZ = hero.alive ? hero.z : CASTLE_R;
-        const e = this.nearestEnemy(a.x, a.z, 7);
-        if (e && hyp(e.x - anchorX, e.z - anchorZ) < 11) target = e;
+        if (hero.alive) target = this.escortTarget(a);
+        else { const e = this.nearestEnemy(a.x, a.z, 7); if (e && hyp(e.x - gx, e.z - gz) < 11) target = e; }
       } else if (a.kind === 'raider') {
         gx = (a.id % 5) * 1.4 - 2.8; gz = CASTLE_R + 3.5;
         target = this.nearestEnemy(a.x, a.z, 60);
@@ -1575,7 +1595,8 @@ export class World {
         const d = hyp(target.x - a.x, target.z - a.z);
         a.yaw = Math.atan2(target.x - a.x, target.z - a.z);
         if (d > u.range + target.def.radius) {
-          if (a.kind !== 'archer') { gx = target.x; gz = target.z; }
+          // Escorting archers close to bow range; everyone else charges.
+          if (a.kind !== 'archer' || a.follow || this.rally) { gx = target.x; gz = target.z; }
         } else {
           gx = a.x; gz = a.z;
           if (a.atkCd <= 0) {
@@ -1601,6 +1622,18 @@ export class World {
       }
     }
     separate(this.allies, 0.45);
+  }
+
+  // Who a soldier riding with the king should fight: anything closing on the
+  // king first (the whole escort turns on it), else whatever is near the
+  // soldier, as long as the king isn't left too far behind.
+  escortTarget(a) {
+    const hero = this.hero;
+    const threat = this.nearestEnemy(hero.x, hero.z, ESCORT.guard);
+    if (threat && hyp(threat.x - a.x, threat.z - a.z) < ESCORT.rush) return threat;
+    const own = this.nearestEnemy(a.x, a.z, a.kind === 'archer' ? Math.max(UNITS.archer.range, ESCORT.reach) : ESCORT.reach);
+    if (own && hyp(own.x - hero.x, own.z - hero.z) < ESCORT.leash) return own;
+    return null;
   }
 
   nearestEnemy(x, z, range) {
@@ -1682,6 +1715,7 @@ export class World {
     if (p.from === 'enemy') {
       if (t === this.hero) this.hurtHero(p.dmg);
       else if (t.gate) this.hurtGate(t, p.dmg);
+      else if (t.bld) this.hurtStructure(t, p.dmg);
       else if (t.castle) this.hurtCastle(p.dmg);
       else this.hurtAlly(t, p.dmg);
       return;
@@ -1810,6 +1844,20 @@ export class World {
     if (g.hp <= 0) { g.hp = 0; this.emit('gateBroken', { lane: g.lane, x: g.x, z: g.z }); }
   }
 
+  // A tower, catapult or outpost under attack in the siege. At zero it is
+  // wrecked back to a build pad (its posted archers are lost).
+  hurtStructure(b, dmg) {
+    if (b.state !== 'built' || !(b.hp > 0)) return;
+    b.hp -= dmg;
+    b.flash = 1;
+    this.emit('structHit', { x: b.x, z: b.z });
+    if (b.hp > 0) return;
+    const name = b.type === 'outpost' ? OUTPOST[b.id].name : b.type === 'catapult' ? BUILDINGS.catapult.levels[b.level].name : BUILDINGS.tower.levels[b.level].name;
+    b.hp = 0; b.gone = true; b.bld = false;
+    b.state = 'site'; b.level = 0; b.garrison = 0;
+    this.emit('wrecked', { x: b.x, z: b.z, name, outpost: b.type === 'outpost' });
+  }
+
   hurtCastle(dmg) {
     if (this.phase !== 'wave') return;
     this.castleHp -= dmg;
@@ -1858,7 +1906,19 @@ export class World {
           for (const a of this.allies) { const d = hyp(a.x - e.x, a.z - e.z); if (d < bd) { bd = d; best = a; } }
           e.target = best;
         }
-        if (e.target && hyp(e.x - homeX, e.z - homeZ) > (e.guard ? 10 : def.leash || 10)) e.target = null;
+        // In the siege, columns marching on the road turn on any tower,
+        // catapult or outpost they come across.
+        if (!e.target && this.siege && !e.guard) {
+          let best = null, bd = def.ranged ? def.range : 7;
+          for (const b of Object.values(this.b)) {
+            if (!b.bld || b.state !== 'built' || !(b.hp > 0)) continue;
+            const d = hyp(b.x - e.x, b.z - e.z) - b.size / 2;
+            if (d < bd) { bd = d; best = b; }
+          }
+          if (best) e.target = best;
+        }
+        if (e.target && !e.target.bld && hyp(e.x - homeX, e.z - homeZ) > (e.guard ? 10 : def.leash || 10)) e.target = null;
+        if (e.target?.bld && (e.target.state !== 'built' || !(e.target.hp > 0))) e.target = null;
       }
 
       let mx = 0, mz = 0, want = 0;
@@ -1870,7 +1930,7 @@ export class World {
       } else if (t) {
         const d = hyp(t.x - e.x, t.z - e.z);
         e.yaw = Math.atan2(t.x - e.x, t.z - e.z);
-        if (d > def.range + 0.6) { mx = (t.x - e.x) / d; mz = (t.z - e.z) / d; want = e.speed * 1.1; }
+        if (d > def.range + 0.6 + (t.bld ? t.size / 2 : 0)) { mx = (t.x - e.x) / d; mz = (t.z - e.z) / d; want = e.speed * 1.1; }
         else if (e.atkCd <= 0) this.enemyAttack(e, t);
       } else if (e.guard) {
         const dHome = hyp(homeX - e.x, homeZ - e.z);
@@ -2001,6 +2061,7 @@ export class World {
     }
     if (t === 'castle') this.hurtCastle(e.dmg);
     else if (t.gate) this.hurtGate(t, e.dmg * (e.kind === 'brute' ? 2 : 1));
+    else if (t.bld) this.hurtStructure(t, e.dmg * (e.kind === 'brute' ? 2.5 : 1.2));
     else if (t === this.hero) this.hurtHero(e.dmg);
     else this.hurtAlly(t, e.dmg);
   }
@@ -2050,14 +2111,14 @@ export class World {
     // South, the king can ride as far as the road he has claimed. At the
     // stronghold its gate holds him out until it is broken.
     let zMax = this.frontier - 1.5;
-    if (this.siegeReady) {
+    if (this.siegeReady || this.siege) {
       const gateUp = !this.sgGate || this.sgGate.hp > 0;
       if (Math.abs(nx - STRONGHOLD.x) < STRONGHOLD.half + 1) zMax = gateUp ? STRONGHOLD.gateZ - 2.5 : STRONGHOLD.z + 4;
       else zMax = STRONGHOLD.gateZ - 3;
     }
     nz = Math.max(-BOUNDS, Math.min(zMax, nz));
     // Gate down: in through the gateway only, and not through the walls.
-    if (this.siegeReady && this.sgGate && this.sgGate.hp <= 0 && !this.noclip) {
+    if ((this.siegeReady || this.siege) && this.sgGate && this.sgGate.hp <= 0 && !this.noclip) {
       const S = STRONGHOLD, r = HERO.radius, open = 2.9 - r;
       const z0 = S.gateZ - 1.1 - r, z1 = S.gateZ + 1.1 + r;
       if (nz > z0 && nz < z1 && Math.abs(nx - S.x) > open) nz = h.z < S.gateZ ? z0 : z1;
@@ -2373,10 +2434,19 @@ export class World {
       if (this.siege && !this.spawnQueue.length) {
         this.reinforceT -= dt;
         if (this.reinforceT <= 0) {
-          this.reinforceT = 18;
-          const lanes = this.lanesOpen;
-          const kinds = ['grunt', 'grunt', 'grunt', 'brute', 'archer', 'hound', 'grunt', 'brute', 'archer', 'raider', 'grunt', 'hound'];
-          this.spawnQueue = kinds.map((kind, i) => ({ kind, lane: i < 8 ? 'S' : lanes[i % lanes.length].id, hpK: i < 8 ? 1.4 : 1 }));
+          // Ever bigger columns pour out of the gate and march up the road,
+          // with a smaller raid on the other roads home.
+          const n = ++this.reinforceN;
+          this.reinforceT = 15;
+          const lanes = this.lanesOpen.filter((l) => l.id !== 'S');
+          const MIX = ['grunt', 'grunt', 'brute', 'archer', 'grunt', 'hound', 'brute', 'raider', 'archer', 'grunt'];
+          const column = Math.min(36, 12 + 3 * n), raid = Math.min(12, 3 + n);
+          const hpK = 1.4 * (1 + 0.08 * n);
+          this.spawnQueue = [
+            ...Array.from({ length: column }, (_, i) => ({ kind: MIX[i % MIX.length], lane: 'S', hpK })),
+            ...Array.from({ length: raid }, (_, i) => ({ kind: MIX[(i + 3) % MIX.length], lane: lanes[i % lanes.length]?.id || 'S' })),
+          ];
+          this.emit('column', { n, size: column });
         }
       }
     }

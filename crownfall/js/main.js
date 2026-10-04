@@ -132,7 +132,8 @@ const TIPS = {
   siege: ['🏰 The enemy stronghold', `
     <p>The stronghold is held by a <b>garrison of elite troops</b>, towers, a massive gate and keep, and fresh troops pour out every few seconds. The king cannot take it alone.</p>
     <ul>
-      <li>Muster at least <b>55 soldiers</b>: that takes upgraded Barracks at the castle <b>and every outpost</b>, with Houses to fill them.</li>
+      <li>Muster at least <b>65 soldiers</b>: that takes fully upgraded Barracks at the castle <b>and every outpost</b>, with Houses to fill them.</li>
+      <li>Columns of troops <b>keep pouring out of the gate</b> and march up the road, wrecking every tower, catapult and outpost they reach. Hold the road.</li>
       <li>Tap 🚩 Follow me so they march with you, and keep the king behind the line.</li>
       <li>Leave your home towers and gates strong: the enemy still attacks the castle while you're away.</li>
     </ul>`],
@@ -400,7 +401,7 @@ function devBuild(stage) {
     place('house', 10, null, 2);
     king(Object.fromEntries(Object.keys(HERO_UPGRADES).map((k) => [k, 99])), { weapons: ['crossbow', 'fire', 'multi', 'storm'], bow: 4, weapon: 'storm' });
     w.smith = { king: 3, workers: 3, arrows: 3 };
-    army(58);
+    army(66);
     w.wave = Math.max(w.wave, 15);
   }
   w.rebuildGates();
@@ -616,6 +617,8 @@ function handle(ev, events = []) {
     case 'need': audio.deny(); ui.toast(ev.text, true); break;
     case 'advice': audio.villager(); ui.toast(`💡 ${ev.text}`); break;
     case 'forged': audio.buy(); ui.banner('⚒️ Forged!', ev.title.replace(/^Forge the /, ''), 1.6); break;
+    case 'column': if (ev.n === 1 || ev.n % 3 === 0) ui.toast(`⚔️ A column of ${ev.size} marches out of the stronghold!`, true); break;
+    case 'wrecked': audio.crash(); ui.toast(`🔥 ${ev.name} ${ev.outpost ? 'has fallen' : 'was wrecked'}!`, true); break;
     case 'deposit': audio.spend(); ui.float(at(ev.x, 2.6, ev.z), `🏦 +${ev.n} banked`, '#ffe28a'); break;
     case 'rally': ui.toast(ev.on ? '🚩 Your troops ride with you' : '🏰 Troops head back to their posts'); break;
     case 'toast': ui.toast(ev.text); break;

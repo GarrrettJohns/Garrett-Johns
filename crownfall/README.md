@@ -71,21 +71,17 @@ It then launches full screen and works offline.
   longer strides, a big draw-and-loose on every shot with a glint from the
   bow, coloured arrow trails, and a shimmer on the grandest bows.
 - **The final siege is hard on purpose:** the stronghold has a 30-strong
-  elite garrison in front of the gate, in the courtyard and around the keep,
-  a tougher gate, towers and keep, and 12 fresh troops every 18 seconds. Only
-  one Barracks fits inside the castle walls and one on each outpost's land,
-  so an army big enough (the guide asks for 55) means building Barracks and
-  Houses at every outpost. In simulation a fully upgraded king loses with 22
-  or 30 soldiers, is a coin flip at 45 and wins every time with 55+.
-- **Developer tools** (top of the pause menu) stay open until closed, with a
-  status line showing what each button did. Jumps build the kingdom up the
-  way an average player would have it by then (towers and upgrades, houses,
-  barracks, camps, warehouse, blacksmith, the Mountain Fort taken, outposts
-  and their land, king upgrades and army), adding to what's already built.
-  Level jumps start the new biome with a settled kingdom, and *Siege ready*
-  sets up everything the siege needs (every outpost settled with level-3
-  Barracks and Houses, home defences, a maxed king and 58 soldiers at the
-  Siege Camp).
+  elite garrison, a tough gate, towers and keep, and ever bigger columns
+  (12, 15, 18... up to 36 troops, each tougher than the last) pour out of the
+  gate every 15 seconds and march up the road, battering down every tower,
+  catapult and outpost they reach, while smaller raids hit home. Only one
+  Barracks fits inside the castle walls and one on each outpost's land, so
+  the army it takes (the guide asks for 65 of a possible 70) means upgraded
+  Barracks and Houses at every outpost. In simulation with a fully upgraded
+  king: 50 soldiers lose, 58 is a coin flip, 64+ win.
+- **Escorts fight from further out:** soldiers riding with the king all turn
+  on anything that comes within 15 m of him, and otherwise take on enemies
+  within 16 m of themselves, so they don't hang back while he fights.
 - **Notifications** appear at the top under the objective, stay for 15
   seconds or until you tap ✕, and stack up to four.
 - **Outposts serve the king:** tap a built outpost for the same King upgrades
