@@ -113,6 +113,11 @@ flat(SITES.village.x, SITES.village.z, SITES.village.r, 8, true);
 flat(SITES.ruin.x, SITES.ruin.z, SITES.ruin.r - 1, 9, true);
 flat(SITES.ridge.x, SITES.ridge.z, 2.5, 5, true);
 flat(SITES.overlook.x, SITES.overlook.z, 1.5, 4, true);
+// The realms' landmarks too.
+for (const [id, S] of Object.entries(SITES)) {
+  if (['farmland', 'village', 'ruin', 'ridge', 'overlook', 'stonebridge', 'viaduct'].includes(id)) continue;
+  flat(S.x, S.z, S.r * 0.85, 8, true);
+}
 for (const p of FIXED_PADS) {
   if (p.type === 'outpost') flat(p.x, p.z, OUTPOST_ZONE + 1, 8);
   else if (p.type === 'pass') flat(FORT.x, FORT.z, 9, 14);

@@ -85,6 +85,22 @@ export const SITES = {
   overlook: { x: 54, z: -28, r: 4, name: 'The Foothill Overlook' },
   // A landmark, not an encounter: the broken arches of an older crossing.
   stonebridge: { x: -46, z: RIVER_Z, r: 6, name: 'The Old Stone Bridge' },
+  // The six realms' landmarks (world concept): scenery, not encounters.
+  hamlet: { x: -58, z: 66, r: 7, name: 'Meadow hamlet' },
+  hamlet2: { x: -62, z: -8, r: 7, name: 'West hamlet' },
+  sunCity: { x: -64, z: 128, r: 11, name: 'The Golden City of Sunscorch' },
+  oasis: { x: -38, z: 86, r: 7, name: 'The Oasis' },
+  mesa1: { x: -72, z: 96, r: 4, name: 'Red mesa' },
+  mesa2: { x: -30, z: 168, r: 4, name: 'Red mesa' },
+  frostCitadel: { x: 60, z: 186, r: 11, name: 'The Frost Citadel' },
+  frozenLake: { x: 32, z: 140, r: 7, name: 'The frozen lake' },
+  foundry: { x: 68, z: 104, r: 8, name: 'The Iron Foundry' },
+  lava1: { x: 76, z: 94, r: 3.5, name: 'Lava pool' },
+  lava2: { x: 44, z: 70, r: 3.5, name: 'Lava pool' },
+  mountainCastle: { x: 110, z: -70, r: 8, name: 'The Mountain Hold' },
+  viaduct: { x: 96, z: -80, r: 6, name: 'The high viaduct' },
+  warcamp: { x: -34, z: 204, r: 7, name: "The Warlord's camp" },
+  warcamp2: { x: 34, z: 200, r: 7, name: "The Warlord's camp" },
 };
 // Props at each site, offsets from its centre. `r` > 0 makes it solid to the
 // king (a circle). The renderer builds the same list.
@@ -103,6 +119,20 @@ export const SITE_PROPS = [
   prop('ridge', 'watchtower', 2.5, -2, 1.4), prop('ridge', 'tent', -3, -3, 0, 0.5), prop('ridge', 'tent', -2.5, 3, 0, -0.3), prop('ridge', 'campfire', 0, 0.5),
   prop('overlook', 'cairn', 0, 0, 0.8),
   prop('stonebridge', 'bridgeRuin', 0, 0),
+  prop('farmland', 'windmill', -11, -9, 1.6),
+  prop('hamlet', 'home', -3, -2, 2.2, 0.4), prop('hamlet', 'home', 3, 1, 2.2, -0.5), prop('hamlet', 'well', 0, 3.8, 0.9), prop('hamlet', 'fence', -1, 6, 0), prop('hamlet', 'hay', 4.5, -3.5, 0.8),
+  prop('hamlet2', 'home', -2, 2, 2.2, 2.8), prop('hamlet2', 'home', 3, -2, 2.2, -2.4), prop('hamlet2', 'hay', -4, -3, 0.8), prop('hamlet2', 'cart', 4, 3, 1.0, 0.8), prop('hamlet2', 'garden', 0, -5, 0),
+  prop('sunCity', 'sunCity', 0, 0, 10.6), prop('sunCity', 'palm', 13, -9), prop('sunCity', 'palm', 14, 8), prop('sunCity', 'palm', 12.5, 11.5),
+  prop('oasis', 'oasis', 0, 0), prop('oasis', 'pool', 0, 0), prop('oasis', 'palm', 4.6, 1.5), prop('oasis', 'palm', -3.5, 3.4), prop('oasis', 'palm', -1, -4.8), prop('oasis', 'palm', 3, -3.8),
+  prop('mesa1', 'mesa', 0, 0, 3.2), prop('mesa2', 'mesa', 0, 0, 3.2, 1.2),
+  prop('frostCitadel', 'frostCitadel', 0, 0, 10.5), prop('frostCitadel', 'frostGlow', 0, 0),
+  prop('frozenLake', 'frozenLake', 0, 0), prop('frozenLake', 'iceCrystal', 7.5, 4, 0.8), prop('frozenLake', 'iceCrystal', -7, -4, 0.8, 1),
+  prop('foundry', 'foundry', 0, 0, 7.5), prop('foundry', 'foundryGlow', 0, 0), prop('foundry', 'slag', -7, 5, 1.0),
+  prop('lava1', 'lava', 0, 0), prop('lava1', 'lavaCrust', 0, 0), prop('lava2', 'lava', 0, 0), prop('lava2', 'lavaCrust', 0, 0), prop('lava2', 'slag', 3.5, 3, 1.0),
+  prop('mountainCastle', 'mountainCastle', 0, 0, 7.2),
+  prop('viaduct', 'viaduct', 0, 0),
+  prop('warcamp', 'warBanner', -2, -2, 0.3), prop('warcamp', 'spikes', 2, 3, 0, 0.3), prop('warcamp', 'brokenCart', -3, 3, 1.2, 0.6), prop('warcamp', 'blackRock', 4, -3, 1.4), prop('warcamp', 'emberCrack', 0, 0), prop('warcamp', 'deadTree', -5, -4), prop('warcamp', 'deadTree', 5, 4),
+  prop('warcamp2', 'warBanner', 2, -2, 0.3), prop('warcamp2', 'spikes', -2, 3, 0, -0.3), prop('warcamp2', 'blackRock', -4, -3, 1.4), prop('warcamp2', 'emberCrack', 0, 0), prop('warcamp2', 'deadTree', 5, -4), prop('warcamp2', 'brokenCart', 3, 3.5, 1.2, -0.8),
 ];
 const inSite = (x, z, pad) => Object.values(SITES).some((S) => Math.hypot(x - S.x, z - S.z) < S.r + pad);
 
@@ -462,5 +492,5 @@ export function scenery() {
   for (let x = sp(-68); x <= sp(68); x += 4.6) wall(x, sp(214) + rnd() * 8);
 
   // Clear the journey's sites.
-  return { trees: trees.filter((t) => !inSite(t.x, t.z, 3)), rocks: rocks.filter((r) => r.highland || r.iron || !inSite(r.x, r.z, 2)), cliffs };
+  return { trees: trees.filter((t) => !inSite(t.x, t.z, 3)), rocks: rocks.filter((r) => r.iron || !inSite(r.x, r.z, 2)), cliffs: cliffs.filter((c) => !c.peak || !inSite(c.x, c.z, c.w)) };
 }

@@ -1,5 +1,5 @@
 // Offline shell for Crownfall. Bump CACHE when any asset changes.
-const CACHE = 'crownfall-v29';
+const CACHE = 'crownfall-v30';
 
 const ASSETS = [
   './',
@@ -22,6 +22,7 @@ const ASSETS = [
   './js/slice.js',
   './js/units.js',
   './js/buildings.js',
+  './js/regions.js',
   './js/util.js',
   './icons/icon-192.png',
   './icons/icon-512.png',

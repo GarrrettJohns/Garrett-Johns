@@ -21,12 +21,14 @@ import { groundH as G, standH, setBridge, footing, TERRAIN } from './terrain.js'
 import { CAM } from './camera.js';
 import { KING_SWING } from './world.js';
 import { castleGeo, houseGeo, barracksGeo, towerGeo, catapultBaseGeo, catapultFrameGeo, catapultArmGeo, wallKitGeo, wallCornerGeo, wallGateGeo, wallDoorGeo, WALL_SEG } from './buildings.js';
+import * as RG from './regions.js';
 import { allyRigs, enemyRigs, BOSS_LOOKS, bossLook, treantRig, ENEMY_KIT_FOR_BIOME } from './units.js';
 
 const TAU = Math.PI * 2;
 const TOWER_TOP = [3.15, 3.15, 3.15, 3.55, 3.95];   // platform height per tower level
 
 // Each level's land. Trees: [forest/grove kind, scattered kind].
+const REALM_GROUND = Object.fromEntries(Object.entries(RG.REGION_GROUND).map(([k, v]) => [k, v.map((c) => new THREE.Color(c))]));
 const BIOMES = {
   grass: {
     sky: 0x9ad6f5, ground: C.grass, light: 0x7fcb5c, dark: C.grassDark, forest: C.forest, bank: 0x4f8f45, sand: C.sandDark,
@@ -268,6 +270,17 @@ export class Renderer {
       // Scorched earth around the enemy stronghold.
       const sd = Math.hypot((x - STRONGHOLD.x) * 0.8, z - STRONGHOLD.z);
       if (sd < 30) tmp.lerp(new THREE.Color(0x6e5a4a), Math.min(1, (30 - sd) / 12) * 0.75);
+      // The realms of the world concept, on the home map.
+      if (biomeName === 'grass') {
+        const W = RG.regionWeights(x, z);
+        for (const [r, w] of Object.entries(W)) {
+          if (w < 0.01) continue;
+          const [g0, g1, g2] = REALM_GROUND[r];
+          _c.copy(g0).lerp(n > 0 ? g1 : g2, Math.abs(n) * 0.6);
+          if (r === 'warlord' && ((Math.sin(x * 0.7) + Math.cos(z * 0.53)) > 1.5)) _c.lerp(new THREE.Color(0x9a2a1a), 0.7);
+          tmp.lerp(_c, w);
+        }
+      }
       // Height shading: sunlit crests, rocky and then snowy high ground.
       tmp.multiplyScalar(0.92 + Math.min(0.16, Math.max(-0.1, hy * 0.03)));
       const mtn = x > HIGHLAND.x0 && z < HIGHLAND.z1 + 6;
@@ -328,9 +341,22 @@ export class Renderer {
 
     // Trees (two kinds per biome), rocks, mountains.
     const sc = scenery();
-    const kinds = [treeGeo(B.trees[0]), treeGeo(B.trees[1])];
-    const lists = [[], []];
-    sc.trees.forEach((t, i) => lists[t.forest ? 0 : i % 2 === 0 ? 1 : 0].push(t));
+    // Trees: the biome's two kinds, or the realm's own on the home map.
+    const TREE = { pine: pineGeo, oak: () => treeGeo('oak'), palm: () => treeGeo('palm'), cactus: () => treeGeo('cactus'), snowpine: () => treeGeo('snowpine'), ash: RG.ashTreeGeo, dead: RG.deadTreeGeo };
+    const kindOf = (t, i) => {
+      if (biomeName === 'grass' && t.z > 0) {
+        const r = RG.regionAt(t.x, t.z);
+        if (r === 'desert') return i % 3 === 0 ? 'cactus' : 'palm';
+        if (r === 'frost') return 'snowpine';
+        if (r === 'iron') return 'ash';
+        if (r === 'warlord') return 'dead';
+      }
+      return t.forest ? B.trees[0] : i % 2 === 0 ? B.trees[1] : B.trees[0];
+    };
+    const byKind = new Map();
+    sc.trees.forEach((t, i) => { const k = kindOf(t, i); if (!byKind.has(k)) byKind.set(k, []); byKind.get(k).push(t); });
+    const kinds = [...byKind.keys()].map((k) => (TREE[k] || TREE.pine)());
+    const lists = [...byKind.values()];
     // Each tree's instance, so felled trees can be hidden and regrown.
     this.treeInst = new Map();
     this.treeGeo = kinds[0];
@@ -342,7 +368,7 @@ export class Renderer {
         _q.setFromAxisAngle(UP, t.r);
         _m.compose(_v.set(t.x, G(t.x, t.z) - 0.15, t.z), _q, _s.set(t.s, t.s * (0.9 + (i % 5) * 0.06), t.s));
         mesh.setMatrixAt(i, _m);
-        this.treeInst.set(treeIndex.get(t), { mesh, i, t, sy: 0.9 + (i % 5) * 0.06 });
+        this.treeInst.set(treeIndex.get(t), { mesh, i, t, sy: 0.9 + (i % 5) * 0.06, geo });
       });
       mesh.count = list.length;
       mesh.castShadow = true;
@@ -358,12 +384,12 @@ export class Renderer {
     this.rockList = sc.rocks;
     this.natureSig = null;
     // Iron rocks are darker and rust-streaked.
-    this.rockBase = sc.rocks.map((t) => (t.iron ? [0.62, 0.46, 0.4] : [1, 1, 1]));
+    this.rockBase = sc.rocks.map((t) => (t.iron ? [0.62, 0.46, 0.4] : biomeName === 'grass' && RG.REGION_ROCK[RG.regionAt(t.x, t.z)] || [1, 1, 1]));
     sc.rocks.forEach((t, i) => {
       _q.setFromAxisAngle(UP, t.r);
       _m.compose(_v.set(t.x, G(t.x, t.z) - 0.1, t.z), _q, _s.set(t.s, t.s, t.s));
       rock.setMatrixAt(i, _m);
-      if (t.iron) rock.setColorAt(i, _c.setRGB(...this.rockBase[i]));
+      rock.setColorAt(i, _c.setRGB(...this.rockBase[i]));
     });
     rock.castShadow = true;
     scene.add(rock);
@@ -1422,7 +1448,16 @@ export class Renderer {
     const one = {
       field: fieldGeo, barn: barnGeo, hay: hayGeo, scarecrow: scarecrowGeo, cart: cartGeo, well: wellGeo, garden: gardenGeo,
       laundry: laundryGeo, tent: tentGeo, campfire: campfireGeo, column: columnGeo, arch: archGeo, bridgeRuin: stoneBridgeRuinGeo,
+      windmill: RG.windmillGeo, home: RG.homeGeo, fence: RG.fenceGeo, sunCity: RG.sunCityGeo, oasis: RG.oasisGeo, pool: () => RG.poolGeo(4.4), palm: () => treeGeo('palm'),
+      mesa: RG.mesaGeo, frostCitadel: RG.frostCitadelGeo, frozenLake: RG.frozenLakeGeo, iceCrystal: RG.iceCrystalGeo, foundry: RG.foundryGeo, slag: RG.slagGeo,
+      lavaCrust: () => RG.lavaCrustGeo(3), mountainCastle: RG.mountainCastleGeo, viaduct: RG.viaductGeo, warBanner: RG.warBannerGeo, spikes: RG.spikesGeo,
+      brokenCart: RG.brokenCartGeo, blackRock: RG.blackRockGeo, deadTree: RG.deadTreeGeo,
+      // Glowing parts, drawn unlit.
+      frostGlow: RG.frostGlowGeo, foundryGlow: RG.foundryGlowGeo, lava: () => RG.lavaGeo(3), emberCrack: RG.emberCrackGeo,
     };
+    const GLOW = new Set(['frostGlow', 'foundryGlow', 'lava', 'emberCrack']);
+    const glowMat = new THREE.MeshBasicMaterial({ vertexColors: true });
+    this.sails = [];
     const two = {   // [before, after]
       cottage: [() => cottageGeo(true), () => cottageGeo(false)], chest: [() => chestGeo(false), () => chestGeo(true)],
       watchtower: [() => watchtowerGeo(false), () => watchtowerGeo(true)], cairn: [() => cairnGeo(false), () => cairnGeo(true)],
@@ -1439,13 +1474,24 @@ export class Renderer {
         if (two[p.kind]) {
           groups.before.push({ geo: geo(p.kind + '0', two[p.kind][0]), m: m.clone() });
           groups.after.push({ geo: geo(p.kind + '1', two[p.kind][1]), m });
+        } else if (GLOW.has(p.kind)) {
+          (groups.glow = groups.glow || []).push({ geo: geo(p.kind, one[p.kind]), m });
         } else groups[only[id]?.[p.kind] || 'always'].push({ geo: geo(p.kind, one[p.kind]), m });
+        if (p.kind === 'windmill') {
+          const sails = new THREE.Mesh(RG.windmillSailsGeo(), vcMat);
+          sails.position.set(p.x + Math.sin(p.ry || 0) * 1.55, G(p.x, p.z) + 3.6, p.z + Math.cos(p.ry || 0) * 1.55);
+          sails.rotation.y = p.ry || 0;
+          sails.castShadow = true;
+          scene.add(sails);
+          this.sails.push(sails);
+        }
       }
       const meshes = {};
       for (const [k, list] of Object.entries(groups)) {
         if (!list.length) continue;
-        const mesh = new THREE.Mesh(mergePlaced(list), vcMat);
-        mesh.castShadow = mesh.receiveShadow = true;
+        const mesh = new THREE.Mesh(mergePlaced(list), k === 'glow' ? glowMat : vcMat);
+        mesh.castShadow = k !== 'glow';
+        mesh.receiveShadow = k !== 'glow';
         mesh.visible = k !== 'after';
         scene.add(mesh);
         meshes[k] = mesh;
@@ -1491,6 +1537,11 @@ export class Renderer {
         const c = Math.cos(p.ry || 0), s2 = Math.sin(p.ry || 0);
         const cx = vDone ? p.x + c * 0.9 + s2 * -0.5 : p.x, cz = vDone ? p.z - s2 * 0.9 + c * -0.5 : p.z;
         this.spark(cx, vDone ? 4.3 : 1.4, cz, vDone ? 0xd9d9d9 : 0x4a4440, 1, vDone ? 0.32 : 0.5, 0.5, 2.6, -0.35);
+      } else if (p.kind === 'foundry' && Math.random() < 0.8) {
+        const [cx, cz] = Math.random() < 0.5 ? [-1.5, -2] : [1.8, -1];
+        this.spark(p.x + cx, 13.3, p.z + cz, Math.random() < 0.2 ? 0xff8a2a : 0x3a3434, 1, 0.7, 0.6, 3.2, -0.5);
+      } else if (p.kind === 'lava' && Math.random() < 0.5) {
+        this.spark(p.x + (Math.random() - 0.5) * 4, 0.3, p.z + (Math.random() - 0.5) * 4, 0xffa040, 1, 0.16, 1.4, 0.9, 2);
       } else if (p.kind === 'campfire' && world.enc[p.site] !== 'done' && Math.random() < 0.7) {
         this.spark(p.x, 0.7, p.z, Math.random() < 0.3 ? 0xff9a3a : 0x6a625c, 1, 0.34, 0.45, 2.2, -0.4);
       }
@@ -1564,6 +1615,7 @@ export class Renderer {
   }
 
   updateEnv(dt) {
+    for (const s of this.sails || []) s.rotateZ(dt * 0.9);
     if (this.fallsTex) this.fallsTex.offset.y += dt * 1.4;
     if (this.sky) this.sky.position.copy(this.camera.position);
     this.fallsMistT = (this.fallsMistT || 0) - dt;
@@ -1812,7 +1864,7 @@ export class Renderer {
         root.rotation.y = ev.dir;
         const pivot = new THREE.Group();
         root.add(pivot);
-        const m = new THREE.Mesh(this.treeGeo, vcMat);
+        const m = new THREE.Mesh(this.treeInst.get(ev.si)?.geo || this.treeGeo, vcMat);
         m.scale.setScalar(ev.s);
         m.castShadow = true;
         pivot.add(m);
