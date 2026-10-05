@@ -1,13 +1,14 @@
 {
  "version": 3,
- "updated": "2026-10-04",
+ "updated": "2026-10-05",
  "description": "Asset inventory from docs/crownfall/asset-workup/data/asset-manifest.json (stable IDs), plus what the game draws today. production_status stays not_produced until a real production asset (GLB, icon file) exists and is tested. runtime_status: procedural_from_approved_reference = built in code to match an approved reference; procedural_placeholder = an older in-code stand-in; not_in_game = nothing drawn yet. runtime_path stays null: there are no asset files.",
  "source": "docs/crownfall/asset-workup/data/asset-manifest.json",
  "asset_count": 552,
  "runtime_counts": {
-  "procedural_from_approved_reference": 25,
-  "not_in_game": 401,
-  "procedural_placeholder": 126
+  "procedural_from_approved_reference": 156,
+  "not_in_game": 282,
+  "png_cut_from_selected_sheet": 24,
+  "procedural_placeholder": 90
  },
  "items": [
   {
@@ -228,7 +229,7 @@
    "priority": "P1",
    "design_status": "established_requirement",
    "production_status": "not_produced",
-   "runtime_path": null,
+   "runtime_path": "icons/ui/greenwood.png",
    "planned_runtime_path": "assets/crownfall/icon/king_ui/greenwood/banner.png",
    "concept_references": [
     "references/approved/03_five_regional_kings.jpeg"
@@ -236,8 +237,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "png_cut_from_selected_sheet",
+   "runtime_code": "cut from asset-workup/visuals/resource_and_ui_icons.png"
   },
   {
    "id": "king_ui.greenwood.region_emblem",
@@ -590,7 +591,7 @@
    "priority": "P1",
    "design_status": "established_requirement",
    "production_status": "not_produced",
-   "runtime_path": null,
+   "runtime_path": "icons/ui/eastern_mountains.png",
    "planned_runtime_path": "assets/crownfall/icon/king_ui/eastern_mountains/banner.png",
    "concept_references": [
     "references/approved/03_five_regional_kings.jpeg"
@@ -598,8 +599,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "png_cut_from_selected_sheet",
+   "runtime_code": "cut from asset-workup/visuals/resource_and_ui_icons.png"
   },
   {
    "id": "king_ui.eastern_mountains.region_emblem",
@@ -952,7 +953,7 @@
    "priority": "P1",
    "design_status": "established_requirement",
    "production_status": "not_produced",
-   "runtime_path": null,
+   "runtime_path": "icons/ui/iron_hills.png",
    "planned_runtime_path": "assets/crownfall/icon/king_ui/iron_hills/banner.png",
    "concept_references": [
     "references/approved/03_five_regional_kings.jpeg"
@@ -960,8 +961,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "png_cut_from_selected_sheet",
+   "runtime_code": "cut from asset-workup/visuals/resource_and_ui_icons.png"
   },
   {
    "id": "king_ui.iron_hills.region_emblem",
@@ -1314,7 +1315,7 @@
    "priority": "P1",
    "design_status": "established_requirement",
    "production_status": "not_produced",
-   "runtime_path": null,
+   "runtime_path": "icons/ui/sunscorch.png",
    "planned_runtime_path": "assets/crownfall/icon/king_ui/sunscorch/banner.png",
    "concept_references": [
     "references/approved/03_five_regional_kings.jpeg"
@@ -1322,8 +1323,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "png_cut_from_selected_sheet",
+   "runtime_code": "cut from asset-workup/visuals/resource_and_ui_icons.png"
   },
   {
    "id": "king_ui.sunscorch.region_emblem",
@@ -1676,7 +1677,7 @@
    "priority": "P1",
    "design_status": "established_requirement",
    "production_status": "not_produced",
-   "runtime_path": null,
+   "runtime_path": "icons/ui/frostmarch.png",
    "planned_runtime_path": "assets/crownfall/icon/king_ui/frostmarch/banner.png",
    "concept_references": [
     "references/approved/03_five_regional_kings.jpeg"
@@ -1684,8 +1685,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "png_cut_from_selected_sheet",
+   "runtime_code": "cut from asset-workup/visuals/resource_and_ui_icons.png"
   },
   {
    "id": "king_ui.frostmarch.region_emblem",
@@ -1847,8 +1848,8 @@
     "rally"
    ],
    "notes": "Final realm may reuse chosen regional coalition models.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js RIGS.knight (pending soldier selection)"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js allyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.ally.greenwood.archer",
@@ -1877,8 +1878,8 @@
     "rally"
    ],
    "notes": "Final realm may reuse chosen regional coalition models.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js RIGS.archer (pending soldier selection)"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js allyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.ally.greenwood.raider",
@@ -1907,8 +1908,8 @@
     "rally"
    ],
    "notes": "Final realm may reuse chosen regional coalition models.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js RIGS.raider (pending soldier selection)"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js allyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.enemy.greenwood.swordsman",
@@ -1936,8 +1937,8 @@
     "rally"
    ],
    "notes": "",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js RIGS.grunt"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js enemyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.enemy.greenwood.bowman",
@@ -1965,8 +1966,8 @@
     "rally"
    ],
    "notes": "",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js RIGS.bowman"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js enemyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.enemy.greenwood.brute",
@@ -1994,8 +1995,8 @@
     "rally"
    ],
    "notes": "",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js RIGS.brute"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js enemyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.enemy.greenwood.outrider",
@@ -2023,8 +2024,8 @@
     "rally"
    ],
    "notes": "",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js RIGS.outrider"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js enemyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "mount.enemy.greenwood",
@@ -2049,8 +2050,8 @@
     "ko"
    ],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js outrider horse"
   },
   {
    "id": "unit.enemy.greenwood.hound",
@@ -2076,8 +2077,8 @@
     "ko"
    ],
    "notes": "",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js RIGS.hound"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js enemyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "boss.greenwood",
@@ -2107,8 +2108,8 @@
     "ko"
    ],
    "notes": "Stable boss ID; A/B alternative designs, not two mandatory bosses.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js BOSS_LOOKS (option A commanders)"
   },
   {
    "id": "troop_rank.greenwood.guard.recruit",
@@ -2308,8 +2309,8 @@
     "rally"
    ],
    "notes": "Final realm may reuse chosen regional coalition models.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js allyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.ally.eastern_mountains.archer",
@@ -2338,8 +2339,8 @@
     "rally"
    ],
    "notes": "Final realm may reuse chosen regional coalition models.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js allyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.ally.eastern_mountains.raider",
@@ -2368,8 +2369,8 @@
     "rally"
    ],
    "notes": "Final realm may reuse chosen regional coalition models.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js allyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.enemy.eastern_mountains.swordsman",
@@ -2510,8 +2511,8 @@
     "ko"
    ],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js outrider horse"
   },
   {
    "id": "unit.enemy.eastern_mountains.hound",
@@ -2568,8 +2569,8 @@
     "ko"
    ],
    "notes": "Stable boss ID; A/B alternative designs, not two mandatory bosses.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js BOSS_LOOKS (option A commanders)"
   },
   {
    "id": "troop_rank.eastern_mountains.guard.recruit",
@@ -2769,8 +2770,8 @@
     "rally"
    ],
    "notes": "Final realm may reuse chosen regional coalition models.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js allyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.ally.iron_hills.archer",
@@ -2799,8 +2800,8 @@
     "rally"
    ],
    "notes": "Final realm may reuse chosen regional coalition models.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js allyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.ally.iron_hills.raider",
@@ -2829,8 +2830,8 @@
     "rally"
    ],
    "notes": "Final realm may reuse chosen regional coalition models.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js allyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.enemy.iron_hills.swordsman",
@@ -2971,8 +2972,8 @@
     "ko"
    ],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js outrider horse"
   },
   {
    "id": "unit.enemy.iron_hills.hound",
@@ -3029,8 +3030,8 @@
     "ko"
    ],
    "notes": "Stable boss ID; A/B alternative designs, not two mandatory bosses.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js BOSS_LOOKS (option A commanders)"
   },
   {
    "id": "troop_rank.iron_hills.guard.recruit",
@@ -3230,8 +3231,8 @@
     "rally"
    ],
    "notes": "Final realm may reuse chosen regional coalition models.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js allyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.ally.sunscorch.archer",
@@ -3260,8 +3261,8 @@
     "rally"
    ],
    "notes": "Final realm may reuse chosen regional coalition models.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js allyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.ally.sunscorch.raider",
@@ -3290,8 +3291,8 @@
     "rally"
    ],
    "notes": "Final realm may reuse chosen regional coalition models.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js allyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.enemy.sunscorch.swordsman",
@@ -3319,8 +3320,8 @@
     "rally"
    ],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js enemyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.enemy.sunscorch.bowman",
@@ -3348,8 +3349,8 @@
     "rally"
    ],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js enemyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.enemy.sunscorch.brute",
@@ -3377,8 +3378,8 @@
     "rally"
    ],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js enemyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.enemy.sunscorch.outrider",
@@ -3406,8 +3407,8 @@
     "rally"
    ],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js enemyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "mount.enemy.sunscorch",
@@ -3432,8 +3433,8 @@
     "ko"
    ],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js outrider horse"
   },
   {
    "id": "unit.enemy.sunscorch.hound",
@@ -3459,8 +3460,8 @@
     "ko"
    ],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js enemyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "boss.sunscorch",
@@ -3490,8 +3491,8 @@
     "ko"
    ],
    "notes": "Stable boss ID; A/B alternative designs, not two mandatory bosses.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js BOSS_LOOKS (option A commanders)"
   },
   {
    "id": "troop_rank.sunscorch.guard.recruit",
@@ -3691,8 +3692,8 @@
     "rally"
    ],
    "notes": "Final realm may reuse chosen regional coalition models.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js allyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.ally.frostmarch.archer",
@@ -3721,8 +3722,8 @@
     "rally"
    ],
    "notes": "Final realm may reuse chosen regional coalition models.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js allyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.ally.frostmarch.raider",
@@ -3751,8 +3752,8 @@
     "rally"
    ],
    "notes": "Final realm may reuse chosen regional coalition models.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js allyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.enemy.frostmarch.swordsman",
@@ -3780,8 +3781,8 @@
     "rally"
    ],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js enemyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.enemy.frostmarch.bowman",
@@ -3809,8 +3810,8 @@
     "rally"
    ],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js enemyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.enemy.frostmarch.brute",
@@ -3838,8 +3839,8 @@
     "rally"
    ],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js enemyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.enemy.frostmarch.outrider",
@@ -3867,8 +3868,8 @@
     "rally"
    ],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js enemyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "mount.enemy.frostmarch",
@@ -3893,8 +3894,8 @@
     "ko"
    ],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js outrider horse"
   },
   {
    "id": "unit.enemy.frostmarch.hound",
@@ -3920,8 +3921,8 @@
     "ko"
    ],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js enemyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "boss.frostmarch",
@@ -3951,8 +3952,8 @@
     "ko"
    ],
    "notes": "Stable boss ID; A/B alternative designs, not two mandatory bosses.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js BOSS_LOOKS (option A commanders)"
   },
   {
    "id": "troop_rank.frostmarch.guard.recruit",
@@ -4152,8 +4153,8 @@
     "rally"
    ],
    "notes": "Final realm may reuse chosen regional coalition models.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js allyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.ally.warlord.archer",
@@ -4182,8 +4183,8 @@
     "rally"
    ],
    "notes": "Final realm may reuse chosen regional coalition models.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js allyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.ally.warlord.raider",
@@ -4212,8 +4213,8 @@
     "rally"
    ],
    "notes": "Final realm may reuse chosen regional coalition models.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js allyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.enemy.warlord.swordsman",
@@ -4241,8 +4242,8 @@
     "rally"
    ],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js enemyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.enemy.warlord.bowman",
@@ -4270,8 +4271,8 @@
     "rally"
    ],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js enemyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.enemy.warlord.brute",
@@ -4299,8 +4300,8 @@
     "rally"
    ],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js enemyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "unit.enemy.warlord.outrider",
@@ -4328,8 +4329,8 @@
     "rally"
    ],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js enemyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "mount.enemy.warlord",
@@ -4354,8 +4355,8 @@
     "ko"
    ],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js outrider horse"
   },
   {
    "id": "unit.enemy.warlord.hound",
@@ -4381,8 +4382,8 @@
     "ko"
    ],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js enemyRigs(kit) \u2014 army sheets"
   },
   {
    "id": "boss.warlord",
@@ -4412,8 +4413,8 @@
     "ko"
    ],
    "notes": "Stable boss ID; A/B alternative designs, not two mandatory bosses.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js RIGS.boss"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js BOSS_LOOKS (option A commanders)"
   },
   {
    "id": "troop_rank.warlord.guard.recruit",
@@ -4610,8 +4611,8 @@
     "ko"
    ],
    "notes": "Original wave-5 boss; visual proposal supplied; runtime model not produced.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js RIGS.treant (wave 5)"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/units.js treantRig \u2014 elder_treant.png"
   },
   {
    "id": "worker.laborer",
@@ -5596,8 +5597,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js castleGeo(level) \u2014 spires per approved world concept"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.castle_1",
@@ -5636,8 +5637,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js castleGeo(level) \u2014 spires per approved world concept"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.castle_2",
@@ -5676,8 +5677,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js castleGeo(level) \u2014 spires per approved world concept"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.castle_3",
@@ -5716,8 +5717,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js castleGeo(level) \u2014 spires per approved world concept"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.castle_4",
@@ -5756,8 +5757,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js barracksGeo(level)"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.barracks_1",
@@ -5796,8 +5797,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js barracksGeo(level)"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.barracks_2",
@@ -5836,8 +5837,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js barracksGeo(level)"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.barracks_3",
@@ -5876,8 +5877,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js towerGeo(level)"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.tower_1",
@@ -5916,8 +5917,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js towerGeo(level)"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.tower_2",
@@ -5956,8 +5957,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js towerGeo(level)"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.tower_3",
@@ -5996,8 +5997,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js towerGeo(level)"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.tower_4",
@@ -6036,8 +6037,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js towerGeo(level)"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.tower_5",
@@ -6076,8 +6077,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js catapult*Geo(level)"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.siege_1",
@@ -6116,8 +6117,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js catapult*Geo(level)"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.siege_2",
@@ -6156,8 +6157,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js catapult*Geo(level)"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.siege_3",
@@ -6195,8 +6196,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js houseGeo"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.house",
@@ -6586,8 +6587,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js palisadeGeo, gateGeo(false)"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.wall_palisade_straight",
@@ -6626,8 +6627,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js palisadeGeo, gateGeo(false)"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.wall_palisade_corner",
@@ -6666,8 +6667,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js palisadeGeo, gateGeo(false)"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.wall_palisade_gate",
@@ -6706,8 +6707,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.wall_reinforced_straight",
@@ -6746,8 +6747,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.wall_reinforced_corner",
@@ -6786,8 +6787,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.wall_reinforced_gate",
@@ -6826,8 +6827,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.wall_timber_straight",
@@ -6866,8 +6867,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.wall_timber_corner",
@@ -6906,8 +6907,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.wall_timber_gate",
@@ -6946,8 +6947,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js stoneWallGeo, gateGeo(true)"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.wall_stone_straight",
@@ -6986,8 +6987,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js stoneWallGeo, gateGeo(true)"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.wall_stone_corner",
@@ -7026,8 +7027,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js stoneWallGeo, gateGeo(true)"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.wall_stone_gate",
@@ -7066,8 +7067,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.wall_iron_straight",
@@ -7106,8 +7107,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.wall_iron_corner",
@@ -7146,8 +7147,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Base gameplay geometry; regional skins are separate kit configs. Full tier visual sheets still to produce.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/buildings.js \u2014 building_progression.png"
   },
   {
    "id": "icon.building.wall_iron_gate",
@@ -7280,8 +7281,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Landmark geometry + cheap distant LOD; statue is proposed optional landmark.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js fort*Geo"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js / models.js landmark geometry (world concept)"
   },
   {
    "id": "landmark.enemy_stronghold",
@@ -7300,8 +7301,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Landmark geometry + cheap distant LOD; statue is proposed optional landmark.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js stronghold*Geo"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js / models.js landmark geometry (world concept)"
   },
   {
    "id": "landmark.old_stone_bridge",
@@ -7320,8 +7321,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Landmark geometry + cheap distant LOD; statue is proposed optional landmark.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js stoneBridgeRuinGeo; map.js SITES.stonebridge"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js / models.js landmark geometry (world concept)"
   },
   {
    "id": "landmark.ancient_king_statue",
@@ -7360,8 +7361,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Landmark geometry + cheap distant LOD; statue is proposed optional landmark.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js / models.js landmark geometry (world concept)"
   },
   {
    "id": "landmark.frost_citadel",
@@ -7380,8 +7381,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Landmark geometry + cheap distant LOD; statue is proposed optional landmark.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js / models.js landmark geometry (world concept)"
   },
   {
    "id": "landmark.foundry_landmark",
@@ -7400,8 +7401,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Landmark geometry + cheap distant LOD; statue is proposed optional landmark.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js / models.js landmark geometry (world concept)"
   },
   {
    "id": "enemy_camp.greenwood",
@@ -7419,8 +7420,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Region kit with hostile banners, spawn and gate sockets.",
-   "runtime_status": "procedural_placeholder",
-   "runtime_code": "js/models.js tentGeo, watchtowerGeo, campfireGeo (journey camps)"
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "map.js SITES warcamp/ridge/village camps"
   },
   {
    "id": "enemy_camp.eastern_mountains",
@@ -7438,8 +7439,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Region kit with hostile banners, spawn and gate sockets.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "map.js SITES warcamp/ridge/village camps"
   },
   {
    "id": "enemy_camp.iron_hills",
@@ -7457,8 +7458,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Region kit with hostile banners, spawn and gate sockets.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "map.js SITES warcamp/ridge/village camps"
   },
   {
    "id": "enemy_camp.sunscorch",
@@ -7476,8 +7477,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Region kit with hostile banners, spawn and gate sockets.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "map.js SITES warcamp/ridge/village camps"
   },
   {
    "id": "enemy_camp.frostmarch",
@@ -7495,8 +7496,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Region kit with hostile banners, spawn and gate sockets.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "map.js SITES warcamp/ridge/village camps"
   },
   {
    "id": "enemy_camp.warlord",
@@ -7514,8 +7515,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "Region kit with hostile banners, spawn and gate sockets.",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "map.js SITES warcamp/ridge/village camps"
   },
   {
    "id": "terrain.shared.hill",
@@ -8040,8 +8041,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.eastern_mountains.boulder",
@@ -8060,8 +8061,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.eastern_mountains.alpine_pine",
@@ -8080,8 +8081,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.eastern_mountains.snowcap",
@@ -8100,8 +8101,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.eastern_mountains.talus",
@@ -8120,8 +8121,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.eastern_mountains.mine_entry",
@@ -8140,8 +8141,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.eastern_mountains.ledge",
@@ -8160,8 +8161,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.eastern_mountains.rope_bridge",
@@ -8180,8 +8181,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.iron_hills.rust_rock",
@@ -8200,8 +8201,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.iron_hills.iron_seam",
@@ -8220,8 +8221,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.iron_hills.slag",
@@ -8240,8 +8241,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.iron_hills.forge_vent",
@@ -8260,8 +8261,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.iron_hills.ash_tree",
@@ -8280,8 +8281,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.iron_hills.foundry_frame",
@@ -8300,8 +8301,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.iron_hills.dark_earth",
@@ -8320,8 +8321,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.sunscorch.sandstone",
@@ -8340,8 +8341,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.sunscorch.palm",
@@ -8360,8 +8361,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.sunscorch.cactus",
@@ -8380,8 +8381,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.sunscorch.dry_shrub",
@@ -8400,8 +8401,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.sunscorch.oasis_bank",
@@ -8420,8 +8421,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.sunscorch.column",
@@ -8440,8 +8441,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.sunscorch.awning",
@@ -8460,8 +8461,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.sunscorch.sand_patch",
@@ -8480,8 +8481,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.frostmarch.snowy_pine",
@@ -8500,8 +8501,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.frostmarch.ice_rock",
@@ -8520,8 +8521,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.frostmarch.frozen_river",
@@ -8540,8 +8541,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.frostmarch.ice_cave",
@@ -8560,8 +8561,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.frostmarch.snowdrift",
@@ -8580,8 +8581,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.frostmarch.winter_fence",
@@ -8600,8 +8601,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.frostmarch.snow_ground",
@@ -8620,8 +8621,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.warlord.dead_tree",
@@ -8640,8 +8641,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.warlord.black_rock",
@@ -8660,8 +8661,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.warlord.cracked_earth",
@@ -8680,8 +8681,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.warlord.spike",
@@ -8700,8 +8701,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.warlord.broken_siege_cart",
@@ -8720,8 +8721,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.warlord.red_banner",
@@ -8740,8 +8741,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "environment.warlord.barricade",
@@ -8760,8 +8761,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "procedural_from_approved_reference",
+   "runtime_code": "js/regions.js realm trees, rocks and props"
   },
   {
    "id": "resource_node.gold.intact",
@@ -9247,7 +9248,7 @@
    "priority": "P1",
    "design_status": "pending_selection",
    "production_status": "not_produced",
-   "runtime_path": null,
+   "runtime_path": "icons/ui/gold.png",
    "planned_runtime_path": "assets/crownfall/icon/icon/ui/gold.png",
    "concept_references": [
     "visuals/resource_and_ui_icons.png"
@@ -9255,8 +9256,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "png_cut_from_selected_sheet",
+   "runtime_code": "cut from asset-workup/visuals/resource_and_ui_icons.png"
   },
   {
    "id": "icon.ui.wood",
@@ -9266,7 +9267,7 @@
    "priority": "P1",
    "design_status": "pending_selection",
    "production_status": "not_produced",
-   "runtime_path": null,
+   "runtime_path": "icons/ui/wood.png",
    "planned_runtime_path": "assets/crownfall/icon/icon/ui/wood.png",
    "concept_references": [
     "visuals/resource_and_ui_icons.png"
@@ -9274,8 +9275,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "png_cut_from_selected_sheet",
+   "runtime_code": "cut from asset-workup/visuals/resource_and_ui_icons.png"
   },
   {
    "id": "icon.ui.stone",
@@ -9285,7 +9286,7 @@
    "priority": "P1",
    "design_status": "pending_selection",
    "production_status": "not_produced",
-   "runtime_path": null,
+   "runtime_path": "icons/ui/stone.png",
    "planned_runtime_path": "assets/crownfall/icon/icon/ui/stone.png",
    "concept_references": [
     "visuals/resource_and_ui_icons.png"
@@ -9293,8 +9294,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "png_cut_from_selected_sheet",
+   "runtime_code": "cut from asset-workup/visuals/resource_and_ui_icons.png"
   },
   {
    "id": "icon.ui.iron",
@@ -9304,7 +9305,7 @@
    "priority": "P1",
    "design_status": "pending_selection",
    "production_status": "not_produced",
-   "runtime_path": null,
+   "runtime_path": "icons/ui/iron.png",
    "planned_runtime_path": "assets/crownfall/icon/icon/ui/iron.png",
    "concept_references": [
     "visuals/resource_and_ui_icons.png"
@@ -9312,8 +9313,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "png_cut_from_selected_sheet",
+   "runtime_code": "cut from asset-workup/visuals/resource_and_ui_icons.png"
   },
   {
    "id": "icon.ui.people",
@@ -9323,7 +9324,7 @@
    "priority": "P1",
    "design_status": "pending_selection",
    "production_status": "not_produced",
-   "runtime_path": null,
+   "runtime_path": "icons/ui/people.png",
    "planned_runtime_path": "assets/crownfall/icon/icon/ui/people.png",
    "concept_references": [
     "visuals/resource_and_ui_icons.png"
@@ -9331,8 +9332,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "png_cut_from_selected_sheet",
+   "runtime_code": "cut from asset-workup/visuals/resource_and_ui_icons.png"
   },
   {
    "id": "icon.ui.banked_gold",
@@ -9342,7 +9343,7 @@
    "priority": "P1",
    "design_status": "pending_selection",
    "production_status": "not_produced",
-   "runtime_path": null,
+   "runtime_path": "icons/ui/bank.png",
    "planned_runtime_path": "assets/crownfall/icon/icon/ui/banked_gold.png",
    "concept_references": [
     "visuals/resource_and_ui_icons.png"
@@ -9350,8 +9351,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "png_cut_from_selected_sheet",
+   "runtime_code": "cut from asset-workup/visuals/resource_and_ui_icons.png"
   },
   {
    "id": "icon.ui.bow",
@@ -9361,7 +9362,7 @@
    "priority": "P1",
    "design_status": "pending_selection",
    "production_status": "not_produced",
-   "runtime_path": null,
+   "runtime_path": "icons/ui/bow.png",
    "planned_runtime_path": "assets/crownfall/icon/icon/ui/bow.png",
    "concept_references": [
     "visuals/resource_and_ui_icons.png"
@@ -9369,8 +9370,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "png_cut_from_selected_sheet",
+   "runtime_code": "cut from asset-workup/visuals/resource_and_ui_icons.png"
   },
   {
    "id": "icon.ui.crossbow",
@@ -9380,7 +9381,7 @@
    "priority": "P1",
    "design_status": "pending_selection",
    "production_status": "not_produced",
-   "runtime_path": null,
+   "runtime_path": "icons/ui/crossbow.png",
    "planned_runtime_path": "assets/crownfall/icon/icon/ui/crossbow.png",
    "concept_references": [
     "visuals/resource_and_ui_icons.png"
@@ -9388,8 +9389,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "png_cut_from_selected_sheet",
+   "runtime_code": "cut from asset-workup/visuals/resource_and_ui_icons.png"
   },
   {
    "id": "icon.ui.fire_arrows",
@@ -9399,7 +9400,7 @@
    "priority": "P1",
    "design_status": "pending_selection",
    "production_status": "not_produced",
-   "runtime_path": null,
+   "runtime_path": "icons/ui/fire.png",
    "planned_runtime_path": "assets/crownfall/icon/icon/ui/fire_arrows.png",
    "concept_references": [
     "visuals/resource_and_ui_icons.png"
@@ -9407,8 +9408,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "png_cut_from_selected_sheet",
+   "runtime_code": "cut from asset-workup/visuals/resource_and_ui_icons.png"
   },
   {
    "id": "icon.ui.multishot",
@@ -9418,7 +9419,7 @@
    "priority": "P1",
    "design_status": "pending_selection",
    "production_status": "not_produced",
-   "runtime_path": null,
+   "runtime_path": "icons/ui/multi.png",
    "planned_runtime_path": "assets/crownfall/icon/icon/ui/multishot.png",
    "concept_references": [
     "visuals/resource_and_ui_icons.png"
@@ -9426,8 +9427,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "png_cut_from_selected_sheet",
+   "runtime_code": "cut from asset-workup/visuals/resource_and_ui_icons.png"
   },
   {
    "id": "icon.ui.storm_bow",
@@ -9437,7 +9438,7 @@
    "priority": "P1",
    "design_status": "pending_selection",
    "production_status": "not_produced",
-   "runtime_path": null,
+   "runtime_path": "icons/ui/storm.png",
    "planned_runtime_path": "assets/crownfall/icon/icon/ui/storm_bow.png",
    "concept_references": [
     "visuals/resource_and_ui_icons.png"
@@ -9445,8 +9446,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "png_cut_from_selected_sheet",
+   "runtime_code": "cut from asset-workup/visuals/resource_and_ui_icons.png"
   },
   {
    "id": "icon.ui.axe",
@@ -9456,7 +9457,7 @@
    "priority": "P1",
    "design_status": "pending_selection",
    "production_status": "not_produced",
-   "runtime_path": null,
+   "runtime_path": "icons/ui/axe.png",
    "planned_runtime_path": "assets/crownfall/icon/icon/ui/axe.png",
    "concept_references": [
     "visuals/resource_and_ui_icons.png"
@@ -9464,8 +9465,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "png_cut_from_selected_sheet",
+   "runtime_code": "cut from asset-workup/visuals/resource_and_ui_icons.png"
   },
   {
    "id": "icon.ui.pickaxe",
@@ -9475,7 +9476,7 @@
    "priority": "P1",
    "design_status": "pending_selection",
    "production_status": "not_produced",
-   "runtime_path": null,
+   "runtime_path": "icons/ui/pickaxe.png",
    "planned_runtime_path": "assets/crownfall/icon/icon/ui/pickaxe.png",
    "concept_references": [
     "visuals/resource_and_ui_icons.png"
@@ -9483,8 +9484,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "png_cut_from_selected_sheet",
+   "runtime_code": "cut from asset-workup/visuals/resource_and_ui_icons.png"
   },
   {
    "id": "icon.ui.build",
@@ -9494,7 +9495,7 @@
    "priority": "P1",
    "design_status": "pending_selection",
    "production_status": "not_produced",
-   "runtime_path": null,
+   "runtime_path": "icons/ui/build.png",
    "planned_runtime_path": "assets/crownfall/icon/icon/ui/build.png",
    "concept_references": [
     "visuals/resource_and_ui_icons.png"
@@ -9502,8 +9503,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "png_cut_from_selected_sheet",
+   "runtime_code": "cut from asset-workup/visuals/resource_and_ui_icons.png"
   },
   {
    "id": "icon.ui.king",
@@ -9513,7 +9514,7 @@
    "priority": "P1",
    "design_status": "pending_selection",
    "production_status": "not_produced",
-   "runtime_path": null,
+   "runtime_path": "icons/ui/king.png",
    "planned_runtime_path": "assets/crownfall/icon/icon/ui/king.png",
    "concept_references": [
     "visuals/resource_and_ui_icons.png"
@@ -9521,8 +9522,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "png_cut_from_selected_sheet",
+   "runtime_code": "cut from asset-workup/visuals/resource_and_ui_icons.png"
   },
   {
    "id": "icon.ui.orders",
@@ -9532,7 +9533,7 @@
    "priority": "P1",
    "design_status": "pending_selection",
    "production_status": "not_produced",
-   "runtime_path": null,
+   "runtime_path": "icons/ui/orders.png",
    "planned_runtime_path": "assets/crownfall/icon/icon/ui/orders.png",
    "concept_references": [
     "visuals/resource_and_ui_icons.png"
@@ -9540,8 +9541,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "png_cut_from_selected_sheet",
+   "runtime_code": "cut from asset-workup/visuals/resource_and_ui_icons.png"
   },
   {
    "id": "icon.ui.rally",
@@ -9551,7 +9552,7 @@
    "priority": "P1",
    "design_status": "pending_selection",
    "production_status": "not_produced",
-   "runtime_path": null,
+   "runtime_path": "icons/ui/follow.png",
    "planned_runtime_path": "assets/crownfall/icon/icon/ui/rally.png",
    "concept_references": [
     "visuals/resource_and_ui_icons.png"
@@ -9559,8 +9560,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "png_cut_from_selected_sheet",
+   "runtime_code": "cut from asset-workup/visuals/resource_and_ui_icons.png"
   },
   {
    "id": "icon.ui.defend",
@@ -9570,7 +9571,7 @@
    "priority": "P1",
    "design_status": "pending_selection",
    "production_status": "not_produced",
-   "runtime_path": null,
+   "runtime_path": "icons/ui/posts.png",
    "planned_runtime_path": "assets/crownfall/icon/icon/ui/defend.png",
    "concept_references": [
     "visuals/resource_and_ui_icons.png"
@@ -9578,8 +9579,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "png_cut_from_selected_sheet",
+   "runtime_code": "cut from asset-workup/visuals/resource_and_ui_icons.png"
   },
   {
    "id": "icon.ui.retreat",
@@ -9608,7 +9609,7 @@
    "priority": "P1",
    "design_status": "pending_selection",
    "production_status": "not_produced",
-   "runtime_path": null,
+   "runtime_path": "icons/ui/wave.png",
    "planned_runtime_path": "assets/crownfall/icon/icon/ui/start_wave.png",
    "concept_references": [
     "visuals/resource_and_ui_icons.png"
@@ -9616,8 +9617,8 @@
    "rig_contract": null,
    "required_clips": [],
    "notes": "",
-   "runtime_status": "not_in_game",
-   "runtime_code": null
+   "runtime_status": "png_cut_from_selected_sheet",
+   "runtime_code": "cut from asset-workup/visuals/resource_and_ui_icons.png"
   },
   {
    "id": "icon.ui.attack",

@@ -34,11 +34,11 @@
       <div class="hud-row">
         <div class="res">
           <div class="pill gold tap" data-res="gold"><i class="coin"></i><b id="hud-coins">0</b><small id="hud-cap">/60</small></div>
-          <div class="pill bank tap" id="hud-bank" data-res="gold" hidden><i>🏦</i><b id="hud-bank-n">0</b></div>
-          <div class="pill tap" data-res="wood"><i>🪵</i><b id="hud-wood">0</b></div>
-          <div class="pill tap" data-res="stone"><i>🪨</i><b id="hud-stone">0</b></div>
-          <div class="pill tap" id="hud-iron-pill" data-res="iron" hidden><i>⚙️</i><b id="hud-iron">0</b></div>
-          <div class="pill"><i>👥</i><b id="hud-pop">0</b><small id="hud-beds">/4</small></div>
+          <div class="pill bank tap" id="hud-bank" data-res="gold" hidden><img class="ico" src="icons/ui/bank.png" alt=""><b id="hud-bank-n">0</b></div>
+          <div class="pill tap" data-res="wood"><img class="ico" src="icons/ui/wood.png" alt=""><b id="hud-wood">0</b></div>
+          <div class="pill tap" data-res="stone"><img class="ico" src="icons/ui/stone.png" alt=""><b id="hud-stone">0</b></div>
+          <div class="pill tap" id="hud-iron-pill" data-res="iron" hidden><img class="ico" src="icons/ui/iron.png" alt=""><b id="hud-iron">0</b></div>
+          <div class="pill"><img class="ico" src="icons/ui/people.png" alt=""><b id="hud-pop">0</b><small id="hud-beds">/4</small></div>
           <div class="pill load" id="hud-load" hidden><i>🎒</i><b id="hud-load-n">0</b><small id="hud-load-cap">/20</small><i id="hud-load-i">🪵</i></div>
         </div>
         <div class="hud-right">
@@ -52,6 +52,7 @@
       </div>
       <div id="objective" hidden><span id="objective-text"></span></div>
       <div id="boss-bar" hidden>
+        <img class="boss-face" src="icons/ui/warlord.png" alt="">
         <span id="boss-name">Warlord</span>
         <div class="bar boss"><span id="boss-fill"></span></div>
       </div>
@@ -62,14 +63,14 @@
     <div id="banner" aria-live="polite"></div>
 
     <div id="controls">
-      <button id="btn-build" class="round-btn" type="button" aria-label="Build"><span>🔨</span><small>Build</small></button>
+      <button id="btn-build" class="round-btn" type="button" aria-label="Build"><img class="ico" src="icons/ui/build.png" alt=""><small>Build</small></button>
       <button id="btn-wave" class="btn primary wave-btn" type="button">⚔️ Start Wave 1</button>
     </div>
-    <button id="btn-follow" class="round-btn follow" type="button" aria-label="Orders for your troops" hidden><span>🚩</span><small>Orders</small></button>
+    <button id="btn-follow" class="round-btn follow" type="button" aria-label="Orders for your troops" hidden><img class="ico" src="icons/ui/orders.png" alt=""><small>Orders</small></button>
     <div id="orders" class="orders" hidden role="menu" aria-label="Troop orders">
-      <button type="button" data-order="posts"><span>🏰</span><b>Hold posts</b><small>Guard towers, gates and the castle</small></button>
-      <button type="button" data-order="follow"><span>🚩</span><b>Follow me</b><small>Ride with the king and fight at his side</small></button>
-      <button type="button" data-order="march"><span>⚔️</span><b>March on the stronghold</b><small>Muster at the furthest outpost; storm the stronghold in the siege</small></button>
+      <button type="button" data-order="posts"><span><img class="ico" src="icons/ui/posts.png" alt=""></span><b>Hold posts</b><small>Guard towers, gates and the castle</small></button>
+      <button type="button" data-order="follow"><span><img class="ico" src="icons/ui/follow.png" alt=""></span><b>Follow me</b><small>Ride with the king and fight at his side</small></button>
+      <button type="button" data-order="march"><span><img class="ico" src="icons/ui/orders.png" alt=""></span><b>March on the stronghold</b><small>Muster at the furthest outpost; storm the stronghold in the siege</small></button>
     </div>
     <div id="guards"></div>
     <section id="rates" class="rates-card" hidden aria-live="polite">
@@ -81,7 +82,7 @@
       <div id="tip-text"></div>
       <button id="tip-ok" class="btn primary" type="button">Got it</button>
     </section>
-    <button id="btn-recenter" class="round-btn recenter" type="button" aria-label="Back to the king" hidden><span>👑</span><small>King</small></button>
+    <button id="btn-recenter" class="round-btn recenter" type="button" aria-label="Back to the king" hidden><img class="ico" src="icons/ui/king.png" alt=""><small>King</small></button>
 
     <div id="place-bar" hidden>
       <div id="place-text">Drag the building into place</div>

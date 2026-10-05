@@ -1,5 +1,5 @@
 // Offline shell for Crownfall. Bump CACHE when any asset changes.
-const CACHE = 'crownfall-v30';
+const CACHE = 'crownfall-v31';
 
 const ASSETS = [
   './',
@@ -24,6 +24,31 @@ const ASSETS = [
   './js/buildings.js',
   './js/regions.js',
   './js/util.js',
+  './icons/ui/gold.png',
+  './icons/ui/wood.png',
+  './icons/ui/stone.png',
+  './icons/ui/iron.png',
+  './icons/ui/people.png',
+  './icons/ui/bank.png',
+  './icons/ui/bow.png',
+  './icons/ui/crossbow.png',
+  './icons/ui/fire.png',
+  './icons/ui/multi.png',
+  './icons/ui/storm.png',
+  './icons/ui/axe.png',
+  './icons/ui/pickaxe.png',
+  './icons/ui/build.png',
+  './icons/ui/king.png',
+  './icons/ui/orders.png',
+  './icons/ui/posts.png',
+  './icons/ui/follow.png',
+  './icons/ui/wave.png',
+  './icons/ui/greenwood.png',
+  './icons/ui/eastern_mountains.png',
+  './icons/ui/iron_hills.png',
+  './icons/ui/sunscorch.png',
+  './icons/ui/frostmarch.png',
+  './icons/ui/warlord.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/maskable-512.png',

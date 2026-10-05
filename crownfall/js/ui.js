@@ -136,7 +136,7 @@ export class UI {
       if (!show) e.orders.hidden = true;
       e.follow.classList.toggle('on', order === 'follow');
       e.follow.classList.toggle('march', order === 'march');
-      e.follow.innerHTML = { posts: '<span>🏰</span><small>Posts</small>', follow: '<span>🚩</span><small>Following</small>', march: '<span>⚔️</span><small>Marching</small>' }[order];
+      e.follow.innerHTML = { posts: '<img class="ico" src="icons/ui/posts.png" alt=""><small>Posts</small>', follow: '<img class="ico" src="icons/ui/follow.png" alt=""><small>Following</small>', march: '<img class="ico" src="icons/ui/orders.png" alt=""><small>Marching</small>' }[order];
       for (const b of e.orders.querySelectorAll('button')) b.classList.toggle('on', b.dataset.order === order);
     });
     const left = inWave ? world.enemiesLeft : 0;
@@ -150,6 +150,8 @@ export class UI {
     e.boss.hidden = !boss;
     if (boss) {
       e.bossName.textContent = boss.name || boss.def.name;
+      const face = `icons/ui/${boss.kind === 'treant' ? 'wood' : 'warlord'}.png`;
+      if (this.bossFace !== face) { this.bossFace = face; e.boss.querySelector('.boss-face').src = face; }
       e.bossFill.style.width = `${Math.max(0, boss.hp / boss.max) * 100}%`;
     }
 

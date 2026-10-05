@@ -3,13 +3,73 @@
 ## Resume note (read this first)
 
 - **Branch:** `main` (every Crownfall change is pushed to `main`; GitHub Pages deploys it).
-- **Milestone:** milestone 3 (graphics pass from the asset workup) below. The Phase 2 slice is milestone 2; Phases 0–1 are milestone 1. Next: the user's design selections (soldiers, villains, buildings, UI, icons), a real-iPhone pass, then Phase 3 (render streaming). See `implementation-plan.md`.
+- **Milestone:** milestone 4 (full graphics and world pass to the supplied images) below. Earlier: milestone 3 (kings), 2 (Greenwood journey), 1 (terrain and cameras). Next: a real-iPhone pass with the checklist below, then Phase 3 (render streaming). See `implementation-plan.md`.
 - **Run the checks:** `node crownfall/tests/run.mjs` (no dependencies). Module syntax check: `node --input-type=module --check < crownfall/js/<file>.js`. A plain `node --check` misses ES module errors.
 - **Perf overlay:** open the game with `?perf`.
 - **Release rule:** bump `CACHE` in `crownfall/sw.js` on every release. Add any new JS file to its asset list.
 - **Source art:** `docs/crownfall/asset-workup/` (checksums verified). Approved: `references/approved/` (five kings, mounted hero, world and cameras). Everything in `visuals/` is a proposal awaiting the user's selection (`data/design-selections.json`, all pending). Do not treat a proposal as approved.
-- **Blockers:** soldier, villain, building, UI and icon selections; the unlock rule for the four non-Greenwood kings; real GLB production.
+- **Selections:** the user asked on 2026-10-05 for everything to match the supplied images, recorded in `asset-workup/data/design-selections.json` (soldiers as on the army sheets, villain option A, all sections as shown). Option B villains and Frontier Retinue soldiers stay concept history.
+- **Blockers:** the unlock rule for the four non-Greenwood kings; real GLB production (everything is still built in code).
 - **Not verified:** anything on a real iPhone (see the device checklist below).
+
+## Milestone 4: full graphics and world pass to the supplied images (2026-10-05)
+
+Requirement IDs: R08, R10, R15–R19, R21, R22, R24, R26, R36–R40.
+
+### What changed
+- **Troops** (`js/units.js`, from the six army sheets). Guard, archer and raider are built per kingdom: the Crown Guard in a great helm with a crest and a round crown shield, the Greenhood Archer, and the Royal Raider with a spear. There are Mountain, Iron Hills, Sunscorch and Frostmarch variants (peak, hammers, sun and snowflake shields, fur, curved swords). Your troops wear the kit of the king you ride, and every friendly soldier wears the blue alliance sash.
+- **Enemies.** Swordsman with a kite shield, masked bowman, horned brute with a club, mace or ice hammer, an outrider on a barded horse, and a spiked-collar war hound. Each land has its own kit (Greenwood red, Sunscorch red and bronze with curved blades, Frostmarch white fur with crossbows). The Stronghold garrison and siege columns wear the Warlord's black-and-gold elite kit.
+- **Bosses.**
+  - **Commanders (option A):** the Bramble Captain, the Cliff Marshal, the Forge Tyrant, the Dune Conqueror and the Rime Regent.
+  - **The Warlord:** a horned black helm with a gold crown band and a greatsword.
+  - **Wave bosses:** wave 10 is the Bramble Captain, Dune Conqueror or Rime Regent depending on the land, and wave 15 the Forge Tyrant or Cliff Marshal.
+  - **Elder Treant:** stays the wave-5 boss and is rebuilt from its sheet: a trunk body with a glowing heart, root legs, claw branches and a leaf crown.
+- **Buildings** (`js/buildings.js`, from the building progression sheet):
+  - castle, 4 levels (fortified keep → curtain wall and corner towers → inner halls → royal capital with the tall central spire);
+  - barracks, 3 levels (hall → stone tower and yard → fortified complex);
+  - towers: Archer, Sturdy, Timber Fort, Stone and Ballista;
+  - siege: Catapult, Heavy Catapult and Trebuchet;
+  - five wall materials (Palisade, Reinforced, Timber, Stone, Iron), each with matching corners and gatehouses that follow the gate upgrades;
+  - timber-framed red-roofed cottages.
+  - Blue cone roofs, gold finials and blue crown banners throughout.
+- **The world** (`js/regions.js` plus the realm sites in `map.js`), after the approved world concept. All six realms now sit on the one map in the concept's layout:
+  - **Greenwood:** around the castle, with hamlets and a turning windmill at the farmland.
+  - **Eastern Mountains:** to the north-east, with the dark Mountain Hold and a snow-topped high viaduct.
+  - **Iron Hills:** ash ground, glowing lava pools and the Iron Foundry with fire-lit windows and chimney smoke.
+  - **Sunscorch:** to the south-west: sand, palms, cacti, red mesas, the oasis and the walled Golden City with gold domes and minarets.
+  - **Frostmarch:** to the south-east: snow, snowy pines, a frozen lake with ice spikes, and the purple-spired Frost Citadel with glowing windows.
+  - **Warlord's realm:** round the Stronghold: corrupted ground with ember cracks, dead trees, black rocks, spikes, broken carts and war banners.
+  - Landmarks are solid and sit on levelled ground, and roads and pads stay clear (tested).
+- **UI and icons.** The 25 icons are cut from the icon-language sheet (`icons/ui/`): resources, the bank chest, people, weapons, tools, Build/King/Orders/Posts/Follow, and the six region banners. They're used in the HUD pills, the round buttons (now gold-rimmed) and the orders menu. Costs use the coin icon. A boss health bar with a round portrait follows the portrait-UI sheet.
+- **Model viewer:** `crownfall/tests/viewer.html?set=allies|enemies|bosses|treant|kings|buildings&type=castle|walls|siege` renders any rig or building on a plain backdrop for art review.
+
+### Checks run
+| Check | Result |
+|---|---|
+| `node crownfall/tests/run.mjs` | **30 passed, 0 failed** (terrain slopes, roads, pads, site props off roads and solid, saves, camera, journey, kings) |
+| Module syntax check of every JS file | clean |
+| Economy sim | unchanged (wave 1 pays 99, wave 2 pays 111) |
+| Siege sim (60 troops ×3) | won 3 of 3 in 77 s |
+| Browser runs (SwiftShader, 390×844 at DPR 2) | no page errors in kingdom, wave-10 battle, kit switch or the realm views |
+
+### Measurements (headless, same method)
+| Scene | Draw calls | Triangles |
+|---|---|---|
+| Idle capital | 101 | 277k |
+| By the falls | 81 | 258k |
+| Wave 9 fight, Combat view | 122 | 304k |
+
+Unit rigs are 450–780 triangles each. Buildings range from about 300 for a cottage to 5.5k for the level-4 castle. Each realm landmark is merged into one or two meshes. Phone performance is still unverified.
+
+### Evidence (`docs/crownfall/evidence/`)
+`m4-troops-commanders.png`, `m4-elder-treant.png`, `m4-building-kit.png`, `m4-six-realms-birdseye.png`, `m4-sunscorch-golden-city.png`, `m4-frost-citadel.png`, `m4-iron-foundry.png`, `m4-warlord-realm.png`, `m4-mountain-hold.png`, `m4-ui-icons.png`, `m4-icon-cutouts.png`.
+
+### Known limitations
+- Everything is still built in code from simple shapes. It matches the sheets' shapes, colours and heraldry, not their sculpted detail.
+- The realm landmarks are scenery: you can't yet enter the Golden City or the Frost Citadel, and they hold no encounters. Their kingdoms' kings and quests (Phase 4) are still to come.
+- The realm painting appears on the home map (level 1). Later lands keep their whole-map biome.
+- Regional building kits for the other four kingdoms (sandstone, snow and so on) aren't applied to your own buildings yet. Your castle is always the Greenwood kit.
+- The weapon and building menus still show emoji icons. Only the HUD, buttons and orders use the cut icons.
 
 ## Milestone 3: graphics pass from the asset workup (2026-10-04)
 

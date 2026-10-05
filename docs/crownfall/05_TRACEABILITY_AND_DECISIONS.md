@@ -13,25 +13,25 @@ This table started unimplemented and is now mapped to the repository (see `imple
 | R05 | Five regional king identities | implemented-unverified (procedural approximation) | five colour kits on one mounted rig from `references/approved/03_five_regional_kings.jpeg` + spec 06 (`KINGS` in `js/config.js`, `RIGS.hero` in `js/models.js`); `hero.kit` saved; dev-tools preview; unlock rule undecided; evidence `evidence/m3-five-kings.png` |
 | R06 | Exploration/elevation/landmark inspiration | in-progress | rolling hills, river valley, East Ridge, faceted peaks, rim hills; successive reveals (ruin → ridge watchtower → overlook → fort); evidence `evidence/m2-*.png` |
 | R07 | Preserve strategy and building loop | existing-verified | all systems in `js/world.js` untouched by terrain; headless economy and siege sims re-run (see status); legacy save test in `crownfall/tests/run.mjs` |
-| R08 | Chunky bright low-poly style | in-progress | flat-shaded vertex colours; layered cliffs, oaks, spired castle, falls, sky gradient toward `references/approved/04_world_and_cameras.jpeg`; evidence `evidence/m3-*.png` |
+| R08 | Chunky bright low-poly style | implemented-unverified | whole look rebuilt to the supplied sheets (units, buildings, realms, icons); evidence `evidence/m4-*.png` |
 | R09 | Three cameras + cinematic reveals | implemented-unverified | `js/camera.js` (state machine, tested), `js/render.js` (`updateCamera`, `cinematic`, `skipCinematic`), camera button `#btn-cam`; evidence `evidence/m1-*.png` |
-| R10 | Five kingdoms + Warlord realm | existing (partial) | `LEVELS` in `js/config.js`: Greenwood, Sunscorch, Frostmarch lands; Eastern Mountains and Iron Hills inside the Greenwood map; Warlord at each Stronghold. Region order is an open decision |
+| R10 | Five kingdoms + Warlord realm | implemented-unverified (visual) | six realms painted and landmarked on the home map per sheet 04 (`js/regions.js`, `SITES` in `js/map.js`); realm kings/quests still Phase 4 |
 | R11 | Collect/upgrade/build/recruit/campaign | existing-verified | `js/world.js`, `js/config.js`; headless econ sim |
 | R12 | Auto-fire/harvest/cargo/hero states | existing-verified; bow stow implemented-unverified | auto-fire, axe and pickaxe, saddlebag cargo in `js/world.js`; stow matrix `STOW` in `js/render.js`, `stow` parts in `js/models.js`; evidence `evidence/m1-adventure-road-south.png` |
 | R13 | Bow tiers/customization/weapons | existing-verified | `WEAPONS`, `ROYAL_BOW` (5 tiers), `STYLES` (finish/gem/string/trail) in `js/config.js`; blacksmith UI |
 | R14 | Six HUD resource values | existing-verified | gold (carried + 🏦 banked), wood, stone, iron, people in `js/ui.js` |
-| R15 | Friendly units/workers | existing-verified | villagers, knights, archers, raiders, haulers with wheelbarrows (`js/world.js`, `js/models.js`) |
-| R16 | Enemies/bosses/elites | existing-verified | `ENEMIES` in `js/config.js`: grunt, brute, archer, raider, hound, treant (wave 5), boss, fort/stronghold structures |
-| R17 | Friendly buildings/levels | existing-verified | `BUILDINGS` in `js/config.js`; buildings now stand on `footing()` ground |
-| R18 | Tower/catapult/wall progression | existing-verified | tower and catapult tiers in `BUILDINGS`; `WALLS` 6 expansions + 5 gate materials (Palisade → Iron) |
+| R15 | Friendly units/workers | implemented-unverified | ally guard/archer/raider kits per kingdom, blue alliance sash (`js/units.js` allyRigs); villagers unchanged |
+| R16 | Enemies/bosses/elites | implemented-unverified | enemy kits per land + Warlord elite, commanders A, Treant per sheet (`js/units.js`); evidence `evidence/m4-troops-commanders.png`, `m4-elder-treant.png` |
+| R17 | Friendly buildings/levels | implemented-unverified | castle 4 / barracks 3 / houses rebuilt (`js/buildings.js`); other buildings keep older models |
+| R18 | Tower/catapult/wall progression | implemented-unverified | towers 5, siege 3, walls 5 materials with corners and gates (`js/buildings.js`); evidence `evidence/m4-building-kit.png` |
 | R19 | Mountain Fort/final Stronghold | existing-verified | `FORT`, `STRONGHOLD`, camps in `js/map.js`; built on levelled ground (`FLATS` in `js/terrain.js`); evidence `evidence/m1-cinematic-mountain-fort.png` |
 | R20 | Orders/claims/waves/siege | existing-verified; scout join implemented-unverified | orders/stations/outposts/siege in `js/world.js`; the ridge scout puts field soldiers on follow (`updateScout`), tested |
 | R21 | Full effects inventory | existing (unaudited per effect) | `js/render.js` particles and rings, now ground-relative |
-| R22 | UI style and controls | existing-verified | `js/ui.js`, `style.css`; new camera button next to pause |
+| R22 | UI style and controls | in-progress | sheet icons in HUD/buttons/orders (`icons/ui/`), gold-rimmed round buttons, boss bar with portrait; menus still emoji |
 | R23 | Elevation/natural boundaries/traversal | implemented-unverified | `js/terrain.js`; tests: roads walkable, ridable map within slope limits, castle grounds and pads level, river below water, footing never floats |
 | R24 | Landmark sightlines/reveals | implemented-unverified | `LANDMARKS` + encounter reveals with `look` targets (`js/slice.js`), light beam + arrow to the next place (`syncSites`, `updateThreats`); tests; evidence `evidence/m2-ruin-reveal-watchtower.png`, `m2-overlook-reveals-fort.png` |
 | R25 | Routes/branches/chokepoints | in-progress | 4 lanes, bridge, fort gorge; the journey route with side places off the roads; bot traversal test of the whole route; route graph and journey in `world-layout.json` |
-| R26 | Settlements feel inhabited/grow visibly | in-progress (bounded) | the Fallen Village rebuilds visibly with people returning; King's Farmland dressing; houses inside the walls not yet dressed |
+| R26 | Settlements feel inhabited/grow visibly | in-progress | Fallen Village rebuild, hamlets, windmill, farmland dressing |
 | R27 | Smooth collision-aware camera states | implemented-unverified | pose easing over `CAM.blend` 0.9 s, hysteresis, terrain lift along the view line, ground raycast for taps (`rayGround`) in `js/render.js`; camera tests |
 | R28 | Simple concurrent touch controls | implemented-unverified | `js/input.js` pointer tracking; right-side drag turns the camera in chase modes; **needs real iPhone test** |
 | R29 | Waves and exploration encounters coexist | implemented-unverified | camp guards never count towards a wave (tested); waves continue while travelling, with a one-time toast; encounter state saved |
@@ -40,10 +40,10 @@ This table started unimplemented and is now mapped to the repository (see `imple
 | R32 | Key art/sheets/icons/UI/concepts | planned | needs separate art production |
 | R33 | GLB/scale/LODs/pivots | planned | no GLBs in the repository |
 | R34 | Persistent streamed world | planned | Phase 3; chunk grid proposed in `world-layout.json` |
-| R36 | Allied guard/archer/raider variants per kingdom | blocked on selection | soldier A/B per region pending (`asset-workup/data/design-selections.json`); current knight/archer/raider rigs are placeholders |
-| R37 | Distinct villain and enemy army per region, Warlord final | blocked on selection | villain A/B per region pending; current enemy rigs placeholders; Warlord remains final boss |
+| R36 | Allied guard/archer/raider variants per kingdom | implemented-unverified | five ally kits in `js/units.js`, chosen by the ridden king |
+| R37 | Distinct villain and enemy army per region, Warlord final | implemented-unverified | enemy kits per land, Warlord elite, five commanders + Warlord (`js/units.js`); Iron/Mountain enemy kits reuse Greenwood colours until those lands exist |
 | R38 | Original wave-5 Treant kept separate from the Greenwood villain | existing-verified | `RIGS.treant`, wave 5 in `waveSpec`; Bramble Captain not added |
-| R39 | User-selectable review across soldiers/villains/buildings/terrain/UI/icons | in-progress | selections file kept in `asset-workup/data/design-selections.json`, all pending; the workup's `index.html` gallery |
+| R39 | User-selectable review across soldiers/villains/buildings/terrain/UI/icons | verified | selections recorded 2026-10-05 in `asset-workup/data/design-selections.json` (match the images) |
 | R40 | Use the supplied king/world images as source; resolve conflicts explicitly | in-progress | kings from sheet 03 per spec 06; castle spires, cliffs, falls and Old Stone Bridge from sheet 04; conflicts noted in `implementation-status.md` |
 | R35 | Bounded simulation and visual working set | planned | baseline ≈98 draw calls, ≈260–270k triangles (headless); `?perf` overlay in `js/main.js` |
 
@@ -73,6 +73,7 @@ This table started unimplemented and is now mapped to the repository (see `imple
 2026-10-04 · Greenwood journey · none · five authored places with saved encounter state · R24, R25, R26, R29 · 10 tests incl. whole-route ride, `evidence/m2-*.png`.
 2026-10-04 · combat camera · dist 10 / height 5.6 · dist 12.5 / height 7.4 · R03, R27 · `evidence/m2-ridge-raid-combat.png`.
 2026-10-04 · asset workup v2 adopted · missing king/world references · approved references in `asset-workup/`, manifest IDs adopted, proposals pending selection · R05, R30, R36–R40 · `evidence/m3-*.png`.
+2026-10-05 · full graphics/world pass · placeholder troops, buildings, flat realms · units, commanders, building kit, six realms, sheet icons per user instruction to match the images · R08, R10, R15–R18, R22, R36–R39 · `evidence/m4-*.png`.
 2026-10-04 · regional kings · one placeholder king · five colour kits from the approved sheet, Greenwood default · R05 · `evidence/m3-five-kings.png`.
 
 ## Change log template

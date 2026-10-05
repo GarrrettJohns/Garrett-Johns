@@ -26,8 +26,12 @@ It then launches full screen and works offline.
   Mountain Fort. The first time the king sees a landmark (the forest, the
   Fort, Riverford, the Iron Hills, Stonehill or the Stronghold), the camera
   rises for a short look. Tap to skip it.
-- **The look:** the king and his horse follow the approved regional king
-  sheet in `docs/crownfall/asset-workup/`. The world is moving toward the
+- **The look:** everything follows the art in `docs/crownfall/asset-workup/`:
+  the five regional kings, each kingdom's troops, the enemy armies and their
+  commanders, the Elder Treant, the royal building kit, and the sheet's icons.
+  The home map shows all six realms from the world concept: Greenwood,
+  the Eastern Mountains, the Iron Hills, Sunscorch, Frostmarch and the
+  Warlord's realm. The world is moving toward the
   approved world concept: layered cliffs, oaks and pines, a spired castle,
   falls where the river rises, and the broken Old Stone Bridge.
 - **The Greenwood journey:** after the first waves a light beam and an arrow
@@ -225,6 +229,10 @@ handoff, plan and status live in `docs/crownfall/`; start with
 | `js/config.js` | All balance data: buildings, upgrades, units, enemies, wave generation |
 | `js/terrain.js` | The shape of the land: one height function, levelled build areas, the bridge deck |
 | `js/camera.js` | Camera views (kingdom / adventure / combat) and when they change |
+| `js/units.js` | Troops, enemies, commanders and the Elder Treant, per kingdom |
+| `js/buildings.js` | The royal building kit: castle, barracks, towers, siege, walls, cottages |
+| `js/regions.js` | The six realms: ground, trees and landmarks |
+| `tests/viewer.html` | Model viewer for art review |
 | `js/slice.js` | The Greenwood journey: its encounters and when each opens |
 | `js/map.js` | Layout: enemy roads, the road to the stronghold, outposts and frontiers, river, square walls, fixed pads, scenery |
 | `js/world.js` | The simulation: king, economy, villagers, army, enemies, waves, saving |
