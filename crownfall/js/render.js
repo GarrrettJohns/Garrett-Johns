@@ -4,11 +4,11 @@
 
 import * as THREE from './vendor/three.js';
 import {
-  C, Builder, vcMat, RIGS, pineGeo, rockGeo, cliffGeo, peakGeo, palisadeGeo, stoneWallGeo, gateGeo, gateDoorGeo,
-  castleGeo, houseGeo, farmGeo, barracksGeo, stableGeo, rangeGeo, goldmineGeo, lumberGeo, quarryGeo,
-  bridgeGeo, towerGeo, towerGunGeo, coinGeo, arrowGeo, chevronGeo, rockfallGeo, passGeo, treeGeo, outpostGeo, logGeo,
+  C, Builder, vcMat, RIGS, pineGeo, rockGeo, cliffGeo, peakGeo,
+  farmGeo, stableGeo, rangeGeo, goldmineGeo, lumberGeo, quarryGeo,
+  bridgeGeo, towerGunGeo, coinGeo, arrowGeo, chevronGeo, rockfallGeo, passGeo, treeGeo, outpostGeo, logGeo,
   strongholdWallsGeo, strongholdGateGeo, strongholdTowerGeo, strongholdKeepGeo, warehouseGeo, stumpGeo,
-  fortWallsGeo, fortGateGeo, fortTowerGeo, ironmineGeo, blacksmithGeo, catapultBaseGeo, catapultFrameGeo, catapultArmGeo,
+  fortWallsGeo, fortGateGeo, fortTowerGeo, ironmineGeo, blacksmithGeo,
   fieldGeo, barnGeo, hayGeo, scarecrowGeo, cartGeo, cottageGeo, wellGeo, gardenGeo, laundryGeo, tentGeo, campfireGeo,
   columnGeo, archGeo, chestGeo, watchtowerGeo, cairnGeo, mergePlaced, stoneBridgeRuinGeo,
 } from './models.js';
@@ -20,6 +20,8 @@ import { BUILDINGS, HERO, STYLES, KINGS } from './config.js';
 import { groundH as G, standH, setBridge, footing, TERRAIN } from './terrain.js';
 import { CAM } from './camera.js';
 import { KING_SWING } from './world.js';
+import { castleGeo, houseGeo, barracksGeo, towerGeo, catapultBaseGeo, catapultFrameGeo, catapultArmGeo, wallKitGeo, wallCornerGeo, wallGateGeo, wallDoorGeo, WALL_SEG } from './buildings.js';
+import { allyRigs, enemyRigs, BOSS_LOOKS, bossLook, treantRig, ENEMY_KIT_FOR_BIOME } from './units.js';
 
 const TAU = Math.PI * 2;
 const TOWER_TOP = [3.15, 3.15, 3.15, 3.55, 3.95];   // platform height per tower level
@@ -622,8 +624,15 @@ export class Renderer {
   buildDynamic() {
     const scene = this.scene;
     this.rigs = {};
-    const caps = { hero: 1, knight: 40, archer: 80, raider: 40, villager: 120, grunt: 160, brute: 50, bowman: 70, outrider: 70, hound: 60, boss: 3, treant: 2 };
-    for (const [k, cap] of Object.entries(caps)) this.rigs[k] = new RigMesh(scene, RIGS[k](), cap);
+    this.rigCaps = { hero: 1, knight: 40, archer: 80, raider: 40, villager: 120, grunt: 160, brute: 50, bowman: 70, outrider: 70, hound: 60, treant: 2 };
+    this.rigs.hero = new RigMesh(scene, RIGS.hero(), 1);
+    this.rigs.villager = new RigMesh(scene, RIGS.villager(), 120);
+    this.rigs.treant = new RigMesh(scene, treantRig(), 2);
+    for (const [k, f] of Object.entries(BOSS_LOOKS)) this.rigs['boss_' + k] = new RigMesh(scene, f(), 2);
+    // The Warlord's elite (stronghold garrison and siege columns).
+    for (const [k, r] of Object.entries(enemyRigs('warlord'))) this.rigs['w_' + k] = new RigMesh(scene, r, Math.round(this.rigCaps[k] * 0.7));
+    this.setArmy('greenwood');
+    this.setEnemies('greenwood');
 
     const goldMat = new THREE.MeshLambertMaterial({ color: C.gold, emissive: 0x5a3a00 });
     this.coinPool = new Pool(scene, coinGeo(), goldMat, 500, { shadow: true });
@@ -882,12 +891,13 @@ export class Renderer {
       this.scene.remove(this.wallGroup);
       this.wallGroup = new THREE.Group();
       this.scene.add(this.wallGroup);
-      const stone = world.walls.gate >= 3;
+      // Five wall materials (Palisade, Reinforced, Timber, Stone, Iron) follow the gate upgrades.
+      const tier = Math.min(4, world.walls.gate);
       const R = world.wallRadius;
-      const SEG = 2.4;
-      const geo = this.geo(`wall:${stone}`, () => (stone ? stoneWallGeo(SEG) : palisadeGeo(SEG)));
+      const SEG = WALL_SEG;
+      const geo = this.geo(`wall:${tier}`, () => wallKitGeo(tier, SEG));
       const blockers = Object.values(world.b).filter((b) => b.type !== 'castle' && world.padVisible(b));
-      const gateHalf = stone ? 2.7 : 2.35;
+      const gateHalf = [2.35, 2.35, 2.8, 3.0, 3.0][tier];
       const keep = [];
       // Each side of the square: run from corner to corner, stopping exactly at
       // gate posts and at anything built on the wall line.
@@ -930,7 +940,7 @@ export class Renderer {
       mesh.receiveShadow = true;
       this.wallGroup.add(mesh);
       // Corner towers tie the sides together.
-      const corner = this.geo(`corner:${stone}`, () => cornerGeo(stone));
+      const corner = this.geo(`corner:${tier}`, () => wallCornerGeo(tier));
       for (const cx of [-R, R]) for (const cz of [-R, R]) {
         const c = new THREE.Mesh(corner, vcMat);
         c.position.set(cx, G(cx, cz) - 0.05, cz);
@@ -943,8 +953,8 @@ export class Renderer {
         const grp = new THREE.Group();
         grp.position.set(g.x, G(g.x, g.z), g.z);
         grp.rotation.y = g.side === 'ns' ? 0 : Math.PI / 2;
-        const frame = new THREE.Mesh(this.geo(`gate:${stone}`, () => gateGeo(stone)), vcMat);
-        const door = new THREE.Mesh(this.geo(`door:${stone}`, () => gateDoorGeo(stone)), vcMat);
+        const frame = new THREE.Mesh(this.geo(`gate:${tier}`, () => wallGateGeo(tier)), vcMat);
+        const door = new THREE.Mesh(this.geo(`door:${tier}`, () => wallDoorGeo(tier)), vcMat);
         frame.castShadow = door.castShadow = true;
         grp.add(frame, door);
         this.wallGroup.add(grp);
@@ -997,6 +1007,7 @@ export class Renderer {
       const tint = (cat) => STYLE_C[cat][sty[cat]] || null;
       const cape = 0.12 + 0.85 * gallop + Math.sin(t * 9) * 0.14 * gallop + Math.sin(t * 1.7) * 0.05 + shot * 0.2;
       if (this.heroKit !== (hero.kit || 'greenwood')) this.setKing(hero.kit || 'greenwood');
+      if (this.armyKit !== (hero.kit || 'greenwood')) this.setArmy(hero.kit || 'greenwood');
       this.rigs.hero.add(hero.x, bob + shot * 0.14, hero.z, hero.yaw, HERO_S, {
         walk: gallop, anim: hero.anim * 2.2, swing: hero.tool ? 0 : shot * 1.7, sweep, smash, flash: hero.flash, load: hero.tool,
         legK: 1.35, cape, tier: hero.bow || 0, stowed: !hero.tool && world.t - (hero.lastShot ?? -99) > 1.1, gemTier: sty.gem && sty.gem !== 'none' ? hero.bow || 0 : -1,
@@ -1030,10 +1041,13 @@ export class Renderer {
         load: v.job && world.b[v.job]?.type === 'warehouse' ? (v.carry ? `barrow-${v.carry.res}` : 'barrow') : v.carry ? v.carry.res : null,
       });
     }
-    const ENEMY_RIG = { grunt: 'grunt', brute: 'brute', archer: 'bowman', raider: 'outrider', hound: 'hound', boss: 'boss', treant: 'treant' };
+    const ENEMY_RIG = { grunt: 'grunt', brute: 'brute', archer: 'bowman', raider: 'outrider', hound: 'hound', treant: 'treant' };
+    const ek = ENEMY_KIT_FOR_BIOME[world.levelInfo.biome] || 'greenwood';
+    if (this.enemyKit !== ek) this.setEnemies(ek);
     for (const e of world.enemies) {
       if (e.static) continue;
-      this.rigs[ENEMY_RIG[e.kind]].add(e.x, e.moving ? Math.abs(Math.sin(e.anim)) * 0.08 : 0, e.z, e.yaw, e.scale * UNIT_S, {
+      const rig = e.kind === 'boss' ? 'boss_' + bossLook(e.name) : (e.elite && e.kind !== 'treant' ? 'w_' : '') + ENEMY_RIG[e.kind];
+      this.rigs[rig].add(e.x, e.moving ? Math.abs(Math.sin(e.anim)) * 0.08 : 0, e.z, e.yaw, e.scale * UNIT_S, {
         walk: e.moving ? 1 : 0, anim: e.anim, swing: e.attackT * 3.3, flash: e.flash + (e.burn > 0 ? 0.25 + Math.sin(t * 20) * 0.15 : 0),
       });
     }
@@ -1558,6 +1572,19 @@ export class Renderer {
       this.spark(FALLS.x - 2 + (Math.random() - 0.5) * 2, 0.2, FALLS.z + (Math.random() - 0.5) * 3, 0xffffff, 1, 0.42, 1.2, 1.2, -0.6);
     }
   }
+
+  // Rebuild a set of rigs in place (troop or enemy kits change with the king
+  // and the land).
+  swapRigs(set) {
+    for (const [k, r] of Object.entries(set)) {
+      const old = this.rigs[k];
+      if (old) for (const pt of old.parts) { this.scene.remove(pt.m); pt.m.geometry.dispose(); pt.m.dispose(); }
+      this.rigs[k] = new RigMesh(this.scene, r, this.rigCaps[k]);
+      this.rigs[k].begin();
+    }
+  }
+  setArmy(kit) { this.swapRigs(allyRigs(kit)); this.armyKit = kit; }
+  setEnemies(kit) { this.swapRigs(enemyRigs(kit)); this.enemyKit = kit; }
 
   // Ride as one of the five regional kings: rebuild the hero rig in that
   // king's colours (config.js KINGS).

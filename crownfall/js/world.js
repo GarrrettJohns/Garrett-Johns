@@ -1221,6 +1221,7 @@ export class World {
       burn: 0, burnDps: 0, flash: 0, anim: Math.random() * 10, moving: true, attackT: 0,
       def, scale: q.boss ? q.boss.scale : def.scale || 1, coins: q.boss ? q.boss.coins : def.coins,
       name: q.boss ? q.boss.name : null,
+      elite: !!this.siege,   // siege columns wear the Warlord's colours
     };
     lanePoint(lane, s0, tmpP);
     e.x = tmpP.x - tmpP.dz * e.off;

@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "established_references": [
     "references/approved/03_five_regional_kings.jpeg",
     "references/approved/02_mounted_hero_and_weapons.jpeg",
@@ -8,117 +8,133 @@
   "king_conflicts_resolved_by": "specs/06_REFERENCE_RECONCILIATION.md",
   "soldiers": {
     "greenwood": {
-      "selection": null,
+      "selection": "as_shown_in_regional_army_sheet",
       "options": [
         "A_royal_legions",
         "B_frontier_retinue"
       ],
-      "status": "pending_user_selection"
+      "status": "selected",
+      "basis": "User, 2026-10-05: 'I want the graphics to have a full upgrade to match the images I gave you. Same with the world.' Recorded as: build every proposal sheet as shown."
     },
     "eastern_mountains": {
-      "selection": null,
+      "selection": "as_shown_in_regional_army_sheet",
       "options": [
         "A_royal_legions",
         "B_frontier_retinue"
       ],
-      "status": "pending_user_selection"
+      "status": "selected",
+      "basis": "User, 2026-10-05: 'I want the graphics to have a full upgrade to match the images I gave you. Same with the world.' Recorded as: build every proposal sheet as shown."
     },
     "iron_hills": {
-      "selection": null,
+      "selection": "as_shown_in_regional_army_sheet",
       "options": [
         "A_royal_legions",
         "B_frontier_retinue"
       ],
-      "status": "pending_user_selection"
+      "status": "selected",
+      "basis": "User, 2026-10-05: 'I want the graphics to have a full upgrade to match the images I gave you. Same with the world.' Recorded as: build every proposal sheet as shown."
     },
     "sunscorch": {
-      "selection": null,
+      "selection": "as_shown_in_regional_army_sheet",
       "options": [
         "A_royal_legions",
         "B_frontier_retinue"
       ],
-      "status": "pending_user_selection"
+      "status": "selected",
+      "basis": "User, 2026-10-05: 'I want the graphics to have a full upgrade to match the images I gave you. Same with the world.' Recorded as: build every proposal sheet as shown."
     },
     "frostmarch": {
-      "selection": null,
+      "selection": "as_shown_in_regional_army_sheet",
       "options": [
         "A_royal_legions",
         "B_frontier_retinue"
       ],
-      "status": "pending_user_selection"
+      "status": "selected",
+      "basis": "User, 2026-10-05: 'I want the graphics to have a full upgrade to match the images I gave you. Same with the world.' Recorded as: build every proposal sheet as shown."
     }
   },
   "villains": {
     "greenwood": {
-      "selection": null,
+      "selection": "A",
       "options": [
         "A",
         "B"
       ],
-      "status": "pending_user_selection"
+      "status": "selected",
+      "basis": "User, 2026-10-05: 'I want the graphics to have a full upgrade to match the images I gave you. Same with the world.' Recorded as: build every proposal sheet as shown. Option A = the commander drawn on each regional army sheet."
     },
     "eastern_mountains": {
-      "selection": null,
+      "selection": "A",
       "options": [
         "A",
         "B"
       ],
-      "status": "pending_user_selection"
+      "status": "selected",
+      "basis": "User, 2026-10-05: 'I want the graphics to have a full upgrade to match the images I gave you. Same with the world.' Recorded as: build every proposal sheet as shown. Option A = the commander drawn on each regional army sheet."
     },
     "iron_hills": {
-      "selection": null,
+      "selection": "A",
       "options": [
         "A",
         "B"
       ],
-      "status": "pending_user_selection"
+      "status": "selected",
+      "basis": "User, 2026-10-05: 'I want the graphics to have a full upgrade to match the images I gave you. Same with the world.' Recorded as: build every proposal sheet as shown. Option A = the commander drawn on each regional army sheet."
     },
     "sunscorch": {
-      "selection": null,
+      "selection": "A",
       "options": [
         "A",
         "B"
       ],
-      "status": "pending_user_selection"
+      "status": "selected",
+      "basis": "User, 2026-10-05: 'I want the graphics to have a full upgrade to match the images I gave you. Same with the world.' Recorded as: build every proposal sheet as shown. Option A = the commander drawn on each regional army sheet."
     },
     "frostmarch": {
-      "selection": null,
+      "selection": "A",
       "options": [
         "A",
         "B"
       ],
-      "status": "pending_user_selection"
+      "status": "selected",
+      "basis": "User, 2026-10-05: 'I want the graphics to have a full upgrade to match the images I gave you. Same with the world.' Recorded as: build every proposal sheet as shown. Option A = the commander drawn on each regional army sheet."
     },
     "warlord": {
-      "selection": null,
+      "selection": "A",
       "options": [
         "A",
         "B"
       ],
-      "status": "pending_user_selection"
+      "status": "selected",
+      "basis": "User, 2026-10-05: 'I want the graphics to have a full upgrade to match the images I gave you. Same with the world.' Recorded as: build every proposal sheet as shown. Option A = the commander drawn on each regional army sheet."
     }
   },
   "sections": {
     "enemy_soldiers": {
-      "selection": null,
-      "status": "proposal_pending_review"
+      "selection": "as_shown",
+      "status": "selected",
+      "basis": "User, 2026-10-05: 'I want the graphics to have a full upgrade to match the images I gave you. Same with the world.' Recorded as: build every proposal sheet as shown."
     },
     "buildings": {
-      "selection": null,
-      "status": "proposal_pending_review"
+      "selection": "as_shown",
+      "status": "selected",
+      "basis": "User, 2026-10-05: 'I want the graphics to have a full upgrade to match the images I gave you. Same with the world.' Recorded as: build every proposal sheet as shown."
     },
     "environments": {
-      "selection": null,
-      "status": "proposal_pending_review"
+      "selection": "as_shown",
+      "status": "selected",
+      "basis": "User, 2026-10-05: 'I want the graphics to have a full upgrade to match the images I gave you. Same with the world.' Recorded as: build every proposal sheet as shown."
     },
     "ui": {
-      "selection": null,
-      "status": "proposal_pending_review"
+      "selection": "as_shown",
+      "status": "selected",
+      "basis": "User, 2026-10-05: 'I want the graphics to have a full upgrade to match the images I gave you. Same with the world.' Recorded as: build every proposal sheet as shown."
     },
     "icons": {
-      "selection": null,
-      "status": "proposal_pending_review"
+      "selection": "as_shown",
+      "status": "selected",
+      "basis": "User, 2026-10-05: 'I want the graphics to have a full upgrade to match the images I gave you. Same with the world.' Recorded as: build every proposal sheet as shown."
     }
   },
-  "note": "No newly proposed design has been approved by default. User may mix choices by region/section."
+  "note": "Selections recorded 2026-10-05 from the user's instruction to match all supplied images. Option B villains (villain_options_b.png) and Frontier Retinue soldiers remain concept history, not built."
 }

@@ -289,7 +289,9 @@ export const ENEMIES = {
   boss: { name: 'Warlord', hp: 1100, dmg: 34, interval: 1.7, range: 2.6, speed: 1.5, aggro: 6, coins: 60, radius: 1.5, armor: 2, scale: 2.8, slam: 3.2 },
 };
 
-const BOSS_NAMES = { 5: 'Elder Treant', 10: 'Warlord Vexa', 15: 'The Iron King' };
+// Wave bosses: the Elder Treant at 5, then regional commanders (army sheets,
+// option A) by land: Greenwood, Sunscorch, Frostmarch.
+const COMMANDERS = { 10: ['Bramble Captain', 'Dune Conqueror', 'Rime Regent'], 15: ['The Forge Tyrant', 'The Cliff Marshal', 'The Cliff Marshal'] };
 
 // The levels: each one a new land on the way through the enemy's realm.
 export const LEVELS = [
@@ -317,7 +319,7 @@ export function waveSpec(n, lanesOpen, level = 1) {
     const tier = n / 5;
     boss = {
       kind: n === 5 ? 'treant' : 'boss',
-      name: BOSS_NAMES[n] || `Warlord of wave ${n}`,
+      name: n === 5 ? 'Elder Treant' : COMMANDERS[n] ? COMMANDERS[n][(level - 1) % 3] : `Warlord of wave ${n}`,
       hpMul: [1, 0.6, 1.4, 2.2][Math.min(3, tier)] * (n > 15 ? 1 + (n - 15) * 0.25 : 1),
       coins: [0, 60, 120, 250][Math.min(3, tier)] || 250,
       scale: n >= 15 ? 3.4 : 2.8,
